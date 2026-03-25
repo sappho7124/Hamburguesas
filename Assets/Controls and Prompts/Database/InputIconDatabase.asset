@@ -1,0 +1,184 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 61190f1eb893f8549875be5e531bc2a0, type: 3}
+  m_Name: InputIconDatabase
+  m_EditorClassIdentifier: Assembly-CSharp::InputIconDatabase
+  icons:
+  - inputPath: <Keyboard>/0
+    icon: {fileID: 126787484, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/1
+    icon: {fileID: -523271956, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/4
+    icon: {fileID: 354016595, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/5
+    icon: {fileID: 1174991156, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/6
+    icon: {fileID: 525065176, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/7
+    icon: {fileID: -902417911, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/8
+    icon: {fileID: 1165433771, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/9
+    icon: {fileID: -1270855419, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/a
+    icon: {fileID: 975460697, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/downArrow
+    icon: {fileID: -369863612, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/leftArrow
+    icon: {fileID: -735396493, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/rightArrow
+    icon: {fileID: -1538804130, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/upArrow
+    icon: {fileID: 1716721754, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/numpadMultiply
+    icon: {fileID: 1248389472, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/b
+    icon: {fileID: 1640547739, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/backslash
+    icon: {fileID: -1505370866, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/backspace
+    icon: {fileID: 557622439, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/leftBracket
+    icon: {fileID: -108946185, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/rightBracket
+    icon: {fileID: -1920877977, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/c
+    icon: {fileID: 390317245, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/capsLock
+    icon: {fileID: 40650812, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/leftCommand
+    icon: {fileID: -258873421, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/leftCtrl
+    icon: {fileID: -459348919, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/d
+    icon: {fileID: 345783247, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/delete
+    icon: {fileID: 361212052, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/e
+    icon: {fileID: -344430850, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/end
+    icon: {fileID: -1346272631, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/enter
+    icon: {fileID: -2088609569, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/escape
+    icon: {fileID: -962726863, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/f
+    icon: {fileID: 1302524265, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/f1
+    icon: {fileID: 1830165148, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/f2
+    icon: {fileID: -887867208, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/f3
+    icon: {fileID: -451804119, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/f4
+    icon: {fileID: -1467859789, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/f5
+    icon: {fileID: -609882789, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/f6
+    icon: {fileID: 976536230, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/f7
+    icon: {fileID: -1199597729, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/f8
+    icon: {fileID: 375069207, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/f9
+    icon: {fileID: 1359949657, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/f10
+    icon: {fileID: -1035605079, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/f11
+    icon: {fileID: 864019211, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/f12
+    icon: {fileID: 550693605, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/g
+    icon: {fileID: -1603926226, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/period
+    icon: {fileID: 1496587084, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/h
+    icon: {fileID: 376114673, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/home
+    icon: {fileID: -368818958, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/i
+    icon: {fileID: 352063465, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/insert
+    icon: {fileID: 126069789, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/j
+    icon: {fileID: 1953171382, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/k
+    icon: {fileID: 106548131, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/l
+    icon: {fileID: -2007471017, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/comma
+    icon: {fileID: 1218147469, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/m
+    icon: {fileID: -321592481, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/minus
+    icon: {fileID: 1121918337, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Mouse>/emptyButton
+    icon: {fileID: -75551411, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Mouse>/leftButton
+    icon: {fileID: -1624292792, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Mouse>/middleButton
+    icon: {fileID: -551955970, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Mouse>/rightButton
+    icon: {fileID: 795825978, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/n
+    icon: {fileID: -1228050778, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/numLock
+    icon: {fileID: 820876862, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/o
+    icon: {fileID: 349938728, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/p
+    icon: {fileID: 2123687573, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/pageDown
+    icon: {fileID: -1293012495, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/pageUp
+    icon: {fileID: -40489247, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/equals
+    icon: {fileID: -102778776, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/printScreen
+    icon: {fileID: 448849235, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/q
+    icon: {fileID: 2127456210, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/slash
+    icon: {fileID: 1538176389, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/quote
+    icon: {fileID: 1550593709, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/r
+    icon: {fileID: 2115711973, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/s
+    icon: {fileID: 455980482, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/semicolon
+    icon: {fileID: 995265258, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/leftShift
+    icon: {fileID: -1115485912, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/space
+    icon: {fileID: -337366953, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/t
+    icon: {fileID: -1175516371, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/tab
+    icon: {fileID: -2013480084, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/backquote
+    icon: {fileID: 1659322060, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/u
+    icon: {fileID: 457001196, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/v
+    icon: {fileID: 1802338134, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/w
+    icon: {fileID: -306819042, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/leftMeta
+    icon: {fileID: -265293020, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/x
+    icon: {fileID: -1309762782, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/y
+    icon: {fileID: 2100336957, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  - inputPath: <Keyboard>/z
+    icon: {fileID: 1255645694, guid: 32cb725efc208514b88730ff94b30af7, type: 3}
+  defaultIcon: {fileID: 21300000, guid: 51556f123a19af34ba5dae289045857b, type: 3}

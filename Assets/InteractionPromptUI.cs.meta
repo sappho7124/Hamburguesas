@@ -1,0 +1,25 @@
+fileFormatVersion: 2
+guid: 1b1b51f547d5c824caf62f8ac264fd55
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - uiCamera: {instanceID: 0}
+  - panelRoot: {instanceID: 0}
+  - panelRect: {instanceID: 0}
+  - maskRect: {instanceID: 0}
+  - backgroundImage: {instanceID: 0}
+  - panelOutlineRenderer: {instanceID: 0}
+  - iconImage: {instanceID: 0}
+  - promptText: {instanceID: 0}
+  - leftMaskImage: {instanceID: 0}
+  - blockedIcon: {fileID: 21300000, guid: d0f20fdf1c8ff9548a4e934566d550a9, type: 3}
+  - baseTextMaterial: {instanceID: 0}
+  - baseIconMaterial: {instanceID: 0}
+  - baseBackgroundMaterial: {instanceID: 0}
+  - baseOutlineMaterial: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
