@@ -353,30 +353,59 @@ public class InteractionController : MonoBehaviour
         if(crosshair) crosshair.color = Color.white;
     }
 
-    void HandleHover()
+void HandleHover()
     {
         Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
-        RaycastHit hit;
+        
+        // Use RaycastAll so we can see through overlapping objects
+        RaycastHit[] hits = Physics.RaycastAll(ray, reachDistance, grabLayer);
 
-        if (Physics.Raycast(ray, out hit, reachDistance, grabLayer))
+        HighlightableObject bestItem = null;
+        float closestDist = float.MaxValue;
+        bool foundRigidbody = false;
+
+        foreach (RaycastHit hit in hits)
         {
+            // 1. Completely ignore trigger colliders (like the Grill's detection zone)
+            if (hit.collider.isTrigger) continue;
+
             HighlightableObject item = hit.collider.GetComponentInParent<HighlightableObject>();
-            
             if (item != null)
             {
-                if (currentHoverObject != item)
+                // 2. Check if this item has a Rigidbody (meaning it's a physics object like food)
+                bool hasRb = item.GetComponentInParent<Rigidbody>() != null;
+
+                if (hasRb && !foundRigidbody)
                 {
-                    if (currentHoverObject != null) currentHoverObject.ToggleHighlight(false);
-                    currentHoverObject = item;
-                    currentHoverObject.ToggleHighlight(true);
-                    if(crosshair) crosshair.color = Color.green; 
-                    
-                    CheckAndFireUIEvent(item);
+                    // If this is the first Rigidbody we found, prioritize it immediately
+                    foundRigidbody = true;
+                    bestItem = item;
+                    closestDist = hit.distance;
                 }
-                return;
+                else if (hasRb == foundRigidbody && hit.distance < closestDist)
+                {
+                    // If it has the same priority, just pick the one closest to the camera
+                    bestItem = item;
+                    closestDist = hit.distance;
+                }
             }
         }
 
+        if (bestItem != null)
+        {
+            if (currentHoverObject != bestItem)
+            {
+                if (currentHoverObject != null) currentHoverObject.ToggleHighlight(false);
+                currentHoverObject = bestItem;
+                currentHoverObject.ToggleHighlight(true);
+                if(crosshair) crosshair.color = Color.green; 
+                
+                CheckAndFireUIEvent(bestItem);
+            }
+            return;
+        }
+
+        // If nothing valid was hit
         if (currentHoverObject != null)
         {
             currentHoverObject.ToggleHighlight(false);

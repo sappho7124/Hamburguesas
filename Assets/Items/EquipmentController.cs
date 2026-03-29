@@ -10,9 +10,7 @@ public class EquipmentController : MonoBehaviour
     [Header("Hand Settings")]
     public Transform handMount; 
     public float swayAmount = 0.05f;
-    public float swaySmooth = 8f;
-    
-    [Header("Throwing/Placing")]
+    public float swaySmooth = 8f;[Header("Throwing/Placing")]
     public float throwForce = 15f;
     public float placeDistance = 2f;
     public Material ghostMaterial; 
@@ -44,66 +42,62 @@ public class EquipmentController : MonoBehaviour
         HandlePlacementPreview();
     }
 
-// --- Inside EquipmentController.cs ---
-
-public void Equip(EquippableItem item)
-{
-    // 1. If we are already holding something, drop it first
-    if (currentEquippedItem != null) 
+    public void Equip(EquippableItem item)
     {
-        Drop(); 
+        // 1. If we are already holding something, drop it first
+        if (currentEquippedItem != null) 
+        {
+            Drop(); 
+        }
+
+        currentEquippedItem = item;
+        
+        // 2. Capture Original Layer 
+        // Crucial so we can restore it when dropping, allowing it to be highlighted again.
+        itemOriginalLayer = item.gameObject.layer;
+
+        // 3. Disable Physics & Visuals for "Hand Mode" INSTANTLY
+        // This stops collisions immediately so it doesn't hit the player or environment while moving
+        item.SetPhysics(false);
+        
+        // 4. Change Layer to Ignore Raycast
+        // Prevents the player's own interaction raycast from hitting the tool in their hand
+        SetLayerRecursive(item.gameObject, LayerMask.NameToLayer("Ignore Raycast"));
+
+        // 5. START TRANSITION: Move smoothly to hand offset
+        item.StartTransition(handMount, item.handPositionOffset, Quaternion.Euler(item.handRotationOffset), true, () => {
+            // Callback: Reached hand, nothing extra needed here.
+        });
+
+        // 6. UI PROMPTS
+        // Only show these if we aren't currently busy holding a physics object
+        if (!isPhysicsHolding)
+        {
+            RefreshPrompts();
+        }
     }
 
-    currentEquippedItem = item;
-    
-    // 2. Capture Original Layer 
-    // This is crucial so we can restore it when dropping, allowing it to be highlighted again.
-    itemOriginalLayer = item.gameObject.layer;
-
-    // 3. Parent & Position to the Hand
-    item.transform.SetParent(handMount);
-    item.transform.localPosition = item.handPositionOffset;
-    item.transform.localRotation = Quaternion.Euler(item.handRotationOffset);
-    
-    // 4. Disable Physics & Visuals for "Hand Mode"
-    // This script calls rb.isKinematic = true and col.enabled = false internally
-    item.SetPhysics(false);
-    
-    // 5. Change Layer to Ignore Raycast
-    // This prevents the player's own interaction raycast from hitting the tool in their hand
-    SetLayerRecursive(item.gameObject, LayerMask.NameToLayer("Ignore Raycast"));
-
-    // 6. UI PROMPTS
-    // We only show these if we aren't currently busy holding a physics object (like a box)
-    if (!isPhysicsHolding)
+    public void Drop()
     {
-        RefreshPrompts();
+        if (currentEquippedItem == null) return;
+
+        // Simple drop: Put it 1 meter in front of the camera
+        Vector3 dropPos = cameraTransform.position + cameraTransform.forward * 1.0f;
+        Quaternion dropRot = transform.rotation;
+
+        // true = use smooth transition
+        DetachItem(dropPos, dropRot, true);
     }
-}
 
-// --- Add to EquipmentController.cs ---
-
-public void Drop()
-{
-    if (currentEquippedItem == null) return;
-
-    // Simple drop: Put it 1 meter in front of the camera
-    Vector3 dropPos = cameraTransform.position + cameraTransform.forward * 1.0f;
-    Quaternion dropRot = transform.rotation;
-
-    // This handles the unparenting, physics restore, and UI clearing
-    DetachItem(dropPos, dropRot);
-}
-
-// Helper used by Equip
-private void SetLayerRecursive(GameObject obj, int layer)
-{
-    obj.layer = layer;
-    foreach (Transform child in obj.transform) 
+    // Helper used by Equip and DetachItem
+    private void SetLayerRecursive(GameObject obj, int layer)
     {
-        SetLayerRecursive(child.gameObject, layer);
+        obj.layer = layer;
+        foreach (Transform child in obj.transform) 
+        {
+            SetLayerRecursive(child.gameObject, layer);
+        }
     }
-}
 
     public bool HasItem(ItemDefinition def)
     {
@@ -117,8 +111,6 @@ private void SetLayerRecursive(GameObject obj, int layer)
     {
         // If we have no tool, or we are still supposedly holding physics, don't show tool prompts.
         if (currentEquippedItem == null || isPhysicsHolding) return;
-
-        // Debug.Log("Refreshing Equipment Prompts...");
 
         ActionPromptManager.Instance.ShowPrompt("EquipThrow", "Normal", "Throw Equipment", "Throw Tool");
         ActionPromptManager.Instance.ShowPrompt("EquipPlace", "Normal", "Put Down Equipment", "Place Tool");
@@ -150,10 +142,10 @@ private void SetLayerRecursive(GameObject obj, int layer)
             DestroyGhost();
         }
 
-        // 2. Drop (Simple release)
+        // 2. Drop (Simple release) - Uses the new animated Drop function
         if (controls.Normal.DropEquipment.triggered)
         {
-            DetachItem(currentEquippedItem.transform.position, currentEquippedItem.transform.rotation);
+            Drop();
         }
 
         // 3. Throw
@@ -223,14 +215,19 @@ private void SetLayerRecursive(GameObject obj, int layer)
             pos = hit.point + (hit.normal * 0.1f); 
             rot = Quaternion.LookRotation(Vector3.ProjectOnPlane(cameraTransform.forward, Vector3.up));
         }
-        DetachItem(pos, rot);
+        
+        // true = use smooth transition
+        DetachItem(pos, rot, true);
     }
 
     void Throw()
     {
         if (currentEquippedItem == null) return;
         Rigidbody rb = currentEquippedItem.GetRigidbody();
-        DetachItem(cameraTransform.position + cameraTransform.forward * 0.5f, cameraTransform.rotation);
+        
+        // false = INSTANT detach, no smooth transition. Physics take over immediately.
+        DetachItem(cameraTransform.position + cameraTransform.forward * 0.5f, cameraTransform.rotation, false);
+        
         if (rb != null)
         {
             rb.linearVelocity = Vector3.zero;
@@ -238,19 +235,37 @@ private void SetLayerRecursive(GameObject obj, int layer)
         }
     }
 
-    void DetachItem(Vector3 pos, Quaternion rot)
+    // Refactored DetachItem to support animations and deferring physics restoration
+    void DetachItem(Vector3 pos, Quaternion rot, bool animate = false)
     {
         if (currentEquippedItem == null) return;
-        currentEquippedItem.transform.SetParent(null);
-        currentEquippedItem.transform.position = pos;
-        currentEquippedItem.transform.rotation = rot;
-        currentEquippedItem.SetPhysics(true);
-        SetLayerRecursive(currentEquippedItem.gameObject, itemOriginalLayer);
+        
+        EquippableItem item = currentEquippedItem;
+        int layerToRestore = itemOriginalLayer;
         currentEquippedItem = null;
 
-        //UI Prompt
+        // UI Prompt Cleanup
         ActionPromptManager.Instance.HidePrompt("EquipThrow");
         ActionPromptManager.Instance.HidePrompt("EquipPlace");
         ActionPromptManager.Instance.HidePrompt("EquipDrop");
+
+        if (animate)
+        {
+            // Transition smoothly to target spot in World Space. 
+            // Physics and Collisions remain OFF until the callback is fired.
+            item.StartTransition(null, pos, rot, false, () => {
+                item.SetPhysics(true);
+                SetLayerRecursive(item.gameObject, layerToRestore);
+            });
+        }
+        else
+        {
+            // Instant drop (Used for throwing where Rigidbody handles the arc)
+            item.transform.SetParent(null);
+            item.transform.position = pos;
+            item.transform.rotation = rot;
+            item.SetPhysics(true);
+            SetLayerRecursive(item.gameObject, layerToRestore);
+        }
     }
 }
