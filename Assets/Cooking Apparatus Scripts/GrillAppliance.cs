@@ -3,22 +3,21 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class GrillAppliance : MonoBehaviour
-{
-    [Header("Grill Settings")]
+{[Header("Grill Settings")]
     public bool isOn = false;
-    public float heatPerSecond = 1f;
+    public float grillTemperature = 300f; 
+    public float ambientTemperature = 20f;[Tooltip("How fast heat transfers to the food. 1 = Normal, 2 = Twice as fast, 0.5 = Half speed.")]
+    public float heatTransferMultiplier = 1f;
 
     [Header("UI Prompts")]
-    public HighlightableObject switchHighlight; // Drag the HighlightableObject of your button/switch here
+    public HighlightableObject switchHighlight; 
     public string turnOnVerb = "Turn On";
     public string turnOffVerb = "Turn Off";
 
-    [Header("Visuals (Indicator Mesh)")]
+    [Header("Visuals")]
     public MeshRenderer indicatorMesh; 
     public Material indicatorOnMaterial; 
     public Material indicatorOffMaterial; 
-    
-    [Header("Visuals (Knob)")]
     public Transform knob;
     public float knobTurnSpeed = 10f;
 
@@ -36,7 +35,6 @@ public class GrillAppliance : MonoBehaviour
         UpdateStateVisuals();
     }
 
-    // Link this to the OnInteract UnityEvent of your Grill Button/Switch
     public void ToggleGrill()
     {
         isOn = !isOn;
@@ -44,21 +42,25 @@ public class GrillAppliance : MonoBehaviour
         
         StopAllCoroutines();
         StartCoroutine(AnimateKnob(isOn ? knobOnRot : knobOffRot));
+
+        // Update temperature and multiplier for all food currently sitting on the grill
+        float newTemp = isOn ? grillTemperature : ambientTemperature;
+        float newMultiplier = isOn ? heatTransferMultiplier : 1f; // Back to normal speed if turned off
+        
+        foreach (var food in itemsOnGrill)
+        {
+            if (food != null) 
+            {
+                food.targetEnvironmentTemperature = newTemp;
+                food.currentHeatMultiplier = newMultiplier;
+            }
+        }
     }
 
     private void UpdateStateVisuals()
     {
-        // Swap Light Material
-        if (indicatorMesh != null)
-        {
-            indicatorMesh.material = isOn ? indicatorOnMaterial : indicatorOffMaterial;
-        }
-
-        // Swap UI Prompt Verb
-        if (switchHighlight != null)
-        {
-            switchHighlight.interactionVerb = isOn ? turnOffVerb : turnOnVerb;
-        }
+        if (indicatorMesh != null) indicatorMesh.material = isOn ? indicatorOnMaterial : indicatorOffMaterial;
+        if (switchHighlight != null) switchHighlight.interactionVerb = isOn ? turnOffVerb : turnOnVerb;
     }
 
     private IEnumerator AnimateKnob(Quaternion targetRot)
@@ -72,27 +74,28 @@ public class GrillAppliance : MonoBehaviour
         knob.localRotation = targetRot;
     }
 
-    // Unity physics trigger detection
     void OnTriggerEnter(Collider other)
     {
         CookableItem food = other.GetComponentInParent<CookableItem>();
-        if (food != null && !itemsOnGrill.Contains(food)) itemsOnGrill.Add(food);
+        if (food != null && !itemsOnGrill.Contains(food))
+        {
+            itemsOnGrill.Add(food);
+            
+            food.targetEnvironmentTemperature = isOn ? grillTemperature : ambientTemperature;
+            food.currentHeatMultiplier = isOn ? heatTransferMultiplier : 1f;
+        }
     }
 
     void OnTriggerExit(Collider other)
     {
         CookableItem food = other.GetComponentInParent<CookableItem>();
-        if (food != null && itemsOnGrill.Contains(food)) itemsOnGrill.Remove(food);
-    }
-
-    void Update()
-    {
-        if (!isOn) return;
-        
-        for (int i = itemsOnGrill.Count - 1; i >= 0; i--)
+        if (food != null && itemsOnGrill.Contains(food))
         {
-            if (itemsOnGrill[i] != null) itemsOnGrill[i].ApplyHeat(heatPerSecond * Time.deltaTime);
-            else itemsOnGrill.RemoveAt(i); 
+            itemsOnGrill.Remove(food);
+            
+            // Reset back to room temperature and normal heating/cooling speed
+            food.targetEnvironmentTemperature = food.ambientTemperature;
+            food.currentHeatMultiplier = 1f;
         }
     }
 }

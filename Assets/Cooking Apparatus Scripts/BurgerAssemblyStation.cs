@@ -19,6 +19,12 @@ public class BurgerAssemblyStation : MonoBehaviour
     [Header("Prefabs")]
     public GameObject skewerPrefab; 
 
+    [Header("Master Burger Cooking Settings")]
+    public float burgerTimeToCook = 15f;
+    public float burgerTimeToBurn = 30f;
+    public float burgerFireThreshold = 250f;
+    public GameObject fireParticlePrefab;
+
     // Tracks items currently sitting in the Trigger Collider
     private List<GrabbableItem> itemsInZone = new List<GrabbableItem>();
 
@@ -57,7 +63,7 @@ public class BurgerAssemblyStation : MonoBehaviour
         List<GrabbableItem> allValidItems = new List<GrabbableItem>(itemsInZone);
         List<List<GrabbableItem>> itemClusters = GroupItemsIntoStacks(allValidItems);
         
-        Debug.Log($"[Assembly] Detected {itemClusters.Count} distinct item cluster(s).");
+        //Debug.Log($"[Assembly] Detected {itemClusters.Count} distinct item cluster(s).");
         int successCount = 0;
 
         foreach (var stack in itemClusters)
@@ -137,7 +143,7 @@ public class BurgerAssemblyStation : MonoBehaviour
         return clusters;
     }
 
-    private IEnumerator AssembleBurgerRoutine(List<GrabbableItem> ingredients, Vector3 centerPosition)
+private IEnumerator AssembleBurgerRoutine(List<GrabbableItem> ingredients, Vector3 centerPosition)
     {
         // 1. FREEZE INGREDIENTS INSTANTLY
         // We strip rigidbodies immediately so the player can't knock them over while the skewer is falling
@@ -172,7 +178,7 @@ public class BurgerAssemblyStation : MonoBehaviour
         // Snap to exact center just in case
         skewer.transform.position = centerPosition;
 
-        // 4. FINALIZE ASSEMBLY
+        // 4. FINALIZE ASSEMBLY - Physics and Interaction
         Rigidbody skewerRb = skewer.AddComponent<Rigidbody>();
         skewerRb.mass = ingredients.Count * 0.5f; 
         skewerRb.collisionDetectionMode = CollisionDetectionMode.Continuous;
@@ -187,9 +193,43 @@ public class BurgerAssemblyStation : MonoBehaviour
         masterHighlight.maxOutlineWidth = 10f;
         masterHighlight.hoverColor = Color.white;
 
+// 5. CALCULATE AVERAGE TEMPERATURE & MERGE COMPONENTS
+        float totalTemp = 0f;
+        float totalHeatProgress = 0f;
+        
+        AssembledBurger receipt = skewer.AddComponent<AssembledBurger>();
+
+        receipt.assemblyTime = Time.time;
         foreach (var ingredient in ingredients)
         {
-            // Parent it to the newly landed skewer
+            CookableItem cookable = ingredient.GetComponent<CookableItem>();
+            if (cookable != null) 
+            {
+                totalTemp += cookable.currentTemperature;
+                totalHeatProgress += cookable.currentHeatProgress;
+            }
+
+            // --- NEW: RECORD DETAILED INGREDIENT DATA ---
+            GrabbableItem grab = ingredient.GetComponent<GrabbableItem>();
+            if (grab != null && grab.itemDefinition != null)
+            {
+                SavedIngredient saved = new SavedIngredient();
+                saved.name = grab.itemDefinition.itemName;
+                
+                if (cookable != null)
+                {
+                    saved.isCookable = true;
+                    saved.heatProgressWhenAssembled = cookable.currentHeatProgress;
+                    saved.timeToCook = cookable.timeToCook;
+                    saved.timeToBurn = cookable.timeToBurn;
+                }
+                else
+                {
+                    saved.isCookable = false;
+                }
+                receipt.ingredients.Add(saved);
+            }
+
             ingredient.transform.SetParent(skewer.transform, true);
 
             HighlightableObject highlight = ingredient.GetComponent<HighlightableObject>();
@@ -199,11 +239,27 @@ public class BurgerAssemblyStation : MonoBehaviour
                 Destroy(highlight);
             }
 
-            CookableItem cookable = ingredient.GetComponent<CookableItem>();
             if (cookable != null) Destroy(cookable);
-
-            // Destroy individual grab logic
             Destroy(ingredient); 
         }
+
+        // 6. MAKE THE WHOLE BURGER COOKABLE
+        CookableItem masterCookable = skewer.AddComponent<CookableItem>();
+        masterCookable.category = CookableItem.FoodCategory.AssembledBurger;
+        
+        // --- NEW: PASS INSPECTOR VARIABLES OVER ---
+        masterCookable.timeToCook = burgerTimeToCook;
+        masterCookable.timeToBurn = burgerTimeToBurn;
+        masterCookable.fireTempThreshold = burgerFireThreshold;
+        masterCookable.fireParticlePrefab = fireParticlePrefab;
+        
+        // Pass the averaged stats over to the assembled burger
+        if (ingredients.Count > 0)
+        {
+            masterCookable.currentTemperature = totalTemp / ingredients.Count;
+            masterCookable.currentHeatProgress = totalHeatProgress / ingredients.Count;
+        }
+
+        masterCookable.InitializeRenderers(); 
     }
 }

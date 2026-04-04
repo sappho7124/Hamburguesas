@@ -11,6 +11,10 @@ public class EquippableItem : MonoBehaviour
     public Vector3 handPositionOffset = new Vector3(0.5f, -0.4f, 0.8f);
     public Vector3 handRotationOffset = new Vector3(0, 90, 0);
 
+    [Header("Placement Settings")]
+    public float placementOffset = 0f;
+
+
     [Header("Transition Settings")]
     public float transitionDuration = 0.25f; // How long it takes to equip/place
 

@@ -8,15 +8,13 @@ public class HighlightableObject : MonoBehaviour
 
     [Header("UI Positioning")]
     public Transform uiAnchor; 
-    public Vector3 uiWorldOffset = Vector3.zero;
-
-    [Header("UI Animation Settings")]
-    public float slideInDistance = 0.5f; 
-    [Tooltip("The GAP between the detected visual edge and the UI.")]
+    public Vector3 uiWorldOffset = Vector3.zero;[Header("UI Animation Settings")]
+    public float slideInDistance = 0.5f;[Tooltip("The GAP between the detected visual edge and the UI.")]
     public float slideOutDistance = 0.2f;
     public float thicknessMultiplier = 1.2f;
 
-    [Header("Visual Settings")]
+    [Header("Visual Settings")][Tooltip("Leave empty to highlight this object. Assign a child object (like a handle) to outline that instead.")]
+    public GameObject outlineTarget; 
     public Color hoverColor = Color.white; 
     public float maxOutlineWidth = 10f; 
     public float animSpeed = 15f; 
@@ -26,13 +24,14 @@ public class HighlightableObject : MonoBehaviour
     private Color targetColor; 
 
     public Outline OutlineComponent => outline; 
-    // Added helper to check if the outline is currently "dying"
     public bool IsFadingOut => targetWidth == 0;
 
     void Awake()
     {
-        outline = GetComponent<Outline>();
+        GameObject targetObj = outlineTarget != null ? outlineTarget : gameObject;
+        outline = targetObj.GetComponent<Outline>();
         if (outline != null) Destroy(outline);
+        
         targetWidth = 0f;
         targetColor = Color.clear;
     }
@@ -60,16 +59,17 @@ public class HighlightableObject : MonoBehaviour
 
     public void SetTempColor(Color c) { if (outline != null) targetColor = c; }
     
-    // KEEP COLOR during Reset so width fade is visible
     public void ResetColor() { targetColor = hoverColor; }
 
     public void ToggleHighlight(bool active)
     {
+        GameObject targetObj = outlineTarget != null ? outlineTarget : gameObject;
+
         if (active)
         {
             if (outline == null)
             {
-                outline = gameObject.AddComponent<Outline>();
+                outline = targetObj.AddComponent<Outline>();
                 outline.OutlineMode = Outline.Mode.OutlineAll;
                 outline.OutlineWidth = 0f; 
                 outline.OutlineColor = hoverColor;
@@ -81,7 +81,6 @@ public class HighlightableObject : MonoBehaviour
         else
         {
             targetWidth = 0f;
-            // REMOVED: targetColor = Color.clear; (This was causing the instant transparency)
         }
     }
 

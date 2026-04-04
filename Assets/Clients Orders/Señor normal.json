@@ -1,0 +1,41 @@
+{
+  "profileName": "Señor Normal",
+  "idealTemp": 65,
+  "minTotalItems": 3,
+  "maxTotalItems": 5,
+  "scoreSettings": {
+    "baseScore": 100,
+    "unrequestedIngredient": -20,
+    "missingIngredient": -20,
+    "raw": -75,
+    "cooked": 0,
+    "burnt": -40,
+    "onFire": -100,
+    "maxWaitTime": 60,
+    "waitPenaltyPerSecond": -1,
+    "maxFreshness": 30,
+    "stalePenaltyPerSecond": -1
+  },
+  "ingredients":[
+    { "name": "Bun", "min": 2, "max": 2, "weight": 0 },
+    { "name": "Meat Patty", "min": 1, "max": 3, "weight": 50 },
+    { "name": "Cheese", "min": 0, "max": 2, "weight": 30 }
+  ],
+  "groupedItems":[],
+  "reactions": {
+    "success": "¡Gracias! Esta es una hamburguesa decente.",
+    "wrongOrder": "Esto no es lo que pedi, yo pedi {ORDER} y esto es {SERVED}.",
+    "foodRaw": "Amigo, ¡esta carne todavía hace muuu! ¡Está cruda!",
+    "foodCooked": "¡Perfecto! Justo en su punto.",
+    "foodBurnt": "Pobre hamburguesa... la convertiste en carbón.",
+    "foodOnFire": "¡AYUDA! ¡ESTOY LLAMANDO A LOS BOMBEROS!",
+    "customReactions":[
+      {
+        "conditionName": "Double Trouble",
+        "requiredIngredients": ["Meat Patty", "Meat Patty"],
+        "reaction": "¡Doble carne! Hoy romperé mi dieta felizmente.",
+        "scoreModifier": 20
+      }
+    ]
+  }
+}

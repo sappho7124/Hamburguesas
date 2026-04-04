@@ -40,6 +40,7 @@ public class InteractionController : MonoBehaviour
     private Rigidbody heldObjectRB;
     private ItemDefinition heldPhysicsItemDef; 
     private bool isHolding = false;
+    private string lastHoverVerb = "";
     
     private float originalMass;
     private CollisionDetectionMode originalCollisionMode;
@@ -353,7 +354,7 @@ public class InteractionController : MonoBehaviour
         if(crosshair) crosshair.color = Color.white;
     }
 
-void HandleHover()
+    void HandleHover()
     {
         Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
         
@@ -366,25 +367,21 @@ void HandleHover()
 
         foreach (RaycastHit hit in hits)
         {
-            // 1. Completely ignore trigger colliders (like the Grill's detection zone)
             if (hit.collider.isTrigger) continue;
 
             HighlightableObject item = hit.collider.GetComponentInParent<HighlightableObject>();
             if (item != null)
             {
-                // 2. Check if this item has a Rigidbody (meaning it's a physics object like food)
                 bool hasRb = item.GetComponentInParent<Rigidbody>() != null;
 
                 if (hasRb && !foundRigidbody)
                 {
-                    // If this is the first Rigidbody we found, prioritize it immediately
                     foundRigidbody = true;
                     bestItem = item;
                     closestDist = hit.distance;
                 }
                 else if (hasRb == foundRigidbody && hit.distance < closestDist)
                 {
-                    // If it has the same priority, just pick the one closest to the camera
                     bestItem = item;
                     closestDist = hit.distance;
                 }
@@ -393,10 +390,14 @@ void HandleHover()
 
         if (bestItem != null)
         {
-            if (currentHoverObject != bestItem)
+            if (currentHoverObject != bestItem || lastHoverVerb != bestItem.interactionVerb)
             {
-                if (currentHoverObject != null) currentHoverObject.ToggleHighlight(false);
+                if (currentHoverObject != null && currentHoverObject != bestItem) 
+                    currentHoverObject.ToggleHighlight(false);
+                
                 currentHoverObject = bestItem;
+                lastHoverVerb = bestItem.interactionVerb;
+                
                 currentHoverObject.ToggleHighlight(true);
                 if(crosshair) crosshair.color = Color.green; 
                 
@@ -410,6 +411,7 @@ void HandleHover()
         {
             currentHoverObject.ToggleHighlight(false);
             currentHoverObject = null;
+            lastHoverVerb = ""; // Clear memory
             if(crosshair) crosshair.color = Color.white;
             OnInteractableHover?.Invoke(false, null, "", "", false);
         }

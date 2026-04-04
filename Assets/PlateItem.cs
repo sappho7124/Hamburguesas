@@ -1,5 +1,5 @@
 using UnityEngine;
-using System.Collections.Generic;[RequireComponent(typeof(EquippableItem))]
+using System.Collections.Generic;//[RequireComponent(typeof(EquippableItem))] It Does need Equipable item to function but we are removing it to now show the warnings on ghost placement
 public class PlateItem : MonoBehaviour
 {
     private EquippableItem equippable;

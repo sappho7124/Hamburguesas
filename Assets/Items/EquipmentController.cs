@@ -171,16 +171,22 @@ public class EquipmentController : MonoBehaviour
         handMount.localPosition = Vector3.Lerp(handMount.localPosition, targetPos, Time.deltaTime * swaySmooth);
     }
 
-    void CreateGhost()
+void CreateGhost()
     {
         if (currentEquippedItem == null) return;
         if (ghostObject != null) Destroy(ghostObject);
         ghostObject = Instantiate(currentEquippedItem.gameObject);
         
-        foreach (var comp in ghostObject.GetComponents<Component>())
-        {
-            if (!(comp is Transform || comp is Renderer || comp is MeshFilter)) Destroy(comp);
-        }
+        // BUG FIX: Safely strip components in reverse order using DestroyImmediate 
+        // This stops Unity from throwing "Component depends on it" errors.
+        MonoBehaviour[] scripts = ghostObject.GetComponentsInChildren<MonoBehaviour>();
+        for (int i = scripts.Length - 1; i >= 0; i--) DestroyImmediate(scripts[i]);
+
+        Collider[] cols = ghostObject.GetComponentsInChildren<Collider>();
+        for (int i = cols.Length - 1; i >= 0; i--) DestroyImmediate(cols[i]);
+
+        Rigidbody[] rbs = ghostObject.GetComponentsInChildren<Rigidbody>();
+        for (int i = rbs.Length - 1; i >= 0; i--) DestroyImmediate(rbs[i]);
         
         if (ghostMaterial != null)
         {
@@ -188,20 +194,21 @@ public class EquipmentController : MonoBehaviour
         }
     }
 
-    void HandlePlacementPreview()
+void HandlePlacementPreview()
     {
         if (!isPlacingMode || ghostObject == null) return;
         Ray ray = new Ray(cameraTransform.position, cameraTransform.forward);
-        if (Physics.Raycast(ray, out RaycastHit hit, placeDistance))
+        
+        if (Physics.Raycast(ray, out RaycastHit hit, placeDistance, ~0, QueryTriggerInteraction.Ignore))
         {
             ghostObject.SetActive(true);
-            ghostObject.transform.position = hit.point;
+            
+            float offset = currentEquippedItem != null ? currentEquippedItem.placementOffset : 0.1f;
+            ghostObject.transform.position = hit.point + (hit.normal * offset);
             ghostObject.transform.rotation = Quaternion.LookRotation(Vector3.ProjectOnPlane(cameraTransform.forward, Vector3.up));
         }
         else ghostObject.SetActive(false);
     }
-
-    void DestroyGhost() { if (ghostObject != null) Destroy(ghostObject); }
 
     void PlaceGently()
     {
@@ -210,15 +217,17 @@ public class EquipmentController : MonoBehaviour
         Vector3 pos = cameraTransform.position + cameraTransform.forward * 1.5f;
         Quaternion rot = Quaternion.identity;
 
-        if (Physics.Raycast(ray, out RaycastHit hit, placeDistance))
+        if (Physics.Raycast(ray, out RaycastHit hit, placeDistance, ~0, QueryTriggerInteraction.Ignore))
         {
-            pos = hit.point + (hit.normal * 0.1f); 
+            float offset = currentEquippedItem.placementOffset;
+            pos = hit.point + (hit.normal * offset); 
             rot = Quaternion.LookRotation(Vector3.ProjectOnPlane(cameraTransform.forward, Vector3.up));
         }
         
-        // true = use smooth transition
         DetachItem(pos, rot, true);
     }
+
+    void DestroyGhost() { if (ghostObject != null) Destroy(ghostObject); }
 
     void Throw()
     {
