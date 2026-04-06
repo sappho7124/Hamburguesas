@@ -1,0 +1,41 @@
+{
+  "shiftDuration": 240.0,
+  "spawnRates":[
+    {
+      "startTime": 0.0,
+      "endTime": 60.0,
+      "spawnInterval": 30.0,
+      "groupSizeWeights":[
+        { "groupSize": 1, "weight": 30 },
+        { "groupSize": 2, "weight": 50 },
+        { "groupSize": 3, "weight": 15 },
+        { "groupSize": 4, "weight": 5 }
+      ]
+    },
+    {
+      "startTime": 60.0,
+      "endTime": 180.0,
+      "spawnInterval": 20.0,
+      "groupSizeWeights":[
+        { "groupSize": 1, "weight": 30 },
+        { "groupSize": 2, "weight": 50 },
+        { "groupSize": 3, "weight": 15 },
+        { "groupSize": 4, "weight": 5 }
+      ]
+    },
+    {
+      "startTime": 180.0,
+      "endTime": 240.0,
+      "spawnInterval": -1.0,
+      "groupSizeWeights": []
+    }
+  ],
+  "scheduledNPCs":[
+    { "time": 45.0, "profileNames": ["Conde Vampiro"] },
+    { "time": 120.0, "profileNames":["El Pirómano", "Estudiante Hambriento"] }
+  ],
+  "genericProfiles":[
+    "Señor Normal",
+    "Estudiante Hambriento"
+  ]
+}

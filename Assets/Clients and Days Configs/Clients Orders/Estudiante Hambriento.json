@@ -1,0 +1,53 @@
+{
+  "profileName": "Estudiante Hambriento",
+  "idealTemp": 50,
+  "minTotalItems": 4,
+  "maxTotalItems": 7,
+  "walkoutTime": 180,
+  "queueWaitTime": 90,
+  "paymentSettings": {
+    "pricePerIngredient": 3,
+    "tipThresholds":[
+      { "scorePercentage": 0.5, "tipAmount": 5 },
+      { "scorePercentage": 0.0, "tipAmount": 1 },
+      { "scorePercentage": -0.5, "tipAmount": 0 }
+    ]
+  },
+  "scoreSettings": {
+    "baseScore": 80,
+    "unrequestedIngredient": -10,
+    "missingIngredient": -30,
+    "raw": -20,
+    "cooked": 10,
+    "burnt": -10,
+    "onFire": -50,
+    "maxWaitTime": 90,
+    "waitPenaltyPerSecond": -1,
+    "maxFreshness": 60,
+    "stalePenaltyPerSecond": -1
+  },
+  "ingredients":[
+    { "name": "Bun", "min": 2, "max": 4, "weight": 20 },
+    { "name": "Meat Patty", "min": 1, "max": 4, "weight": 60 },
+    { "name": "Cheese", "min": 0, "max": 3, "weight": 40 }
+  ],
+  "groupedItems":[],
+  "cookingPreferences":[],
+  "reactions": {
+    "success": "¡Uf, cuanta comida! Justo lo que necesitaba después de los parciales.",
+    "wrongOrder": "Oye, pedí {ORDER} y me diste {SERVED}... pero igual me lo como, tengo hambre.",
+    "foodRaw": "Está un poco cruda, pero en mi nevera hay cosas peores.",
+    "foodCooked": "¡Excelente! Comida de verdad.",
+    "foodBurnt": "Sabe a carbón, igual que mis apuntes quemados.",
+    "foodOnFire": "¡ESTÁ ARDIENDO! ¡Igual que mi promedio académico!",
+    "walkout": "Mejor me voy a comer pan con agua a mi casa...",
+    "customReactions":[
+      {
+        "conditionName": "Mountain of Meat",
+        "requiredIngredients":["Meat Patty", "Meat Patty", "Meat Patty"],
+        "reaction": "¡TRES CARNES! Hoy ceno como un rey.",
+        "scoreModifier": 30
+      }
+    ]
+  }
+}

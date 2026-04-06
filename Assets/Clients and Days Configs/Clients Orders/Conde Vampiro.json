@@ -1,0 +1,66 @@
+{
+  "profileName": "Conde Drácula",
+  "idealTemp": 10,
+  "minTotalItems": 3,
+  "maxTotalItems": 4,
+  "walkoutTime": 60,
+  "queueWaitTime": 45,
+  "paymentSettings": {
+    "pricePerIngredient": 8,
+    "tipThresholds":[
+      { "scorePercentage": 0.5, "tipAmount": 20 },
+      { "scorePercentage": 0.0, "tipAmount": 5 },
+      { "scorePercentage": -0.2, "tipAmount": -5 },
+      { "scorePercentage": -1.0, "tipAmount": -20 }
+    ]
+  },
+  "scoreSettings": {
+    "baseScore": 100,
+    "unrequestedIngredient": -30,
+    "missingIngredient": -30,
+    "raw": 50,
+    "cooked": -50,
+    "burnt": -100,
+    "onFire": -200,
+    "maxWaitTime": 30,
+    "waitPenaltyPerSecond": -2,
+    "maxFreshness": 15,
+    "stalePenaltyPerSecond": -5
+  },
+  "ingredients":[
+    { "name": "Bun", "min": 2, "max": 2, "weight": 0 },
+    { "name": "Meat Patty", "min": 1, "max": 3, "weight": 100 },
+    { "name": "Tomato", "min": 1, "max": 1, "weight": 50 }
+  ],
+  "groupedItems":[],
+  "cookingPreferences":[
+    {
+      "ingredientName": "Meat Patty",
+      "desiredState": "Raw",
+      "bonusPoints": 40
+    }
+  ],
+  "reactions": {
+    "success": "Mmm... la sangre aún está fresca. Excelente.",
+    "wrongOrder": "Criatura tonta. Yo pedí {ORDER}, no {SERVED}.",
+    "foodRaw": "¡Delicioso! Justo como lo preparábamos en Transilvania.",
+    "foodCooked": "¡Arruinaste la carne! Le quitaste toda la vida...",
+    "foodBurnt": "¡Esto es polvo y cenizas! ¡Inaceptable!",
+    "foodOnFire": "¡FUEGO! ¡LUZ! ¡MÁTENLO!",
+    "walkout": "La noche es corta y mi paciencia se agotó. Me voy.",
+    "customReactions":[
+      {
+        "conditionName": "Vampire's Bane",
+        "requiredIngredients": ["Garlic"],
+        "reaction": "¡AAGH! ¡AJO! ¡TRATAS DE ENVENENARME!",
+        "scoreModifier": -500
+      },
+      {
+        "conditionName": "Triple Blood",
+        "requiredIngredients":["Meat Patty", "Meat Patty", "Meat Patty"],
+        "reaction": "¡Tanta carne cruda...! Es un festín digno de un Conde.",
+        "scoreModifier": 50
+      }
+    ]
+  }
+}

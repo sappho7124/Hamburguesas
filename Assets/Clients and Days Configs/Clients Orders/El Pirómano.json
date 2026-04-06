@@ -1,0 +1,65 @@
+{
+  "profileName": "El Pirómano",
+  "idealTemp": 200,
+  "minTotalItems": 3,
+  "maxTotalItems": 4,
+  "walkoutTime": 150,
+  "queueWaitTime": 45,
+  "paymentSettings": {
+    "pricePerIngredient": 5,
+    "tipThresholds":[
+      { "scorePercentage": 1.0, "tipAmount": 50 },
+      { "scorePercentage": 0.5, "tipAmount": 15 },
+      { "scorePercentage": 0.0, "tipAmount": 0 },
+      { "scorePercentage": -0.5, "tipAmount": -10 }
+    ]
+  },
+  "scoreSettings": {
+    "baseScore": 100,
+    "unrequestedIngredient": -10,
+    "missingIngredient": -20,
+    "raw": -100,
+    "cooked": -20,
+    "burnt": 50,
+    "onFire": 150,
+    "maxWaitTime": 60,
+    "waitPenaltyPerSecond": -1,
+    "maxFreshness": 60,
+    "stalePenaltyPerSecond": -1
+  },
+  "ingredients":[
+    { "name": "Bun", "min": 2, "max": 2, "weight": 0 },
+    { "name": "Meat Patty", "min": 1, "max": 2, "weight": 100 },
+    { "name": "Hot Sauce", "min": 1, "max": 2, "weight": 50 }
+  ],
+  "groupedItems":[],
+  "cookingPreferences":[
+    {
+      "ingredientName": "Meat Patty",
+      "desiredState": "Burnt",
+      "bonusPoints": 30
+    },
+    {
+      "ingredientName": "Bun",
+      "desiredState": "Burnt",
+      "bonusPoints": 20
+    }
+  ],
+  "reactions": {
+    "success": "Supongo que está bien, pero le falta calor...",
+    "wrongOrder": "¡Mi caos requiere ingredientes específicos! Pedí {ORDER}.",
+    "foodRaw": "¡ESTO ESTÁ FRÍO Y ASQUEROSO!",
+    "foodCooked": "Demasiado normal. Faltan llamas.",
+    "foodBurnt": "¡Oh sí! ¡Ese sabor a carbón es espectacular!",
+    "foodOnFire": "¡SÍ! ¡ASÍ ME GUSTA! ¡FUEGOOOOOOO!",
+    "walkout": "¡Me aburro! Me voy a incendiar otro restaurante.",
+    "customReactions":[
+      {
+        "conditionName": "Spicy Inferno",
+        "requiredIngredients": ["Hot Sauce", "Hot Sauce"],
+        "reaction": "¡Doble salsa picante! ¡Siento que respiro fuego!",
+        "scoreModifier": 40
+      }
+    ]
+  }
+}
