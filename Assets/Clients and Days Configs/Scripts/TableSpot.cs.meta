@@ -1,2 +1,13 @@
 fileFormatVersion: 2
 guid: b7ef7a1ba62b84b48bab6452271296dd
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - linkedSittingSpot: {instanceID: 0}
+  - moneyPrefab: {fileID: 6625425270166459256, guid: 5e9850536249d484983e989746e6ba10, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

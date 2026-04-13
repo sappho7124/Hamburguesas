@@ -26,8 +26,8 @@ public class RestaurantUIManager : MonoBehaviour
         if (shiftTimeText) shiftTimeText.text = "00:00";
     }
 
-    public void UpdateScore(int newScore) { if (scoreText != null) scoreText.text = $"Puntos: {newScore}"; }
-    public void UpdateMoney(int newMoney) { if (moneyText != null) moneyText.text = $"Dinero: ${newMoney}"; }
+    public void UpdateScore(int newScore) { if (scoreText != null) scoreText.text = $"{newScore}"; }
+    public void UpdateMoney(int newMoney) { if (moneyText != null) moneyText.text = $"${newMoney}"; }
 
     // --- NEW: Format Timer Display ---
     public void UpdateShiftTimer(float currentTimer, float maxTimer)

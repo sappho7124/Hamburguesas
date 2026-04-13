@@ -8,7 +8,7 @@ public class InputIconTool : EditorWindow
     private InputIconDatabase targetDatabase;
     private Texture2D spriteSheetTexture;
 
-    [MenuItem("Tools/Robot Factory/Update Input Icons")]
+    [MenuItem("Tools/Legacy/Update Input Icons")]
     public static void ShowWindow()
     {
         GetWindow<InputIconTool>("Input Icons");

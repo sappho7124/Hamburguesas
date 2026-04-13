@@ -25,11 +25,13 @@ public class UIBorderRenderer : MaskableGraphic
     }
 
     // Allow Inspector changes to update in Editor
-    protected override void OnValidate()
-    {
-        base.OnValidate();
-        SetVerticesDirty(); 
-    }
+    #if UNITY_EDITOR
+        protected override void OnValidate()
+        {
+            base.OnValidate();
+            SetVerticesDirty(); 
+        }
+    #endif
 
     protected override void OnPopulateMesh(VertexHelper vh)
     {

@@ -145,17 +145,151 @@ public class OrderManager : MonoBehaviour
         };
         
         activeOrders[sittingSpot.linkedTableSpot] = newOrder;
+        Debug.Log($"[OrderManager] {profile.profileName} sat down. Order: {string.Join(", ", generatedOrder)}");
+    }
 
-        // We join the list of ingredients into a single readable sentence
-        string orderText = "Hola, me gustaría pedir: " + string.Join(", ", generatedOrder) + ".";
-        
-        // Show it on the screen
-        if (RestaurantUIManager.Instance != null)
+        // --- ADD THESE NEW METHODS ANYWHERE INSIDE THE CLASS ---
+    public bool HasActiveOrder(TableSpot table) => activeOrders.ContainsKey(table);
+
+    public string GetOrderText(TableSpot table)
+    {
+        if (!activeOrders.ContainsKey(table)) return "Nada";
+
+        List<string> ingredients = activeOrders[table].expectedIngredients;
+        Dictionary<string, int> counts = new Dictionary<string, int>();
+
+        foreach (string item in ingredients)
         {
-            RestaurantUIManager.Instance.ShowDialogue(profile.profileName, orderText);
+            if (counts.ContainsKey(item)) counts[item]++;
+            else counts[item] = 1;
         }
 
-        Debug.Log($"[OrderManager] {profile.profileName} sat down. Order: {string.Join(", ", generatedOrder)}");
+        string breadText = "";
+        string breadName = "Pan"; 
+        int breadCount = 0;
+        List<string> breadKeys = new List<string>();
+
+        // Find anything that counts as bread
+        foreach (var key in counts.Keys)
+        {
+            if (key.IndexOf("Pan", System.StringComparison.OrdinalIgnoreCase) >= 0 || 
+                key.IndexOf("Bun", System.StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                if (breadCount == 0) breadName = key; 
+                breadCount += counts[key];
+                breadKeys.Add(key);
+            }
+        }
+
+        // Determine Bread Text (Always comes first)
+        if (breadCount == 0) 
+        {
+            breadText = "Sin pan";
+        }
+        else if (breadCount == 1) 
+        {
+            breadText = $"Solo un pedazo de {breadName.ToLower()}";
+        }
+        else if (breadCount == 2) 
+        {
+            // If it's standard bread, say "Pan normal". If it's a special bread, just say the name!
+            if (breadName.Equals("Pan", System.StringComparison.OrdinalIgnoreCase) || 
+                breadName.Equals("Bun", System.StringComparison.OrdinalIgnoreCase))
+            {
+                breadText = "Pan normal";
+            }
+            else
+            {
+                breadText = breadName; // e.g. "Pan asqueroso" or "Pan integral"
+            }
+        }
+        else 
+        {
+            breadText = $"{GetMultiplier(breadCount)} {breadName.ToLower()}";
+        }
+
+        foreach (var bKey in breadKeys) counts.Remove(bKey);
+
+        List<string> orderParts = new List<string>();
+        orderParts.Add(breadText); 
+
+        foreach (var kvp in counts)
+        {
+            if (kvp.Value == 1) orderParts.Add(kvp.Key);
+            else orderParts.Add($"{GetMultiplier(kvp.Value)} {kvp.Key}");
+        }
+
+        if (orderParts.Count == 1) return orderParts[0];
+
+        string lastPart = orderParts[orderParts.Count - 1];
+        orderParts.RemoveAt(orderParts.Count - 1);
+        
+        return string.Join(", ", orderParts) + " y " + lastPart;
+    }
+
+        private string GetMultiplier(int count)
+    {
+        switch (count)
+        {
+            case 2: return "Doble";
+            case 3: return "Triple";
+            case 4: return "Cuádruple";
+            case 5: return "Quíntuple";
+            case 6: return "Séxtuple";
+            default: return count.ToString() + "x";
+        }
+    }
+
+    public float GetWaitTimePercent(TableSpot table)
+    {
+        if (activeOrders.ContainsKey(table))
+        {
+            ActiveOrder order = activeOrders[table];
+            float waitTime = Time.time - order.orderStartTime;
+            return Mathf.Clamp01(waitTime / order.profile.walkoutTime);
+        }
+        return 0f;
+    }
+
+    // Dry-run simulation to see if a table perfectly accepts a burger without triggering side effects
+    public bool WouldAcceptBurger(TableSpot table, AssembledBurger burger)
+    {
+        if (!activeOrders.ContainsKey(table)) return false; 
+        
+        ActiveOrder order = activeOrders[table];
+        List<string> servedNames = burger.GetIngredientNames();
+        List<string> expectedNames = new List<string>(order.expectedIngredients);
+
+        List<string> unrequestedItems = new List<string>();
+        foreach (string served in servedNames)
+        {
+            if (expectedNames.Contains(served)) expectedNames.Remove(served);
+            else unrequestedItems.Add(served);
+        }
+        
+        int missingCount = expectedNames.Count;
+
+        // Check custom reactions that might override standard rules
+        if (order.profile.reactions.customReactions != null)
+        {
+            foreach (var custom in order.profile.reactions.customReactions)
+            {
+                List<string> tempServed = new List<string>(servedNames);
+                bool hasAll = true;
+                foreach (string req in custom.requiredIngredients)
+                {
+                    if (tempServed.Contains(req)) tempServed.Remove(req);
+                    else { hasAll = false; break; }
+                }
+                if (hasAll && custom.requiredIngredients.Count > 0)
+                {
+                    foreach (string req in custom.requiredIngredients) 
+                        if (unrequestedItems.Contains(req)) unrequestedItems.Remove(req);
+                }
+            }
+        }
+        // If there are no missing or unrequested items, it's a perfect match
+        return missingCount == 0 && unrequestedItems.Count == 0;
     }
 
     public string GetActiveProfileName(TableSpot table)

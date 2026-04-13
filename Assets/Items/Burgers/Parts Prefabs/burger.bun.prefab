@@ -169,7 +169,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e0e2e380e72847848af98ef1771d53f6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HighlightableObject
-  objectName: 
+  objectName: Pan
   interactionVerb: Agarrar
   uiAnchor: {fileID: 0}
   uiWorldOffset: {x: 0, y: 0, z: 0}

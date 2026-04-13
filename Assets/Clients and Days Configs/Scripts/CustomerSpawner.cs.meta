@@ -1,2 +1,15 @@
 fileFormatVersion: 2
 guid: c842dc49642a8c342830193f02f22107
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - currentDayConfigJSON: {fileID: 4900000, guid: 151542fb82b7ab9449d321de33aac42e, type: 3}
+  - CustomerPrefab: {fileID: 3974139370507198676, guid: 0dccd4d2b2cdf6f4c983c6e1732c2435, type: 3}
+  - entrancePoint: {instanceID: 0}
+  - exitPoint: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

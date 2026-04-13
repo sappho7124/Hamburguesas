@@ -28,15 +28,15 @@
     "stalePenaltyPerSecond": -1
   },
   "ingredients":[
-    { "name": "Bun", "min": 2, "max": 2, "weight": 0 },
-    { "name": "Meat Patty", "min": 1, "max": 3, "weight": 50 },
-    { "name": "Cheese", "min": 0, "max": 2, "weight": 30 },
-    { "name": "Pickle", "min": 0, "max": 0, "weight": 0 }
+    { "name": "Pan", "min": 2, "max": 2, "weight": 0 },
+    { "name": "Carne", "min": 1, "max": 3, "weight": 50 },
+    { "name": "Queso", "min": 0, "max": 2, "weight": 30 },
+    { "name": "Pepinillo", "min": 0, "max": 0, "weight": 0 }
   ],
   "groupedItems":[],
   "cookingPreferences":[
     {
-      "ingredientName": "Bun",
+      "ingredientName": "Pan",
       "desiredState": "Cooked",
       "bonusPoints": 20
     }
@@ -51,14 +51,14 @@
     "walkout": "¡Me harté de esperar! ¡Me voy de este basurero!",
     "customReactions":[
       {
-        "conditionName": "Surprise Pickle",
-        "requiredIngredients": ["Pickle"],
+        "conditionName": "Surprise Pepinillo",
+        "requiredIngredients": ["Pepinillo"],
         "reaction": "¿Por qué hay un pepinillo en mi comida?",
         "scoreModifier": -60
       },
       {
         "conditionName": "Double Trouble",
-        "requiredIngredients":["Meat Patty", "Meat Patty"],
+        "requiredIngredients":["Carne", "Carne"],
         "reaction": "¡Doble carne! Hoy romperé mi dieta felizmente.",
         "scoreModifier": 20
       }

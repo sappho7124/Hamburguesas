@@ -27,7 +27,7 @@ public class ScheduledNPC { public float time; public List<string> profileNames;
 // --- GROUP CLASS ---
 public class CustomerGroup
 {
-    public List<CustomerPill> members = new List<CustomerPill>();
+    public List<Customer> members = new List<Customer>();
     public float waitTimer = 0f;
     public float maxWaitTime = 999f;
     public bool isLeaving = false;
@@ -41,7 +41,7 @@ public class CustomerSpawner : MonoBehaviour
     [Header("Day & Profile JSONs")]
     public TextAsset currentDayConfigJSON;
     public TextAsset[] allCustomerProfiles;[Header("Spawn Logic")]
-    public GameObject customerPillPrefab; 
+    public GameObject CustomerPrefab; 
     public Transform entrancePoint;
     public Transform exitPoint;
 
@@ -197,8 +197,8 @@ public class CustomerSpawner : MonoBehaviour
             if (!profileJsonMap.ContainsKey(pName)) continue;
 
             CustomerProfile profile = JsonUtility.FromJson<CustomerProfile>(profileJsonMap[pName]);
-            GameObject pillObj = Instantiate(customerPillPrefab, entrancePoint.position, Quaternion.identity);
-            CustomerPill pill = pillObj.GetComponent<CustomerPill>();
+            GameObject pillObj = Instantiate(CustomerPrefab, entrancePoint.position, Quaternion.identity);
+            Customer pill = pillObj.GetComponent<Customer>();
             
             pill.profile = profile;
             newGroup.members.Add(pill);
@@ -220,7 +220,7 @@ public class CustomerSpawner : MonoBehaviour
             for (int i = 0; i < newGroup.members.Count; i++)
             {
                 Transform qSpot = queueSpots[queueIndexStart + i];
-                newGroup.members[i].InitializeQueue(newGroup.members[i].profile, qSpot, exitPoint);
+                newGroup.members[i].InitializeQueue(newGroup.members[i].profile, qSpot, exitPoint, newGroup); 
             }
             queueGroups.Add(newGroup);
         }

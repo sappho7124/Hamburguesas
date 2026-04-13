@@ -27,9 +27,9 @@
     "stalePenaltyPerSecond": -1
   },
   "ingredients":[
-    { "name": "Bun", "min": 2, "max": 4, "weight": 20 },
-    { "name": "Meat Patty", "min": 1, "max": 4, "weight": 60 },
-    { "name": "Cheese", "min": 0, "max": 3, "weight": 40 }
+    { "name": "Pan", "min": 2, "max": 4, "weight": 20 },
+    { "name": "Carne", "min": 1, "max": 4, "weight": 60 },
+    { "name": "Queso", "min": 0, "max": 3, "weight": 40 }
   ],
   "groupedItems":[],
   "cookingPreferences":[],
@@ -44,7 +44,7 @@
     "customReactions":[
       {
         "conditionName": "Mountain of Meat",
-        "requiredIngredients":["Meat Patty", "Meat Patty", "Meat Patty"],
+        "requiredIngredients":["Carne", "Carne", "Carne"],
         "reaction": "¡TRES CARNES! Hoy ceno como un rey.",
         "scoreModifier": 30
       }
