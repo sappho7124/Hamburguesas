@@ -39,6 +39,11 @@ public class Outline : MonoBehaviour {
     }
   }
 
+  // --- NEW HAND-DRAWN PROPERTIES ---
+  public float NoiseAmount { get { return noiseAmount; } set { noiseAmount = value; needsUpdate = true; } }
+  public float NoiseScale { get { return noiseScale; } set { noiseScale = value; needsUpdate = true; } }
+  public float FrameRate { get { return frameRate; } set { frameRate = value; needsUpdate = true; } }
+
   public int CurrentStencilID { get; private set; }
 
   [Serializable]
@@ -49,6 +54,16 @@ public class Outline : MonoBehaviour {
   [SerializeField] private Mode outlineMode;
   [SerializeField] private Color outlineColor = Color.white;
   [SerializeField, Range(0f, 10f)] private float outlineWidth = 2f;
+
+[Header("Hand-Drawn Effect")]
+  [SerializeField, Range(0f, 15f), Tooltip("How much the outline wobbles")] 
+  private float noiseAmount = 7f;
+  
+  [SerializeField, Range(0.1f, 500f), Tooltip("How closely packed the wobbles are")] 
+  private float noiseScale = 250f;
+  
+  [SerializeField, Range(1f, 60f), Tooltip("Animation framerate (e.g. 24 for anime/cinema look)")] 
+  private float frameRate = 8f;
 
   [Header("Optional")]
   [SerializeField, Tooltip("Precompute enabled: Per-vertex calculations are performed in the editor...")]
@@ -67,14 +82,11 @@ public class Outline : MonoBehaviour {
         .Where(r => !(r is ParticleSystemRenderer))
         .ToArray();
 
-    // --- ROBUST MATERIAL LOADER ---
-    // 1. Try Loading from Resources
     Material loadedMask = Resources.Load<Material>(@"Materials/OutlineMask");
     Material loadedFill = Resources.Load<Material>(@"Materials/OutlineFill");
 
     if (loadedMask == null || loadedFill == null)
     {
-        // 2. Fallback: Create from Shaders directly
         Shader maskShader = Shader.Find("Custom/Outline Mask");
         Shader fillShader = Shader.Find("Custom/Outline Fill");
 
@@ -87,8 +99,6 @@ public class Outline : MonoBehaviour {
 
         outlineMaskMaterial = new Material(maskShader);
         outlineFillMaterial = new Material(fillShader);
-        
-        // Debug.Log("[Outline] Materials created from shaders (Resources load skipped).");
     }
     else
     {
@@ -99,7 +109,6 @@ public class Outline : MonoBehaviour {
     outlineMaskMaterial.name = "OutlineMask (Instance)";
     outlineFillMaterial.name = "OutlineFill (Instance)";
 
-    // Generate ID
     int randomStencilId = UnityEngine.Random.Range(1, 255);
     CurrentStencilID = randomStencilId;
 
@@ -201,6 +210,11 @@ public class Outline : MonoBehaviour {
     if(outlineFillMaterial == null) return;
     outlineFillMaterial.SetColor("_OutlineColor", outlineColor);
 
+    // --- APPLY DRAWN PROPERTIES TO SHADER ---
+    outlineFillMaterial.SetFloat("_NoiseAmount", noiseAmount);
+    outlineFillMaterial.SetFloat("_NoiseScale", noiseScale);
+    outlineFillMaterial.SetFloat("_FrameRate", frameRate);
+
     switch (outlineMode) {
       case Mode.OutlineAll:
         outlineMaskMaterial.SetFloat("_ZTest", (float)UnityEngine.Rendering.CompareFunction.Always);
@@ -230,20 +244,12 @@ public class Outline : MonoBehaviour {
     }
   }
 
-// Changed parameter name to 'value' to indicate it's the exact queue, not an offset
-// Add this variable right above the method
   private static int renderOrderOffset = 0;
 
   public void SetRenderQueue(int value) {
     if (outlineMaskMaterial != null && outlineFillMaterial != null) {
-      
-      // Increment by 2 for every new object highlighted.
-      // This ensures Object A (3100, 3101) finishes completely before Object B (3102, 3103) starts!
       renderOrderOffset += 2;
-      
-      // Reset before we hit the UI render queues (which start at 3500)
       if (renderOrderOffset > 300) renderOrderOffset = 0; 
-
       outlineMaskMaterial.renderQueue = value + renderOrderOffset;
       outlineFillMaterial.renderQueue = value + renderOrderOffset + 1; 
     }
