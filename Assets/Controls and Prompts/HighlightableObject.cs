@@ -27,7 +27,7 @@ public class HighlightableObject : MonoBehaviour
     [Tooltip("The standard amount of wobble when just looking at the object")]
     public float baseNoiseAmount = 7f;      // UPDATED DEFAULT
     public float baseNoiseScale = 250f;     // UPDATED DEFAULT
-    public float baseFrameRate = 8f;        // UPDATED DEFAULT
+    public float baseFrameRate = 6f;        // UPDATED DEFAULT
 
     private Outline outline; 
     private float targetWidth = 0f;
@@ -133,5 +133,19 @@ public class HighlightableObject : MonoBehaviour
     {
         Vector3 basePos = (uiAnchor != null) ? uiAnchor.position : transform.position;
         return basePos + uiWorldOffset;
+    }
+    public void RefreshOutlineRenderers()
+    {
+        if (outline != null)
+        {
+            bool wasEnabled = outline.enabled;
+            
+            // DestroyImmediate forces Unity to wipe it this exact millisecond
+            DestroyImmediate(outline); 
+            outline = null;
+            
+            // Re-apply it cleanly so it only highlights current children!
+            if (wasEnabled) ToggleHighlight(true); 
+        }
     }
 }

@@ -25,21 +25,28 @@ public class FridgeSpawner : MonoBehaviour
     // It keeps track of total inventory regardless of what shelf things are on.
     private List<GrabbableItem> itemsInside = new List<GrabbableItem>();
 
-void OnTriggerEnter(Collider other)
+    private List<VesselBase> vesselsInside = new List<VesselBase>(); // Add this at the top with itemsInside
+
+    void OnTriggerEnter(Collider other)
     {
         if (other.isTrigger) return; 
         
         GrabbableItem item = other.GetComponentInParent<GrabbableItem>();
-        if (item != null && !itemsInside.Contains(item))
-        {
-            itemsInside.Add(item);
-        }
+        if (item != null && !itemsInside.Contains(item)) itemsInside.Add(item);
 
         CookableItem cookable = other.GetComponentInParent<CookableItem>();
         if (cookable != null)
         {
             cookable.targetEnvironmentTemperature = fridgeTemperature;
-            if (cookable.isOnFire) cookable.Extinguish(); // Puts out the fire!
+            if (cookable.isOnFire) cookable.Extinguish(); 
+        }
+
+        // --- NEW: VESSEL THERMAL TRANSFER ---
+        VesselBase vessel = other.GetComponentInParent<VesselBase>();
+        if (vessel != null && !vesselsInside.Contains(vessel))
+        {
+            vesselsInside.Add(vessel);
+            vessel.SetEnvironmentState(fridgeTemperature, 1f);
         }
     }
 
@@ -48,15 +55,17 @@ void OnTriggerEnter(Collider other)
         if (other.isTrigger) return;
         
         GrabbableItem item = other.GetComponentInParent<GrabbableItem>();
-        if (item != null && itemsInside.Contains(item))
-        {
-            itemsInside.Remove(item);
-        }
+        if (item != null && itemsInside.Contains(item)) itemsInside.Remove(item);
 
         CookableItem cookable = other.GetComponentInParent<CookableItem>();
-        if (cookable != null)
+        if (cookable != null) cookable.targetEnvironmentTemperature = cookable.ambientTemperature;
+
+        // --- NEW: VESSEL THERMAL TRANSFER ---
+        VesselBase vessel = other.GetComponentInParent<VesselBase>();
+        if (vessel != null && vesselsInside.Contains(vessel))
         {
-            cookable.targetEnvironmentTemperature = cookable.ambientTemperature;
+            vesselsInside.Remove(vessel);
+            vessel.SetEnvironmentState(20f, 1f); // Reset to ambient
         }
     }
 

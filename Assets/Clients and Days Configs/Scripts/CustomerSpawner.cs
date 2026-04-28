@@ -15,8 +15,9 @@ public class TimeBracket {
     public float startTime; 
     public float endTime; 
     public float spawnInterval; 
-    public List<GroupSizeWeight> groupSizeWeights; // NEW: Probabilities for this specific time block
-}[System.Serializable]
+    public List<GroupSizeWeight> groupSizeWeights;
+}
+[System.Serializable]
 public class GroupSizeWeight { 
     public int groupSize; 
     public int weight; 
@@ -33,6 +34,22 @@ public class CustomerGroup
     public bool isLeaving = false;
 }
 
+// --- NEW: TABLE ISLAND CLASS ---
+public class TableIsland
+{
+    public List<SittingSpot> spots = new List<SittingSpot>();
+    public bool isClosedLoop; // True if it's a private table, false if it's an open chain (like a Bar)
+
+    public bool IsEmpty()
+    {
+        foreach (var spot in spots)
+        {
+            if (spot.isOccupied || spot.isReserved) return false;
+        }
+        return true;
+    }
+}
+
 // --- MANAGER CLASS ---
 public class CustomerSpawner : MonoBehaviour
 {
@@ -40,7 +57,9 @@ public class CustomerSpawner : MonoBehaviour
 
     [Header("Day & Profile JSONs")]
     public TextAsset currentDayConfigJSON;
-    public TextAsset[] allCustomerProfiles;[Header("Spawn Logic")]
+    public TextAsset[] allCustomerProfiles;
+
+    [Header("Spawn Logic")]
     public GameObject CustomerPrefab; 
     public Transform entrancePoint;
     public Transform exitPoint;
@@ -53,6 +72,7 @@ public class CustomerSpawner : MonoBehaviour
 
     private Dictionary<string, string> profileJsonMap = new Dictionary<string, string>();
     private List<CustomerGroup> queueGroups = new List<CustomerGroup>();
+    private List<TableIsland> tableIslands = new List<TableIsland>(); // NEW: Stores detected tables
 
     private DayConfig currentDay;
     private bool isShiftActive = false;
@@ -77,6 +97,54 @@ public class CustomerSpawner : MonoBehaviour
             }
             catch (System.Exception e) { Debug.LogError($"<color=red>[JSON CRASH]</color> '{textAsset.name}': {e.Message}"); }
         }
+    }
+
+    void Start()
+    {
+        // Detect and categorize tables as soon as the game starts
+        DetectTableIslands();
+    }
+
+    private void DetectTableIslands()
+    {
+        tableIslands.Clear();
+        HashSet<SittingSpot> unvisited = new HashSet<SittingSpot>(allSittingSpots);
+
+        while (unvisited.Count > 0)
+        {
+            SittingSpot startSeat = unvisited.First();
+            TableIsland newIsland = new TableIsland();
+
+            Queue<SittingSpot> queue = new Queue<SittingSpot>();
+            queue.Enqueue(startSeat);
+            unvisited.Remove(startSeat);
+            newIsland.spots.Add(startSeat);
+
+            while (queue.Count > 0)
+            {
+                SittingSpot current = queue.Dequeue();
+                foreach (var neighbor in current.connectedSpots)
+                {
+                    if (neighbor != null && unvisited.Contains(neighbor))
+                    {
+                        unvisited.Remove(neighbor);
+                        queue.Enqueue(neighbor);
+                        newIsland.spots.Add(neighbor);
+                    }
+                }
+            }
+
+            // Determine if it's a Closed Loop (Normal Table) or an Open Chain (Bar).
+            // A group is an Open Chain if it has > 2 seats AND has end-points (seats with only 1 connection).
+            // Otherwise, it's considered a Closed Loop (Private).
+            bool hasEnds = newIsland.spots.Any(s => s.connectedSpots.Count <= 1) && newIsland.spots.Count > 2;
+            newIsland.isClosedLoop = !hasEnds;
+
+            tableIslands.Add(newIsland);
+        }
+
+        Debug.Log($"[Seating System] Initialization complete. Detected {tableIslands.Count} total isolated seating groups. " + 
+                  $"({tableIslands.Count(t => t.isClosedLoop)} Private Tables, {tableIslands.Count(t => !t.isClosedLoop)} Open Chains).");
     }
 
     public void StartShift()
@@ -164,7 +232,7 @@ public class CustomerSpawner : MonoBehaviour
     // --- WEIGHTED RANDOM FOR GROUP SIZE ---
     private int DetermineGroupSize(TimeBracket bracket)
     {
-        if (bracket.groupSizeWeights == null || bracket.groupSizeWeights.Count == 0) return 1; // Failsafe
+        if (bracket.groupSizeWeights == null || bracket.groupSizeWeights.Count == 0) return 1;
 
         int totalWeight = bracket.groupSizeWeights.Sum(w => w.weight);
         int randomRoll = Random.Range(0, totalWeight);
@@ -175,7 +243,7 @@ public class CustomerSpawner : MonoBehaviour
             if (randomRoll < 0) return w.groupSize;
         }
 
-        return 1; // Default failsafe
+        return 1;
     }
 
     // --- GROUP SPAWNING & QUEUE BATCHING ---
@@ -252,8 +320,6 @@ public class CustomerSpawner : MonoBehaviour
             }
         }
 
-        // The line skipping logic is right here:
-        // It checks group 0. If it doesn't fit, it moves to group 1, then group 2.
         for (int i = 0; i < queueGroups.Count; i++)
         {
             CustomerGroup group = queueGroups[i];
@@ -268,7 +334,7 @@ public class CustomerSpawner : MonoBehaviour
                 
                 queueGroups.RemoveAt(i);
                 queueShifted = true;
-                i--; // Step back to evaluate the new group that took this index
+                i--;
             }
         }
 
@@ -289,37 +355,49 @@ public class CustomerSpawner : MonoBehaviour
         }
     }
 
+    // --- REWORKED: TABLE EXCLUSIVITY SEARCH ---
     private List<SittingSpot> FindAvailableCluster(int requiredSize)
     {
-        List<SittingSpot> availableSeats = allSittingSpots.Where(s => !s.isOccupied && !s.isReserved).ToList();
-        HashSet<SittingSpot> globalVisited = new HashSet<SittingSpot>();
-
-        foreach (var startSeat in availableSeats)
+        foreach (var table in tableIslands)
         {
-            if (globalVisited.Contains(startSeat)) continue;
+            // If it's a Closed Loop (Normal private table), it MUST be completely empty. Strangers don't share!
+            if (table.isClosedLoop && !table.IsEmpty()) continue;
 
-            List<SittingSpot> currentCluster = new List<SittingSpot>();
-            Queue<SittingSpot> queue = new Queue<SittingSpot>();
-            HashSet<SittingSpot> localVisited = new HashSet<SittingSpot>();
+            // Grab available seats inside this specific island
+            List<SittingSpot> availableSeats = table.spots.Where(s => !s.isOccupied && !s.isReserved).ToList();
 
-            queue.Enqueue(startSeat);
-            localVisited.Add(startSeat);
-            globalVisited.Add(startSeat); 
+            // Quick capacity check
+            if (availableSeats.Count < requiredSize) continue;
 
-            while (queue.Count > 0 && currentCluster.Count < requiredSize)
+            HashSet<SittingSpot> globalVisited = new HashSet<SittingSpot>();
+
+            foreach (var startSeat in availableSeats)
             {
-                SittingSpot current = queue.Dequeue();
-                currentCluster.Add(current);
+                if (globalVisited.Contains(startSeat)) continue;
 
-                if (currentCluster.Count == requiredSize) return currentCluster; 
+                List<SittingSpot> currentCluster = new List<SittingSpot>();
+                Queue<SittingSpot> queue = new Queue<SittingSpot>();
+                HashSet<SittingSpot> localVisited = new HashSet<SittingSpot>();
 
-                foreach (var neighbor in current.connectedSpots)
+                queue.Enqueue(startSeat);
+                localVisited.Add(startSeat);
+                globalVisited.Add(startSeat);
+
+                while (queue.Count > 0 && currentCluster.Count < requiredSize)
                 {
-                    if (neighbor != null && availableSeats.Contains(neighbor) && !localVisited.Contains(neighbor))
+                    SittingSpot current = queue.Dequeue();
+                    currentCluster.Add(current);
+
+                    if (currentCluster.Count == requiredSize) return currentCluster; 
+
+                    foreach (var neighbor in current.connectedSpots)
                     {
-                        localVisited.Add(neighbor);
-                        globalVisited.Add(neighbor);
-                        queue.Enqueue(neighbor);
+                        if (neighbor != null && availableSeats.Contains(neighbor) && !localVisited.Contains(neighbor))
+                        {
+                            localVisited.Add(neighbor);
+                            globalVisited.Add(neighbor);
+                            queue.Enqueue(neighbor);
+                        }
                     }
                 }
             }

@@ -277,4 +277,18 @@ void HandlePlacementPreview()
             SetLayerRecursive(item.gameObject, layerToRestore);
         }
     }
+    public EquippableItem GetEquippedItem() => currentEquippedItem;
+
+    public void PlaceItemExact(Vector3 pos, Quaternion rot, bool animate)
+    {
+        DetachItem(pos, rot, animate);
+    }
+
+    public void ReturnToHand()
+    {
+        if (currentEquippedItem != null)
+        {
+            currentEquippedItem.StartTransition(handMount, currentEquippedItem.handPositionOffset, Quaternion.Euler(currentEquippedItem.handRotationOffset), true, () => { });
+        }
+    }
 }

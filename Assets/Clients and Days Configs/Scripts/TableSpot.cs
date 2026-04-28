@@ -3,15 +3,14 @@ using System.Collections;
 using System.Collections.Generic;
 
 public class TableSpot : MonoBehaviour
-{[Tooltip("The chair associated with this table zone.")]
+{
     public SittingSpot linkedSittingSpot;
-    
     public GameObject moneyPrefab; 
     public float eatingDuration = 5f;
     
     private bool isEating = false;
     private List<PlateItem> platesInZone = new List<PlateItem>();
-    private HashSet<AssembledBurger> rejectedBurgers = new HashSet<AssembledBurger>();
+    private HashSet<PlateItem> rejectedPlates = new HashSet<PlateItem>();
 
     void OnTriggerEnter(Collider other)
     {
@@ -25,8 +24,7 @@ public class TableSpot : MonoBehaviour
         if (plate != null && platesInZone.Contains(plate))
         {
             platesInZone.Remove(plate);
-            AssembledBurger burger = plate.GetComponentInChildren<AssembledBurger>();
-            if (burger != null) rejectedBurgers.Remove(burger);
+            rejectedPlates.Remove(plate);
         }
     }
 
@@ -38,35 +36,32 @@ public class TableSpot : MonoBehaviour
         foreach (var plate in platesInZone)
         {
             EquippableItem eqPlate = plate.GetComponent<EquippableItem>();
-            if (eqPlate != null && !eqPlate.GetRigidbody().isKinematic)
+            // If the plate is resting on the table and has food/items on it...
+            if (eqPlate != null && !eqPlate.GetRigidbody().isKinematic && plate.GetAttachedItems().Count > 0)
             {
-                AssembledBurger burger = plate.GetComponentInChildren<AssembledBurger>();
-                if (burger != null && !rejectedBurgers.Contains(burger))
+                if (!rejectedPlates.Contains(plate))
                 {
-                    // --- NEW AUTO-CORRECTION LOGIC ---
-                    TableSpot correctSpot = FindCorrectSpotInCluster(burger);
+                    TableSpot correctSpot = FindCorrectSpotInCluster(plate);
                     if (correctSpot != null && correctSpot != this)
                     {
-                        // Slide the plate over to the correct table
                         eqPlate.transform.position = correctSpot.transform.position + (Vector3.up * 0.1f);
                         platesInZone.Remove(plate);
                         Debug.Log($"[TableSpot] Auto-corrected plate to adjacent table!");
-                        break; // Let the correct table process it on the next frame
+                        break; 
                     }
 
-                    // --- NORMAL EVALUATION ---
                     int moneyToSpawn;
                     string customerDialogue;
                     
-                    if (OrderManager.Instance.TryServeFood(this, burger, out moneyToSpawn, out customerDialogue))
+                    if (OrderManager.Instance.TryServeFood(this, plate, out moneyToSpawn, out customerDialogue))
                     {
                         RestaurantUIManager.Instance.ShowDialogue(OrderManager.Instance.GetActiveProfileName(this), customerDialogue);
-                        StartCoroutine(EatRoutine(plate, eqPlate, burger, moneyToSpawn));
+                        StartCoroutine(EatRoutine(plate, eqPlate, moneyToSpawn));
                     }
                     else
                     {
                         RestaurantUIManager.Instance.ShowDialogue(OrderManager.Instance.GetActiveProfileName(this), customerDialogue);
-                        rejectedBurgers.Add(burger);
+                        rejectedPlates.Add(plate);
                     }
                     break; 
                 }
@@ -74,15 +69,12 @@ public class TableSpot : MonoBehaviour
         }
     }
 
-    private TableSpot FindCorrectSpotInCluster(AssembledBurger burger)
+    private TableSpot FindCorrectSpotInCluster(PlateItem plate)
     {
-        // 1. If THIS table wants it, just keep it here
-        if (OrderManager.Instance.WouldAcceptBurger(this, burger)) return this;
+        if (OrderManager.Instance.WouldAcceptOrder(this, plate)) return this;
 
-        // 2. Search connected tables for a perfect match
         Queue<SittingSpot> queue = new Queue<SittingSpot>();
         HashSet<SittingSpot> visited = new HashSet<SittingSpot>();
-        
         queue.Enqueue(linkedSittingSpot);
         visited.Add(linkedSittingSpot);
 
@@ -91,20 +83,13 @@ public class TableSpot : MonoBehaviour
         while (queue.Count > 0)
         {
             SittingSpot current = queue.Dequeue();
-            
             if (current.linkedTableSpot != null && current.linkedTableSpot != this)
             {
-                // If it's a perfect match, teleport it to them!
-                if (OrderManager.Instance.WouldAcceptBurger(current.linkedTableSpot, burger))
-                {
+                if (OrderManager.Instance.WouldAcceptOrder(current.linkedTableSpot, plate))
                     return current.linkedTableSpot;
-                }
                 
-                // Track ANY adjacent table that has an active order (Fallback)
                 if (emptySpotWithOrder == null && OrderManager.Instance.HasActiveOrder(current.linkedTableSpot))
-                {
                     emptySpotWithOrder = current.linkedTableSpot;
-                }
             }
 
             foreach (var neighbor in current.connectedSpots)
@@ -117,18 +102,11 @@ public class TableSpot : MonoBehaviour
             }
         }
 
-        // 3. Fallback: If no perfect match was found, but you placed the food on a table 
-        // with NO active order, slide it to an adjacent table that DOES have an order so they can reject it verbally.
-        if (!OrderManager.Instance.HasActiveOrder(this) && emptySpotWithOrder != null)
-        {
-            return emptySpotWithOrder;
-        }
-
-        // 4. Default: No better place found, keep it here and face the consequences
+        if (!OrderManager.Instance.HasActiveOrder(this) && emptySpotWithOrder != null) return emptySpotWithOrder;
         return this;
     }
 
-    private IEnumerator EatRoutine(PlateItem plate, EquippableItem eqPlate, AssembledBurger burger, int moneyToSpawn)
+    private IEnumerator EatRoutine(PlateItem plate, EquippableItem eqPlate, int moneyToSpawn)
     {
         isEating = true;
         eqPlate.SetPhysics(false); 
@@ -136,7 +114,18 @@ public class TableSpot : MonoBehaviour
 
         yield return new WaitForSeconds(eatingDuration);
 
-        Destroy(burger.gameObject); 
+        // --- Consume all food on the plate ---
+        foreach (var item in plate.GetAttachedItems())
+        {
+            if (item != null && item.gameObject != plate.gameObject)
+            {
+                Destroy(item.gameObject);
+            }
+        }
+        
+        // --- Make the plate dirty ---
+        plate.MakeDirty();
+
         eqPlate.SetPhysics(true);
         plate.enabled = true;
 

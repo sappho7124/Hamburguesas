@@ -1592,7 +1592,7 @@ MonoBehaviour:
   swaySmooth: 8
   throwForce: 15
   placeDistance: 2
-  ghostMaterial: {fileID: 0}
+  ghostMaterial: {fileID: 2100000, guid: 1b3dd66818d48d34595730b8a355624a, type: 2}
 --- !u!114 &1083945333
 MonoBehaviour:
   m_ObjectHideFlags: 0

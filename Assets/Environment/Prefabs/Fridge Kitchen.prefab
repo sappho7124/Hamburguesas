@@ -268,6 +268,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 4617367248454607802}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &954760830374085637
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1112522377046790902}
+  m_Layer: 0
+  m_Name: Spawn_Potatoes
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1112522377046790902
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 954760830374085637}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.582, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4617367248454607802}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1010079913067601895
 GameObject:
   m_ObjectHideFlags: 0
@@ -476,6 +507,7 @@ Transform:
   - {fileID: 2448709810468006128}
   - {fileID: 6355850112872289758}
   - {fileID: 6504449636269048584}
+  - {fileID: 1112522377046790902}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!64 &5156872975429541635
@@ -818,6 +850,13 @@ MonoBehaviour:
     - {fileID: 2448709810468006128}
     - {fileID: 6355850112872289758}
     - {fileID: 6504449636269048584}
+  - stockName: Potato Bag
+    itemDefinition: {fileID: 11400000, guid: fb1fd399e4013f849a4510872c54172e, type: 2}
+    prefabToSpawn: {fileID: 8156059972470077621, guid: 5b1ab4b0fa1f310439ea4c9e685aaf0c, type: 3}
+    maxThreshold: 1
+    spawnPointCheckRadius: 0.05
+    spawnPoints:
+    - {fileID: 1112522377046790902}
 --- !u!65 &3091203084189451768
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1660,6 +1699,9 @@ MonoBehaviour:
   hoverColor: {r: 1, g: 1, b: 1, a: 1}
   maxOutlineWidth: 10
   animSpeed: 15
+  baseNoiseAmount: 7
+  baseNoiseScale: 250
+  baseFrameRate: 6
 --- !u!114 &1885115940849441423
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1672,22 +1714,29 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a4e4c1a3c53954947945d8318f946aea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::InteractableObject
-  requiredItem: {fileID: 0}
+  manageUI: 0
+  hideLockedState: 0
+  interactions:
+  - displayVerb: Interact
+    inputActionName: Interact
+    isFallbackAction: 1
+    isMainLock: 0
+    validItems: []
+    validColor: {r: 1, g: 1, b: 1, a: 0}
+    lockedColor: {r: 1, g: 0, b: 0, a: 0}
+    OnInteract:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 8258841903641973644}
+          m_TargetAssemblyTypeName: PhysicsDoor, Assembly-CSharp
+          m_MethodName: ToggleDoor
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
   lockedVerb: Requires Tool
-  lockedColor: {r: 1, g: 0, b: 0, a: 1}
-  linkedMinigame: {fileID: 0}
-  OnInteract:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 8258841903641973644}
-        m_TargetAssemblyTypeName: PhysicsDoor, Assembly-CSharp
-        m_MethodName: ToggleDoor
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2

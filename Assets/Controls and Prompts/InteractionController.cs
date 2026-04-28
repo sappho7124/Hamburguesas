@@ -97,11 +97,35 @@ public class InteractionController : MonoBehaviour
     // --- INPUT: NOTHING HELD (Using Normal Map) ---
     void HandleInputEmpty()
     {
-        if (controls.Normal.Interact.triggered && currentHoverObject != null)
+        if (currentHoverObject == null) return;
+
+        ItemDefinition equippedDef = equipmentController?.GetEquippedItem()?.itemDef;
+        InteractableObject interactable = currentHoverObject.GetComponent<InteractableObject>();
+        EquippableItem equippable = currentHoverObject.GetComponent<EquippableItem>();
+
+        // 1. IS IT AN INTERACTION WE HAVE THE TOOL FOR?
+        if (interactable != null)
         {
-            // 1. IS IT AN EQUIPPABLE ITEM?
-            EquippableItem equippable = currentHoverObject.GetComponent<EquippableItem>();
-            if (equippable != null && equipmentController != null)
+            InteractionMapping mapping = interactable.GetValidMapping(equippedDef);
+            if (mapping != null)
+            {
+                // DYNAMIC INPUT CHECK: Look up the EXACT action mapped to this interaction!
+                string actionName = string.IsNullOrEmpty(mapping.inputActionName) ? "Interact" : mapping.inputActionName;
+                InputAction action = controls.asset.FindAction($"Normal/{actionName}");
+                
+                // If the player pressed the correct button (or if it's a Hold action, is pressing it)
+                if (action != null && action.triggered)
+                {
+                    interactable.TryInteract(equippedDef, equipmentController);
+                    return; 
+                }
+            }
+        }
+
+        // 2. STANDARD "E" KEY FALLBACKS (Equipping / Bare-hands Interaction)
+        if (controls.Normal.Interact.triggered)
+        {
+            if (equippable != null && equipmentController != null && (interactable == null || interactable.GetValidMapping(equippedDef) == null))
             {
                 currentHoverObject.ToggleHighlight(false);
                 OnInteractableHover?.Invoke(false, null, "", "", false);
@@ -111,19 +135,16 @@ public class InteractionController : MonoBehaviour
                 return;
             }
 
-            // 2. IS IT AN INTERACTABLE? (Button, Lever)
-            InteractableObject interactable = currentHoverObject.GetComponent<InteractableObject>();
             if (interactable != null)
             {
-                bool hasPhysicsItem = (heldPhysicsItemDef != null && heldPhysicsItemDef == interactable.requiredItem);
-                bool hasEquippedTool = (equipmentController != null && equipmentController.HasItem(interactable.requiredItem));
-
-                ItemDefinition itemToUse = hasPhysicsItem ? heldPhysicsItemDef : (hasEquippedTool ? interactable.requiredItem : null);
-                interactable.TryInteract(itemToUse);
-                return; 
+                InteractionMapping mapping = interactable.GetValidMapping(null);
+                if (mapping != null)
+                {
+                    interactable.TryInteract(null, equipmentController);
+                    return;
+                }
             }
 
-            // 3. IS IT GRABBABLE? (Physics)
             GrabbableItem grabbable = currentHoverObject.GetComponent<GrabbableItem>();
             if (grabbable != null)
             {
@@ -354,11 +375,15 @@ public class InteractionController : MonoBehaviour
         if(crosshair) crosshair.color = Color.white;
     }
 
+// Location: C:\Games\Unity\Hamburguesas\Assets\Controls and Prompts\InteractionController.cs
+
+    // State Tracking for Continuous UI Updates
+    private string lastDisplayVerb = "";
+    private bool lastIsBlocked = false;
+
     void HandleHover()
     {
         Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
-        
-        // Use RaycastAll so we can see through overlapping objects
         RaycastHit[] hits = Physics.RaycastAll(ray, reachDistance, grabLayer);
 
         HighlightableObject bestItem = null;
@@ -390,70 +415,136 @@ public class InteractionController : MonoBehaviour
 
         if (bestItem != null)
         {
-            if (currentHoverObject != bestItem || lastHoverVerb != bestItem.interactionVerb)
+            // Evaluate what the UI SHOULD look like right now
+            EvaluateHoverState(bestItem, out string currentVerb, out bool currentBlocked, out string currentAction);
+
+            // If we swapped objects, OR the object updated its own text, OR our validator state changed (e.g. bag emptied)
+            if (currentHoverObject != bestItem || lastHoverVerb != bestItem.interactionVerb || lastDisplayVerb != currentVerb || lastIsBlocked != currentBlocked)
             {
                 if (currentHoverObject != null && currentHoverObject != bestItem) 
                     currentHoverObject.ToggleHighlight(false);
                 
                 currentHoverObject = bestItem;
                 lastHoverVerb = bestItem.interactionVerb;
+                lastDisplayVerb = currentVerb;
+                lastIsBlocked = currentBlocked;
                 
                 currentHoverObject.ToggleHighlight(true);
                 if(crosshair) crosshair.color = Color.green; 
                 
-                CheckAndFireUIEvent(bestItem);
+                FireUIEvent(bestItem, currentVerb, currentBlocked, currentAction);
             }
             return;
         }
 
-        // If nothing valid was hit
+        // HIDE EVERYTHING IF NOTHING VALID IS HIT
         if (currentHoverObject != null)
         {
             currentHoverObject.ToggleHighlight(false);
             currentHoverObject = null;
-            lastHoverVerb = ""; // Clear memory
+            lastHoverVerb = ""; 
+            lastDisplayVerb = "";
+            
             if(crosshair) crosshair.color = Color.white;
+            
+            ActionPromptManager.Instance.HidePrompt("DynamicHoverInteract");
             OnInteractableHover?.Invoke(false, null, "", "", false);
         }
     }
 
-    void CheckAndFireUIEvent(HighlightableObject item)
+    private void EvaluateHoverState(HighlightableObject item, out string displayVerb, out bool isBlocked, out string actionToLookup)
     {
-        bool hasName = !string.IsNullOrEmpty(item.objectName);
-        bool hasVerb = !string.IsNullOrEmpty(item.interactionVerb);
+        displayVerb = item.interactionVerb;
+        actionToLookup = "Interact"; 
+        isBlocked = false;
 
-        if (hasName || hasVerb)
+        ItemDefinition equippedDef = equipmentController?.GetEquippedItem()?.itemDef;
+        InteractableObject interactable = item.GetComponent<InteractableObject>();
+        EquippableItem equippable = item.GetComponent<EquippableItem>();
+        GrabbableItem grabbable = item.GetComponent<GrabbableItem>(); // NEW: Check for Grabbables!
+
+        // 1. Surrender Control Check
+        if (interactable != null && !interactable.manageUI) return;
+
+        if (interactable != null && interactable.interactions.Count > 0)
         {
-            string map = "Normal";
-            string action = "Interact"; 
-            bool isBlocked = false;
+            InteractionMapping validMapping = interactable.GetValidMapping(equippedDef);
 
-            InteractableObject interactable = item.GetComponent<InteractableObject>();
-            if (interactable != null && interactable.requiredItem != null)
+            if (validMapping != null)
             {
-                bool hasPhysicsItem = (heldPhysicsItemDef == interactable.requiredItem);
-                bool hasEquippedItem = (equipmentController != null && equipmentController.HasItem(interactable.requiredItem));
+                displayVerb = validMapping.displayVerb;
+                actionToLookup = string.IsNullOrEmpty(validMapping.inputActionName) ? "Interact" : validMapping.inputActionName;
 
-                if (!hasPhysicsItem && !hasEquippedItem)
+                var validators = item.GetComponents<IInteractionValidator>();
+                foreach (var v in validators)
                 {
-                    isBlocked = true;
-                    item.SetTempColor(interactable.lockedColor);
+                    if (!v.IsInteractionValid(equipmentController, out string failReason))
+                    {
+                        isBlocked = true;
+                        displayVerb = failReason; 
+                        interactable.lockedVerb = failReason; 
+                        item.SetTempColor(validMapping.lockedColor); 
+                        break;
+                    }
                 }
-                else
-                {
-                    item.ResetColor();
-                }
+
+                if (!isBlocked) item.SetTempColor(validMapping.validColor); 
             }
             else
             {
-                item.ResetColor();
+                // NO VALID MAPPING FOUND (Wrong Tool)
+                
+                // If the user checked "Hide Locked State" OR it's a Grabbable/Equippable, act normal!
+                if (interactable.hideLockedState || equippable != null || grabbable != null)
+                {
+                    item.ResetColor(); 
+                    
+                    if (string.IsNullOrEmpty(item.interactionVerb))
+                    {
+                        displayVerb = equippable != null ? "Equip" : "Grab";
+                    }
+                    else
+                    {
+                        displayVerb = item.interactionVerb;
+                    }
+                }
+                else
+                {
+                    isBlocked = true;
+                    InteractionMapping mainLock = interactable.GetMainLockMapping();
+                    if (mainLock != null)
+                    {
+                        displayVerb = mainLock.displayVerb;
+                        actionToLookup = string.IsNullOrEmpty(mainLock.inputActionName) ? "Interact" : mainLock.inputActionName;
+                        item.SetTempColor(mainLock.lockedColor);
+                        interactable.lockedVerb = "Requires Tool"; 
+                    }
+                }
             }
+        }
+        else
+        {
+            item.ResetColor();
+        }
+    }
 
-            OnInteractableHover?.Invoke(true, item, map, action, isBlocked);
+    private void FireUIEvent(HighlightableObject item, string displayVerb, bool isBlocked, string actionToLookup)
+    {
+        string map = "Normal";
+
+        // Center Screen Highlight UI only
+        string originalVerb = item.interactionVerb;
+        item.interactionVerb = displayVerb;
+
+        if (!string.IsNullOrEmpty(item.objectName) || !string.IsNullOrEmpty(displayVerb))
+        {
+            OnInteractableHover?.Invoke(true, item, map, actionToLookup, isBlocked);
         }
         else
         {
             OnInteractableHover?.Invoke(false, null, "", "", false);
         }
+
+        item.interactionVerb = originalVerb;
     }
 }
