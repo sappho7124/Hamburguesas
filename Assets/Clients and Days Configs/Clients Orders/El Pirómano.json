@@ -28,19 +28,18 @@
     "stalePenaltyPerSecond": -1
   },
   "ingredients":[
-    { "name": "Bun", "min": 2, "max": 2, "weight": 0 },
-    { "name": "Meat Patty", "min": 1, "max": 2, "weight": 100 },
-    { "name": "Hot Sauce", "min": 1, "max": 2, "weight": 50 }
+    { "name": "Pan", "min": 2, "max": 2, "weight": 0 },
+    { "name": "Carne", "min": 1, "max": 2, "weight": 100 }
   ],
   "groupedItems":[],
   "cookingPreferences":[
     {
-      "ingredientName": "Meat Patty",
+      "ingredientName": "Carne",
       "desiredState": "Burnt",
       "bonusPoints": 30
     },
     {
-      "ingredientName": "Bun",
+      "ingredientName": "Pan",
       "desiredState": "Burnt",
       "bonusPoints": 20
     }
@@ -56,7 +55,7 @@
     "customReactions":[
       {
         "conditionName": "Spicy Inferno",
-        "requiredIngredients": ["Hot Sauce", "Hot Sauce"],
+        "requiredIngredients": ["Salsa Picante", "Salsa Picant"],
         "reaction": "¡Doble salsa picante! ¡Siento que respiro fuego!",
         "scoreModifier": 40
       }

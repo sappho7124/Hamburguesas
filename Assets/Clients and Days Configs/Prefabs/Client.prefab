@@ -13,6 +13,9 @@ GameObject:
   - component: {fileID: 8655083896215270666}
   - component: {fileID: 7248297414600168284}
   - component: {fileID: 9217422317374358288}
+  - component: {fileID: -276815336726068668}
+  - component: {fileID: 1264718169918202014}
+  - component: {fileID: 2477033656117107228}
   m_Layer: 6
   m_Name: Client
   m_TagString: Untagged
@@ -30,7 +33,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 5.52, y: 2.902, z: -0.1}
-  m_LocalScale: {x: 0.6570926, y: 0.6570923, z: 0.65709233}
+  m_LocalScale: {x: 0.7, y: 0.7, z: 0.7}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -127,13 +130,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: be9e38acff49c51469f7558d3e16d504, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CustomerPill
-  moveSpeed: 3
   profile:
     profileName: 
     idealTemp: 0
     minTotalItems: 0
     maxTotalItems: 0
     walkoutTime: 120
+    queueWaitTime: 45
     scoreSettings:
       baseScore: 100
       unrequestedIngredient: -20
@@ -151,6 +154,7 @@ MonoBehaviour:
       tipThresholds: []
     ingredients: []
     groupedItems: []
+    cookingPreferences: []
     reactions:
       success: Gracias!
       wrongOrder: Esto no es lo que pedi.
@@ -160,3 +164,79 @@ MonoBehaviour:
       foodOnFire: FUEGO!
       walkout: "\xA1Me hart\xE9 de esperar! \xA1Me voy!"
       customReactions: []
+--- !u!114 &-276815336726068668
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3974139370507198676}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e0e2e380e72847848af98ef1771d53f6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HighlightableObject
+  objectName: 
+  interactionVerb: 
+  uiAnchor: {fileID: 0}
+  uiWorldOffset: {x: 0, y: 0, z: 0}
+  slideInDistance: 0.5
+  slideOutDistance: 0.2
+  thicknessMultiplier: 1.2
+  outlineTarget: {fileID: 0}
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
+  maxOutlineWidth: 10
+  animSpeed: 15
+--- !u!114 &1264718169918202014
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3974139370507198676}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a4e4c1a3c53954947945d8318f946aea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InteractableObject
+  requiredItem: {fileID: 0}
+  lockedVerb: Requires Tool
+  lockedColor: {r: 1, g: 0, b: 0, a: 1}
+  linkedMinigame: {fileID: 0}
+  OnInteract:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 9217422317374358288}
+        m_TargetAssemblyTypeName: Customer, Assembly-CSharp
+        m_MethodName: InteractWithCustomer
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!195 &2477033656117107228
+NavMeshAgent:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3974139370507198676}
+  m_Enabled: 1
+  m_AgentTypeID: 0
+  m_Radius: 0.5
+  m_Speed: 3.5
+  m_Acceleration: 8
+  avoidancePriority: 50
+  m_AngularSpeed: 120
+  m_StoppingDistance: 0
+  m_AutoTraverseOffMeshLink: 1
+  m_AutoBraking: 1
+  m_AutoRepath: 1
+  m_Height: 1.9999999
+  m_BaseOffset: 0.99999994
+  m_WalkableMask: 4294967295
+  m_ObstacleAvoidanceType: 4

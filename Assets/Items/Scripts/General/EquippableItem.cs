@@ -1,3 +1,4 @@
+// Location: C:\Games\Unity\Hamburguesas\Assets\Items\Scripts\General\EquippableItem.cs
 using UnityEngine;
 using System;
 using System.Collections;
@@ -14,21 +15,22 @@ public class EquippableItem : MonoBehaviour
     [Header("Placement Settings")]
     public float placementOffset = 0f;
 
-
     [Header("Transition Settings")]
-    public float transitionDuration = 0.25f; // How long it takes to equip/place
+    public float transitionDuration = 0.25f;
 
-    private Rigidbody rb;
-    private Collider col;
-    private Coroutine transitionCoroutine;
+    // Made protected so child classes (like PlateItem) can access them directly
+    protected Rigidbody rb;
+    protected Collider col;
+    protected Coroutine transitionCoroutine;
 
-    void Awake()
+    // Made virtual so children can add to Awake using base.Awake()
+    protected virtual void Awake()
     {
         rb = GetComponent<Rigidbody>();
         col = GetComponent<Collider>();
     }
 
-    void Start()
+    protected virtual void Start()
     {
         HighlightableObject highlight = GetComponent<HighlightableObject>();
         if (highlight != null && string.IsNullOrEmpty(highlight.interactionVerb))
@@ -37,7 +39,6 @@ public class EquippableItem : MonoBehaviour
         }
     }
 
-    // --- NEW: Smooth Transition Logic ---
     public void StartTransition(Transform newParent, Vector3 targetPos, Quaternion targetRot, bool isLocal, Action onComplete)
     {
         if (transitionCoroutine != null) StopCoroutine(transitionCoroutine);
@@ -55,7 +56,7 @@ public class EquippableItem : MonoBehaviour
         }
     }
 
-    private IEnumerator TransitionRoutine(Vector3 targetPos, Quaternion targetRot, bool isLocal, Action onComplete)
+    protected virtual IEnumerator TransitionRoutine(Vector3 targetPos, Quaternion targetRot, bool isLocal, Action onComplete)
     {
         Vector3 startPos = isLocal ? transform.localPosition : transform.position;
         Quaternion startRot = isLocal ? transform.localRotation : transform.rotation;
@@ -65,7 +66,7 @@ public class EquippableItem : MonoBehaviour
         {
             time += Time.deltaTime;
             float t = Mathf.Clamp01(time / transitionDuration);
-            t = Mathf.SmoothStep(0, 1, t); // Adds a nice ease-in, ease-out
+            t = Mathf.SmoothStep(0, 1, t);
 
             if (isLocal)
             {
@@ -80,7 +81,6 @@ public class EquippableItem : MonoBehaviour
             yield return null;
         }
 
-        // Snap to exact destination to prevent floating point inaccuracies
         if (isLocal)
         {
             transform.localPosition = targetPos;
@@ -93,12 +93,11 @@ public class EquippableItem : MonoBehaviour
         }
 
         transitionCoroutine = null;
-        onComplete?.Invoke(); // Trigger the callback (which restores physics)
+        onComplete?.Invoke(); 
     }
 
-    public void SetPhysics(bool enabled)
+    public virtual void SetPhysics(bool enabled)
     {
-        // If physics are abruptly turned back on (e.g. by Throwing), stop any ongoing movement
         if (enabled) StopTransition(); 
 
         if (rb) rb.isKinematic = !enabled;

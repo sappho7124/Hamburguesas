@@ -1,0 +1,311 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &8188490449251307
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1165784452596871325}
+  m_Layer: 6
+  m_Name: Fries Spot
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1165784452596871325
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8188490449251307}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.023, z: 0.002}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3080105882270906196}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &800782790791336621
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3080105882270906196}
+  - component: {fileID: 8877975132888320745}
+  - component: {fileID: 6318930021189433173}
+  - component: {fileID: 6187417141696057163}
+  - component: {fileID: 8850690975351000604}
+  - component: {fileID: 3967316753142358700}
+  - component: {fileID: 6049226453050356388}
+  - component: {fileID: 7590448280731515706}
+  - component: {fileID: 1773048699797115011}
+  - component: {fileID: 6659000451676276029}
+  m_Layer: 6
+  m_Name: Fry Small Bag
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3080105882270906196
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 800782790791336621}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -3.7682247, y: 3.272, z: -1.3367707}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1165784452596871325}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!33 &8877975132888320745
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 800782790791336621}
+  m_Mesh: {fileID: 8267270187275602716, guid: 444b85f8f2fcc724ebe257e8f097bc46, type: 3}
+--- !u!23 &6318930021189433173
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 800782790791336621}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: 0efa908ca6a58e44a82e4aa4ca854f72, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_MaskInteraction: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &6187417141696057163
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 800782790791336621}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 52730cade984317479c747840e5e2fa9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GrabbableItem
+  itemDefinition: {fileID: 11400000, guid: 6655333a68d2c3a448be2188a2146b02, type: 2}
+  isContainer: 0
+--- !u!114 &8850690975351000604
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 800782790791336621}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e0e2e380e72847848af98ef1771d53f6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HighlightableObject
+  objectName: Paquete
+  interactionVerb: Agarrar
+  uiAnchor: {fileID: 0}
+  uiWorldOffset: {x: 0, y: 0, z: 0}
+  slideInDistance: 0.5
+  slideOutDistance: 0.2
+  thicknessMultiplier: 1.2
+  outlineTarget: {fileID: 0}
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
+  maxOutlineWidth: 10
+  animSpeed: 15
+  baseNoiseAmount: 7
+  baseNoiseScale: 250
+  baseFrameRate: 6
+--- !u!114 &3967316753142358700
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 800782790791336621}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a4e4c1a3c53954947945d8318f946aea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InteractableObject
+  manageUI: 1
+  hideLockedState: 1
+  interactions:
+  - displayVerb: Llenar Paquete
+    inputActionName: Pour Content
+    isFallbackAction: 0
+    isMainLock: 0
+    validItems:
+    - {fileID: 11400000, guid: f6775763abbdbf349b74a0d20ffbe6d8, type: 2}
+    - {fileID: 11400000, guid: fb1fd399e4013f849a4510872c54172e, type: 2}
+    validColor: {r: 1, g: 0.9600028, b: 0, a: 0}
+    lockedColor: {r: 1, g: 0, b: 0, a: 0}
+    OnInteract:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 6659000451676276029}
+          m_TargetAssemblyTypeName: PourActionBase, Assembly-CSharp
+          m_MethodName: PerformPour
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+  lockedVerb: Requires Tool
+--- !u!54 &6049226453050356388
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 800782790791336621}
+  serializedVersion: 5
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
+--- !u!65 &7590448280731515706
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 800782790791336621}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.16931419, y: 0.14632843, z: 0.062685624}
+  m_Center: {x: -0.0000072419643, y: 0.009450294, z: 0.0008090874}
+--- !u!114 &1773048699797115011
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 800782790791336621}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f6583105fdfb66a4c99c4133cbe72390, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SmallBoxVessel
+  maxCapacity: 30
+  currentAmount: 0
+  startFull: 0
+  itemPrefabToSpawn: {fileID: 5930880007117205213, guid: a189c28a434cd3c428650d789724cc48, type: 3}
+  spawnVolume: {fileID: 1165784452596871325}
+  volumeSize: {x: 0.085, y: 0.11, z: 0.03}
+  pourEntryVolume: {fileID: 0}
+  entryVolumeSize: {x: 0.2, y: 0.2}
+  currentEnvTemp: 20
+  currentEnvMultiplier: 1
+  spawnedItems: []
+--- !u!114 &6659000451676276029
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 800782790791336621}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 75228e05d6fdbd74ba43f27afd96b9ee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PourActionBase
+  allowedSourceItems:
+  - {fileID: 11400000, guid: f6775763abbdbf349b74a0d20ffbe6d8, type: 2}
+  - {fileID: 11400000, guid: fb1fd399e4013f849a4510872c54172e, type: 2}
+  pourSpeed: 0.1
+  alignToView: 1
+  hoverOffset: {x: 0.3, y: 0.6, z: 0}
+  pourRotationOffset: {x: 0, y: -90, z: 0}
+  startingPourAngle: 85
+  endingPourAngle: 130
+  enableShake: 0
+  shakeSpeed: 40
+  baseShakeAngle: 4
+  increaseShakeWhenEmpty: 1
+  maxEmptyShakeMultiplier: 3
+  targetUpDirection: {x: 0, y: 1, z: 0}
+  uprightTolerance: 0.7
+  maxDistanceBeforeCancel: 2.5

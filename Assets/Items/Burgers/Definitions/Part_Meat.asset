@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 77df55c3dbefa7f4d86982fde9d23e1d, type: 3}
   m_Name: Part_Meat
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
-  itemName: Meat
+  itemName: Carne
   description: 
   icon: {fileID: 0}

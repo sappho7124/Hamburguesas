@@ -8,11 +8,15 @@ public class SittingSpot : MonoBehaviour
     
     [Header("Group Seating Network")][Tooltip("Drag adjacent SittingSpots here. If this is a stool, drag the stools to the left and right of it.")]
     public List<SittingSpot> connectedSpots = new List<SittingSpot>();
-    
-    [HideInInspector] public bool isReserved = false;[HideInInspector] public bool isOccupied = false;
-    [HideInInspector] public CustomerPill currentCustomer;
 
-    public void ReserveSeat(CustomerPill customer)
+    [Header("Visual Settings")]
+    [Tooltip("Local offset for the customer when seated. Use this to prevent them from clipping into the chair.")]
+    public Vector3 customerOffset = Vector3.zero;
+
+    [HideInInspector] public bool isReserved = false;
+    [HideInInspector] public bool isOccupied = false;[HideInInspector] public Customer currentCustomer;
+
+    public void ReserveSeat(Customer customer)
     {
         isReserved = true;
         currentCustomer = customer;
@@ -28,5 +32,16 @@ public class SittingSpot : MonoBehaviour
         isReserved = false;
         isOccupied = false;
         currentCustomer = null;
+    }
+
+    // --- NEW: Visual Gizmo Helper ---
+    // Draws a yellow sphere in the Scene view so you can visually see the exact seating position!
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.yellow;
+        // TransformPoint converts the local offset to global world space automatically!
+        Vector3 targetPos = transform.TransformPoint(customerOffset);
+        Gizmos.DrawWireSphere(targetPos, 0.2f);
+        Gizmos.DrawLine(transform.position, targetPos);
     }
 }

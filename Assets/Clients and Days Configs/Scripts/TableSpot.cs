@@ -4,15 +4,13 @@ using System.Collections.Generic;
 
 public class TableSpot : MonoBehaviour
 {
-    [Tooltip("The chair associated with this table zone.")]
     public SittingSpot linkedSittingSpot;
-    
-    public GameObject moneyPrefab; // NEW: Assign your Money Prefab here
+    public GameObject moneyPrefab; 
     public float eatingDuration = 5f;
     
     private bool isEating = false;
     private List<PlateItem> platesInZone = new List<PlateItem>();
-    private HashSet<AssembledBurger> rejectedBurgers = new HashSet<AssembledBurger>();
+    private HashSet<PlateItem> rejectedPlates = new HashSet<PlateItem>();
 
     void OnTriggerEnter(Collider other)
     {
@@ -26,8 +24,7 @@ public class TableSpot : MonoBehaviour
         if (plate != null && platesInZone.Contains(plate))
         {
             platesInZone.Remove(plate);
-            AssembledBurger burger = plate.GetComponentInChildren<AssembledBurger>();
-            if (burger != null) rejectedBurgers.Remove(burger);
+            rejectedPlates.Remove(plate);
         }
     }
 
@@ -39,24 +36,32 @@ public class TableSpot : MonoBehaviour
         foreach (var plate in platesInZone)
         {
             EquippableItem eqPlate = plate.GetComponent<EquippableItem>();
-            if (eqPlate != null && !eqPlate.GetRigidbody().isKinematic)
+            // If the plate is resting on the table and has food/items on it...
+            if (eqPlate != null && !eqPlate.GetRigidbody().isKinematic && plate.GetAttachedItems().Count > 0)
             {
-                AssembledBurger burger = plate.GetComponentInChildren<AssembledBurger>();
-                if (burger != null && !rejectedBurgers.Contains(burger))
+                if (!rejectedPlates.Contains(plate))
                 {
-                    // MODIFIED: Request dialogue and money from the OrderManager
+                    TableSpot correctSpot = FindCorrectSpotInCluster(plate);
+                    if (correctSpot != null && correctSpot != this)
+                    {
+                        eqPlate.transform.position = correctSpot.transform.position + (Vector3.up * 0.1f);
+                        platesInZone.Remove(plate);
+                        Debug.Log($"[TableSpot] Auto-corrected plate to adjacent table!");
+                        break; 
+                    }
+
                     int moneyToSpawn;
                     string customerDialogue;
                     
-                    if (OrderManager.Instance.TryServeFood(this, burger, out moneyToSpawn, out customerDialogue))
+                    if (OrderManager.Instance.TryServeFood(this, plate, out moneyToSpawn, out customerDialogue))
                     {
                         RestaurantUIManager.Instance.ShowDialogue(OrderManager.Instance.GetActiveProfileName(this), customerDialogue);
-                        StartCoroutine(EatRoutine(plate, eqPlate, burger, moneyToSpawn));
+                        StartCoroutine(EatRoutine(plate, eqPlate, moneyToSpawn));
                     }
                     else
                     {
                         RestaurantUIManager.Instance.ShowDialogue(OrderManager.Instance.GetActiveProfileName(this), customerDialogue);
-                        rejectedBurgers.Add(burger);
+                        rejectedPlates.Add(plate);
                     }
                     break; 
                 }
@@ -64,7 +69,44 @@ public class TableSpot : MonoBehaviour
         }
     }
 
-    private IEnumerator EatRoutine(PlateItem plate, EquippableItem eqPlate, AssembledBurger burger, int moneyToSpawn)
+    private TableSpot FindCorrectSpotInCluster(PlateItem plate)
+    {
+        if (OrderManager.Instance.WouldAcceptOrder(this, plate)) return this;
+
+        Queue<SittingSpot> queue = new Queue<SittingSpot>();
+        HashSet<SittingSpot> visited = new HashSet<SittingSpot>();
+        queue.Enqueue(linkedSittingSpot);
+        visited.Add(linkedSittingSpot);
+
+        TableSpot emptySpotWithOrder = null;
+
+        while (queue.Count > 0)
+        {
+            SittingSpot current = queue.Dequeue();
+            if (current.linkedTableSpot != null && current.linkedTableSpot != this)
+            {
+                if (OrderManager.Instance.WouldAcceptOrder(current.linkedTableSpot, plate))
+                    return current.linkedTableSpot;
+                
+                if (emptySpotWithOrder == null && OrderManager.Instance.HasActiveOrder(current.linkedTableSpot))
+                    emptySpotWithOrder = current.linkedTableSpot;
+            }
+
+            foreach (var neighbor in current.connectedSpots)
+            {
+                if (neighbor != null && !visited.Contains(neighbor))
+                {
+                    visited.Add(neighbor);
+                    queue.Enqueue(neighbor);
+                }
+            }
+        }
+
+        if (!OrderManager.Instance.HasActiveOrder(this) && emptySpotWithOrder != null) return emptySpotWithOrder;
+        return this;
+    }
+
+    private IEnumerator EatRoutine(PlateItem plate, EquippableItem eqPlate, int moneyToSpawn)
     {
         isEating = true;
         eqPlate.SetPhysics(false); 
@@ -72,16 +114,26 @@ public class TableSpot : MonoBehaviour
 
         yield return new WaitForSeconds(eatingDuration);
 
-        Destroy(burger.gameObject); 
+        // --- Consume all food on the plate ---
+        foreach (var item in plate.GetAttachedItems())
+        {
+            if (item != null && item.gameObject != plate.gameObject)
+            {
+                Destroy(item.gameObject);
+            }
+        }
+        
+        // --- Make the plate dirty ---
+        plate.MakeDirty();
+
         eqPlate.SetPhysics(true);
         plate.enabled = true;
 
-        // NEW: Spawn Money on the table
         if (moneyPrefab != null && moneyToSpawn > 0)
         {
             GameObject moneyObj = Instantiate(moneyPrefab, transform.position + Vector3.up * 0.2f, Quaternion.identity);
             MoneyPickup pickup = moneyObj.GetComponent<MoneyPickup>();
-            if (pickup != null) pickup.moneyValue = moneyToSpawn;
+            if (pickup != null) pickup.Initialize(moneyToSpawn);
         }
 
         if (linkedSittingSpot.currentCustomer != null)

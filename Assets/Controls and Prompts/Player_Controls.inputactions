@@ -77,6 +77,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "Pour Content",
+                    "type": "Button",
+                    "id": "2cbb4214-73d7-443d-b148-36a20947f32b",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -209,6 +218,17 @@
                     "processors": "",
                     "groups": "",
                     "action": "Throw Equipment",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "8ce085f7-31b7-47cf-8909-6a438cea5693",
+                    "path": "<Keyboard>/f",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Pour Content",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

@@ -163,6 +163,15 @@ public partial class @Player_Controls: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Pour Content"",
+                    ""type"": ""Button"",
+                    ""id"": ""2cbb4214-73d7-443d-b148-36a20947f32b"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -295,6 +304,17 @@ public partial class @Player_Controls: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""Throw Equipment"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""8ce085f7-31b7-47cf-8909-6a438cea5693"",
+                    ""path"": ""<Keyboard>/f"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Pour Content"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -575,6 +595,7 @@ public partial class @Player_Controls: IInputActionCollection2, IDisposable
         m_Normal_PutDownEquipment = m_Normal.FindAction("Put Down Equipment", throwIfNotFound: true);
         m_Normal_DropEquipment = m_Normal.FindAction("Drop Equipment", throwIfNotFound: true);
         m_Normal_ThrowEquipment = m_Normal.FindAction("Throw Equipment", throwIfNotFound: true);
+        m_Normal_PourContent = m_Normal.FindAction("Pour Content", throwIfNotFound: true);
         // Minigames
         m_Minigames = asset.FindActionMap("Minigames", throwIfNotFound: true);
         m_Minigames_Move = m_Minigames.FindAction("Move", throwIfNotFound: true);
@@ -678,6 +699,7 @@ public partial class @Player_Controls: IInputActionCollection2, IDisposable
     private readonly InputAction m_Normal_PutDownEquipment;
     private readonly InputAction m_Normal_DropEquipment;
     private readonly InputAction m_Normal_ThrowEquipment;
+    private readonly InputAction m_Normal_PourContent;
     /// <summary>
     /// Provides access to input actions defined in input action map "Normal".
     /// </summary>
@@ -721,6 +743,10 @@ public partial class @Player_Controls: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Normal/ThrowEquipment".
         /// </summary>
         public InputAction @ThrowEquipment => m_Wrapper.m_Normal_ThrowEquipment;
+        /// <summary>
+        /// Provides access to the underlying input action "Normal/PourContent".
+        /// </summary>
+        public InputAction @PourContent => m_Wrapper.m_Normal_PourContent;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -771,6 +797,9 @@ public partial class @Player_Controls: IInputActionCollection2, IDisposable
             @ThrowEquipment.started += instance.OnThrowEquipment;
             @ThrowEquipment.performed += instance.OnThrowEquipment;
             @ThrowEquipment.canceled += instance.OnThrowEquipment;
+            @PourContent.started += instance.OnPourContent;
+            @PourContent.performed += instance.OnPourContent;
+            @PourContent.canceled += instance.OnPourContent;
         }
 
         /// <summary>
@@ -806,6 +835,9 @@ public partial class @Player_Controls: IInputActionCollection2, IDisposable
             @ThrowEquipment.started -= instance.OnThrowEquipment;
             @ThrowEquipment.performed -= instance.OnThrowEquipment;
             @ThrowEquipment.canceled -= instance.OnThrowEquipment;
+            @PourContent.started -= instance.OnPourContent;
+            @PourContent.performed -= instance.OnPourContent;
+            @PourContent.canceled -= instance.OnPourContent;
         }
 
         /// <summary>
@@ -1171,6 +1203,13 @@ public partial class @Player_Controls: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnThrowEquipment(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Pour Content" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnPourContent(InputAction.CallbackContext context);
     }
     /// <summary>
     /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "Minigames" which allows adding and removing callbacks.

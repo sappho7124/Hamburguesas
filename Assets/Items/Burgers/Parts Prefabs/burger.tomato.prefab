@@ -169,7 +169,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e0e2e380e72847848af98ef1771d53f6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HighlightableObject
-  objectName: 
+  objectName: Tomate
   interactionVerb: Agarrar
   uiAnchor: {fileID: 0}
   uiWorldOffset: {x: 0, y: 0, z: 0}
@@ -192,11 +192,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc269a419723fb74cabad3b3618dab6c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CookableItem
+  currentHeatMultiplier: 1
   category: 1
   currentTemperature: 20
   targetEnvironmentTemperature: 20
   ambientTemperature: 20
   tempChangeRate: 15
+  coolingMultiplier: 3
   cookingTempThreshold: 70
   timeToCook: 10
   timeToBurn: 20
