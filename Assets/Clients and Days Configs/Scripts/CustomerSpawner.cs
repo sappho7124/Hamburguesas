@@ -214,12 +214,25 @@ public class CustomerSpawner : MonoBehaviour
 
     private void EndShift()
     {
+        if (!isShiftActive) return; // Prevent double calls
         isShiftActive = false;
+        
+        // Clean up remaining queue
         foreach (var group in queueGroups)
         {
             foreach (var member in group.members) if (member != null) member.Leave();
         }
         queueGroups.Clear();
+
+        // Trigger the End Of Day UI!
+        if (EndOfDayManager.Instance != null)
+        {
+            EndOfDayManager.Instance.ShowEndOfDaySummary();
+        }
+        else
+        {
+            Debug.LogWarning("[CustomerSpawner] EndOfDayManager not found! Cannot show summary.");
+        }
     }
 
     private TimeBracket GetCurrentTimeBracket()

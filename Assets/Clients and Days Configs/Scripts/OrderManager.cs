@@ -84,6 +84,13 @@ public class OrderManager : MonoBehaviour
 
     private Dictionary<TableSpot, ActiveOrder> activeOrders = new Dictionary<TableSpot, ActiveOrder>();
 
+    [Header("Daily Shift Stats")]
+    public int dailyScore = 0;
+    public int dailyMoneyEarned = 0;
+    public int dailyMoneyLost = 0;
+    public int dailySatisfiedCustomers = 0;
+    public int dailyAngryCustomers = 0;
+
     void Awake()
     {
         if (Instance == null) Instance = this;
@@ -92,13 +99,25 @@ public class OrderManager : MonoBehaviour
 
     void Start()
     {
-        if (resetDataOnStart)
+        // Load totals from SaveManager at the start of the day
+        if (SaveManager.Instance != null && SaveManager.Instance.HasSave())
         {
-            PlayerPrefs.DeleteKey("RestaurantTotalScore");
-            PlayerPrefs.DeleteKey("RestaurantTotalMoney");
+            totalSavedScore = SaveManager.Instance.CurrentSave.totalScore;
+            // Calculate net money
+            totalSavedMoney = SaveManager.Instance.CurrentSave.moneyEarned - SaveManager.Instance.CurrentSave.moneyLost; 
         }
-        totalSavedScore = PlayerPrefs.GetInt("RestaurantTotalScore", 0);
-        totalSavedMoney = PlayerPrefs.GetInt("RestaurantTotalMoney", 0);
+        else
+        {
+            totalSavedScore = 0;
+            totalSavedMoney = 0;
+        }
+
+        // Reset daily stats
+        dailyScore = 0;
+        dailyMoneyEarned = 0;
+        dailyMoneyLost = 0;
+        dailySatisfiedCustomers = 0;
+        dailyAngryCustomers = 0;
 
         if (RestaurantUIManager.Instance != null)
         {
@@ -119,10 +138,10 @@ public class OrderManager : MonoBehaviour
     
     public void HandleQueueWalkout(CustomerProfile profile)
     {
-        totalSavedScore += walkoutPenalty;
-        PlayerPrefs.SetInt("RestaurantTotalScore", totalSavedScore);
-        PlayerPrefs.Save();
-        RestaurantUIManager.Instance.UpdateScore(totalSavedScore);
+        dailyScore += walkoutPenalty; // Usually a negative number
+        dailyAngryCustomers++;
+        
+        RestaurantUIManager.Instance.UpdateScore(totalSavedScore + dailyScore);
         RestaurantUIManager.Instance.ShowDialogue(profile.profileName, profile.reactions.walkout);
     }
 
@@ -334,8 +353,13 @@ public class OrderManager : MonoBehaviour
     }
 
     public string GetActiveProfileName(TableSpot table) => activeOrders.ContainsKey(table) ? activeOrders[table].profile.profileName : "Unknown";
-    public void AddMoney(int amount) { totalSavedMoney += amount; PlayerPrefs.SetInt("RestaurantTotalMoney", totalSavedMoney); PlayerPrefs.Save(); RestaurantUIManager.Instance.UpdateMoney(totalSavedMoney); }
+    public void AddMoney(int amount) 
+    { 
+        if (amount > 0) dailyMoneyEarned += amount;
+        else dailyMoneyLost += Mathf.Abs(amount);
 
+        RestaurantUIManager.Instance.UpdateMoney(totalSavedMoney + dailyMoneyEarned - dailyMoneyLost); 
+    }
     public bool TryServeFood(TableSpot table, PlateItem plate, out int moneyToSpawn, out string customerDialogue)
     {
         moneyToSpawn = 0; customerDialogue = "";
@@ -464,6 +488,16 @@ public class OrderManager : MonoBehaviour
         RestaurantUIManager.Instance.UpdateScore(totalSavedScore);
 
         activeOrders.Remove(table);
+        if (customerDialogue == order.profile.reactions.success || !string.IsNullOrEmpty(customReactText))
+        {
+            dailySatisfiedCustomers++;
+        }
+        else
+        {
+            dailyAngryCustomers++; // They got wrong/burnt/raw food
+        }
+        dailyScore += score;
+        RestaurantUIManager.Instance.UpdateScore(totalSavedScore + dailyScore);
         return true; 
     }
 
