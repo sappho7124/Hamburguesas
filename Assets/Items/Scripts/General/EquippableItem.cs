@@ -23,11 +23,14 @@ public class EquippableItem : MonoBehaviour
     protected Collider col;
     protected Coroutine transitionCoroutine;
 
+    [HideInInspector] public Vector3 originalScale; // Save the scale
+
     // Made virtual so children can add to Awake using base.Awake()
     protected virtual void Awake()
     {
         rb = GetComponent<Rigidbody>();
         col = GetComponent<Collider>();
+        originalScale = transform.localScale; // Store it right at spawn
     }
 
     protected virtual void Start()

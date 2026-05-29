@@ -843,6 +843,8 @@ MonoBehaviour:
   transitionDuration: 1.5
   slideDuration: 0.4
   gameplaySceneName: Restaurant
+  finalDaySceneName: FinalDayScene
+  finalDayNumber: 8
 --- !u!1 &885407736
 GameObject:
   m_ObjectHideFlags: 0
@@ -1204,6 +1206,63 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 980318077}
   m_CullTransparentMesh: 1
+--- !u!1001 &1030367756
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 1709404737440485494, guid: e7b50227a655fb947b370a671955ca45, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0.24
+      objectReference: {fileID: 0}
+    - target: {fileID: 1709404737440485494, guid: e7b50227a655fb947b370a671955ca45, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.275
+      objectReference: {fileID: 0}
+    - target: {fileID: 1709404737440485494, guid: e7b50227a655fb947b370a671955ca45, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -8.979
+      objectReference: {fileID: 0}
+    - target: {fileID: 1709404737440485494, guid: e7b50227a655fb947b370a671955ca45, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1709404737440485494, guid: e7b50227a655fb947b370a671955ca45, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1709404737440485494, guid: e7b50227a655fb947b370a671955ca45, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1709404737440485494, guid: e7b50227a655fb947b370a671955ca45, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1709404737440485494, guid: e7b50227a655fb947b370a671955ca45, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1709404737440485494, guid: e7b50227a655fb947b370a671955ca45, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1709404737440485494, guid: e7b50227a655fb947b370a671955ca45, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2168829202937431016, guid: e7b50227a655fb947b370a671955ca45, type: 3}
+      propertyPath: m_Name
+      value: Restaurant
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: e7b50227a655fb947b370a671955ca45, type: 3}
 --- !u!1 &1077998342
 GameObject:
   m_ObjectHideFlags: 0
@@ -1267,7 +1326,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0, b: 0, a: 1}
+  m_Color: {r: 0, g: 0, b: 0, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -1655,6 +1714,7 @@ GameObject:
   - component: {fileID: 1251649038}
   - component: {fileID: 1251649037}
   - component: {fileID: 1251649040}
+  - component: {fileID: 1251649041}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -1729,13 +1789,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1251649036}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: -10}
+  m_LocalRotation: {x: -0, y: -0.15669322, z: -0, w: 0.9876473}
+  m_LocalPosition: {x: 0.51, y: 1, z: -9.74}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: -18.03, z: 0}
 --- !u!114 &1251649040
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1780,6 +1840,21 @@ MonoBehaviour:
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
   m_Version: 2
+--- !u!114 &1251649041
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1251649036}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5676dd41603009143ae9b07827875055, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MainMenuCameraSway
+  rotationAmount: 3
+  positionAmount: 0.05
+  smoothSpeed: 3
 --- !u!114 &1508833255 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 5313629030527388976, guid: 100f1054e01db1c4f998d0db5cfca6b9, type: 3}
@@ -2419,8 +2494,8 @@ Transform:
   m_GameObject: {fileID: 553440517525861354}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0.36221132, z: -0, w: 0.932096}
-  m_LocalPosition: {x: -0.795, y: 0.58422, z: -8.365}
-  m_LocalScale: {x: 1.1299627, y: 1.1299627, z: 1.1299627}
+  m_LocalPosition: {x: -0.901, y: 0.5863938, z: -8.457}
+  m_LocalScale: {x: 1.050063, y: 1.050063, z: 1.050063}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1173836230}
@@ -2451,7 +2526,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: f2bf2e0ddb751054b8316f93d34f5615, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -2739,3 +2814,4 @@ SceneRoots:
   - {fileID: 1160992772}
   - {fileID: 782642422}
   - {fileID: 1782906649}
+  - {fileID: 1030367756}

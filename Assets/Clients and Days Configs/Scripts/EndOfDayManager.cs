@@ -22,6 +22,10 @@ public class EndOfDayManager : MonoBehaviour
     public UnityEngine.UI.Button nextDayButton;
     public UnityEngine.UI.Button mainMenuButton;
 
+    [Header("Scene Routing")]
+    public string finalDaySceneName = "FinalDayScene";
+    public int finalDayNumber = 8;
+
     void Awake()
     {
         if (Instance == null) Instance = this;
@@ -77,8 +81,19 @@ public class EndOfDayManager : MonoBehaviour
     private void StartNextDay()
     {
         Time.timeScale = 1f;
-        // Reload the scene to start the fresh day
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        
+        // --- NEW ROUTING LOGIC ---
+        int nextDay = SaveManager.Instance.CurrentSave.currentDay;
+        
+        if (nextDay >= finalDayNumber)
+        {
+            SceneManager.LoadScene(finalDaySceneName);
+        }
+        else
+        {
+            // Just reload the current restaurant scene for standard days
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        }
     }
 
     private void ReturnToMenu()

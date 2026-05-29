@@ -71,7 +71,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 02ed3f3e4c92fc443aad344cd77fb870, type: 2}
+  - {fileID: 2100000, guid: 7ace02b4a60babe46bdf24969fe4e54e, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -128,25 +128,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a4e4c1a3c53954947945d8318f946aea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::InteractableObject
-  requiredItem: {fileID: 0}
+  manageUI: 1
+  hideLockedState: 0
+  interactions: []
   lockedVerb: Requires Tool
-  lockedColor: {r: 1, g: 0, b: 0, a: 1}
-  linkedMinigame: {fileID: 0}
-  OnInteract:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 2836060951123131914}
-        m_TargetAssemblyTypeName: BurgerAssemblyStation, Assembly-CSharp
-        m_MethodName: TryAssembleBurger
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
 --- !u!114 &6047119770414242163
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -170,6 +155,9 @@ MonoBehaviour:
   hoverColor: {r: 1, g: 1, b: 1, a: 1}
   maxOutlineWidth: 10
   animSpeed: 15
+  baseNoiseAmount: 7
+  baseNoiseScale: 250
+  baseFrameRate: 6
 --- !u!114 &2836060951123131914
 MonoBehaviour:
   m_ObjectHideFlags: 0

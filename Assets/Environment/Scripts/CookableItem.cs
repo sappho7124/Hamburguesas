@@ -14,10 +14,14 @@ public class CookableItem : MonoBehaviour
     public float targetEnvironmentTemperature = 20f;
     public float ambientTemperature = 20f;
     public float tempChangeRate = 15f;
-    public float coolingMultiplier = 3f;[Header("2. Cooking Progress (Heat)")]
+    public float coolingMultiplier = 3f;
+    
+    [Header("2. Cooking Progress (Heat)")]
     public float cookingTempThreshold = 70f; 
     public float timeToCook = 10f;
-    public float timeToBurn = 20f;[Header("3. Fire State (Disaster)")]
+    public float timeToBurn = 20f;
+    
+    [Header("3. Fire State (Disaster)")]
     public float fireTempThreshold = 250f;
     public float fireBurnSpeedMultiplier = 3f; 
     public bool isOnFire = false;
@@ -33,6 +37,9 @@ public class CookableItem : MonoBehaviour
     private struct RendererData { public Renderer renderer; public Color originalColor; }
     private List<RendererData> rendererDataList = new List<RendererData>();
 
+    // We cache the property ID for performance
+    private static readonly int BaseColorID = Shader.PropertyToID("_BaseColor");
+
     void Awake()
     {
         InitializeRenderers();
@@ -43,7 +50,20 @@ public class CookableItem : MonoBehaviour
         rendererDataList.Clear();
         foreach (var r in GetComponentsInChildren<Renderer>())
         {
-            rendererDataList.Add(new RendererData { renderer = r, originalColor = r.material.color });
+            Color startColor = Color.white;
+
+            // Check if the shader uses _BaseColor (URP / Toon Shader)
+            if (r.material.HasProperty(BaseColorID))
+            {
+                startColor = r.material.GetColor(BaseColorID);
+            }
+            // Fallback for legacy standard shaders
+            else if (r.material.HasProperty("_Color"))
+            {
+                startColor = r.material.color;
+            }
+
+            rendererDataList.Add(new RendererData { renderer = r, originalColor = startColor });
         }
     }
 
@@ -122,7 +142,15 @@ public class CookableItem : MonoBehaviour
                     targetColor = Color.Lerp(data.originalColor, burnedColor, (safeProgress - timeToCook) / (timeToBurn - timeToCook));
             }
 
-            data.renderer.material.color = targetColor;
+            // Apply the color to the correct property
+            if (data.renderer.material.HasProperty(BaseColorID))
+            {
+                data.renderer.material.SetColor(BaseColorID, targetColor);
+            }
+            else
+            {
+                data.renderer.material.color = targetColor;
+            }
         }
     }
 }

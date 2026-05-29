@@ -22,6 +22,8 @@ public class MainMenuManager : MonoBehaviour
     public float transitionDuration = 1.5f;
     public float slideDuration = 0.4f;
     public string gameplaySceneName = "GameplayScene";
+    public string finalDaySceneName = "FinalDayScene"; // <-- The scene for Day 8
+    public int finalDayNumber = 8; // <-- Which day triggers the different scene
 
     private Vector2 offScreenPosition = new Vector2(0, -1500f); // Below screen
     private Vector2 onScreenPosition = Vector2.zero; // Center screen
@@ -67,7 +69,7 @@ public class MainMenuManager : MonoBehaviour
 
     private IEnumerator FadeOutAndLoad()
     {
-        blackoutScreen.blocksRaycasts = true; // Prevent clicking during fade
+        blackoutScreen.blocksRaycasts = true; 
         
         float timer = 0f;
         while (timer < transitionDuration)
@@ -77,7 +79,17 @@ public class MainMenuManager : MonoBehaviour
             yield return null;
         }
 
-        SceneManager.LoadScene(gameplaySceneName);
+        // --- NEW ROUTING LOGIC ---
+        int currentDay = SaveManager.Instance.CurrentSave.currentDay;
+        
+        if (currentDay >= finalDayNumber)
+        {
+            SceneManager.LoadScene(finalDaySceneName);
+        }
+        else
+        {
+            SceneManager.LoadScene(gameplaySceneName);
+        }
     }
 
     // --- OVERLAY PANEL SLIDING ---

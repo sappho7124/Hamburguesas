@@ -52,15 +52,26 @@ public class TableSpot : MonoBehaviour
 
                     int moneyToSpawn;
                     string customerDialogue;
-                    
-                    if (OrderManager.Instance.TryServeFood(this, plate, out moneyToSpawn, out customerDialogue))
+                    CustomerFaceController.Mood reactionMood;
+
+                    if (OrderManager.Instance.TryServeFood(this, plate, out moneyToSpawn, out customerDialogue, out reactionMood))
                     {
                         RestaurantUIManager.Instance.ShowDialogue(OrderManager.Instance.GetActiveProfileName(this), customerDialogue);
+                        
+                        // Apply the mood to the customer!
+                        if (linkedSittingSpot.currentCustomer != null)
+                            linkedSittingSpot.currentCustomer.faceController.SetMood(reactionMood);
+
                         StartCoroutine(EatRoutine(plate, eqPlate, moneyToSpawn));
                     }
                     else
                     {
                         RestaurantUIManager.Instance.ShowDialogue(OrderManager.Instance.GetActiveProfileName(this), customerDialogue);
+                        
+                        // Apply the angry/rejected mood to the customer!
+                        if (linkedSittingSpot.currentCustomer != null)
+                            linkedSittingSpot.currentCustomer.faceController.SetMood(reactionMood);
+
                         rejectedPlates.Add(plate);
                     }
                     break; 

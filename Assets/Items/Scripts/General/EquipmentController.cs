@@ -260,19 +260,19 @@ void HandlePlacementPreview()
 
         if (animate)
         {
-            // Transition smoothly to target spot in World Space. 
-            // Physics and Collisions remain OFF until the callback is fired.
             item.StartTransition(null, pos, rot, false, () => {
+                item.transform.SetParent(null);
+                item.transform.localScale = item.originalScale;
                 item.SetPhysics(true);
                 SetLayerRecursive(item.gameObject, layerToRestore);
             });
         }
         else
         {
-            // Instant drop (Used for throwing where Rigidbody handles the arc)
             item.transform.SetParent(null);
             item.transform.position = pos;
             item.transform.rotation = rot;
+            item.transform.localScale = item.originalScale;
             item.SetPhysics(true);
             SetLayerRecursive(item.gameObject, layerToRestore);
         }

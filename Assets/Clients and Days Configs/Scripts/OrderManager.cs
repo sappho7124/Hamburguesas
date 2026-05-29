@@ -360,9 +360,10 @@ public class OrderManager : MonoBehaviour
 
         RestaurantUIManager.Instance.UpdateMoney(totalSavedMoney + dailyMoneyEarned - dailyMoneyLost); 
     }
-    public bool TryServeFood(TableSpot table, PlateItem plate, out int moneyToSpawn, out string customerDialogue)
+    public bool TryServeFood(TableSpot table, PlateItem plate, out int moneyToSpawn, out string customerDialogue, out CustomerFaceController.Mood reactionMood)
     {
         moneyToSpawn = 0; customerDialogue = "";
+        reactionMood = CustomerFaceController.Mood.Neutral;
         if (!activeOrders.ContainsKey(table)) return false; 
 
         ActiveOrder order = activeOrders[table];
@@ -457,20 +458,40 @@ public class OrderManager : MonoBehaviour
             if (tempDiff > 20f) score -= 20; 
         }
 
-        // --- DIALOGUE ---
-        if (isOnFire) customerDialogue = order.profile.reactions.foodOnFire; 
-        else if (wasDirty) customerDialogue = order.profile.reactions.dirtyPlate;
-        else if (!string.IsNullOrEmpty(customReactText)) customerDialogue = customReactText; 
-        else if (unwantedBurnt) customerDialogue = order.profile.reactions.foodBurnt; 
-        else if (unwantedRaw) customerDialogue = order.profile.reactions.foodRaw; 
+        // --- DIALOGUE & MOOD ---
+        if (isOnFire) { 
+            customerDialogue = order.profile.reactions.foodOnFire; 
+            reactionMood = CustomerFaceController.Mood.Scared; 
+        }
+        else if (wasDirty) { 
+            customerDialogue = order.profile.reactions.dirtyPlate; 
+            reactionMood = CustomerFaceController.Mood.Puking; 
+        }
+        else if (!string.IsNullOrEmpty(customReactText)) { 
+            customerDialogue = customReactText; 
+            // Custom reactions can be happy or confused, we default to neutral/happy
+            reactionMood = CustomerFaceController.Mood.Happy; 
+        } 
+        else if (unwantedBurnt) { 
+            customerDialogue = order.profile.reactions.foodBurnt; 
+            reactionMood = CustomerFaceController.Mood.Sad; 
+        } 
+        else if (unwantedRaw) { 
+            customerDialogue = order.profile.reactions.foodRaw; 
+            reactionMood = CustomerFaceController.Mood.Puking; 
+        } 
         else if (missingCount > 0 || unrequestedItems.Count > 0)
         {
             string expectedStr = string.Join(", ", order.expectedIngredients);
             string servedStr = string.Join(", ", servedNames);
             customerDialogue = order.profile.reactions.wrongOrder.Replace("{ORDER}", expectedStr).Replace("{SERVED}", servedStr);
+            reactionMood = CustomerFaceController.Mood.Angry; 
             return false; // Rejected!
         }
-        else customerDialogue = order.profile.reactions.success; 
+        else { 
+            customerDialogue = order.profile.reactions.success; 
+            reactionMood = CustomerFaceController.Mood.Happy; 
+        }
 
         // --- PAYMENT ---
         float scorePercent = (float)(score - order.profile.scoreSettings.baseScore) / order.profile.scoreSettings.baseScore;

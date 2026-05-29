@@ -71,7 +71,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 25c0bc7f1f97c2a48bc41b480dec1045, type: 2}
+  - {fileID: 2100000, guid: 69e206d7860330f418084599e7f05ff0, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -177,9 +177,12 @@ MonoBehaviour:
   slideOutDistance: 0.2
   thicknessMultiplier: 1.2
   outlineTarget: {fileID: 0}
-  hoverColor: {r: 1, g: 1, b: 1, a: 1}
+  hoverColor: {r: 0, g: 0, b: 0, a: 1}
   maxOutlineWidth: 10
   animSpeed: 15
+  baseNoiseAmount: 7
+  baseNoiseScale: 250
+  baseFrameRate: 6
 --- !u!114 &7413661781859440558
 MonoBehaviour:
   m_ObjectHideFlags: 0

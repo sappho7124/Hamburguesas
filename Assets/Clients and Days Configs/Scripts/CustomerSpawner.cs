@@ -57,10 +57,23 @@ public class CustomerSpawner : MonoBehaviour
 
     [Header("Day & Profile JSONs")]
     public TextAsset currentDayConfigJSON;
-    public TextAsset[] allCustomerProfiles;
+
+    [System.Serializable]
+    public class CharacterSetup
+    {
+        [Tooltip("The 3D Prefab for this character")]
+        public GameObject characterPrefab;
+        [Tooltip("The JSON order/profile for this character")]
+        public TextAsset profileJSON;
+    }
+
+[Header("Character Roster")]
+public List<CharacterSetup> characterRoster;
+
+private Dictionary<string, string> profileJsonMap = new Dictionary<string, string>();
+private Dictionary<string, GameObject> prefabMap = new Dictionary<string, GameObject>();
 
     [Header("Spawn Logic")]
-    public GameObject CustomerPrefab; 
     public Transform entrancePoint;
     public Transform exitPoint;
 
@@ -70,7 +83,6 @@ public class CustomerSpawner : MonoBehaviour
     [Header("Queue System")]
     public List<Transform> queueSpots; 
 
-    private Dictionary<string, string> profileJsonMap = new Dictionary<string, string>();
     private List<CustomerGroup> queueGroups = new List<CustomerGroup>();
     private List<TableIsland> tableIslands = new List<TableIsland>(); // NEW: Stores detected tables
 
@@ -84,18 +96,19 @@ public class CustomerSpawner : MonoBehaviour
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
 
-        foreach (var textAsset in allCustomerProfiles)
+        foreach (var setup in characterRoster)
         {
-            if (textAsset == null) continue;
+            if (setup.profileJSON == null || setup.characterPrefab == null) continue;
             try
             {
-                CustomerProfile p = JsonUtility.FromJson<CustomerProfile>(textAsset.text);
+                CustomerProfile p = JsonUtility.FromJson<CustomerProfile>(setup.profileJSON.text);
                 if (p != null && !string.IsNullOrEmpty(p.profileName))
                 {
-                    profileJsonMap[p.profileName] = textAsset.text;
+                    profileJsonMap[p.profileName] = setup.profileJSON.text;
+                    prefabMap[p.profileName] = setup.characterPrefab; // Link the name to the specific prefab!
                 }
             }
-            catch (System.Exception e) { Debug.LogError($"<color=red>[JSON CRASH]</color> '{textAsset.name}': {e.Message}"); }
+            catch (System.Exception e) { Debug.LogError($"<color=red>[JSON CRASH]</color> '{setup.profileJSON.name}': {e.Message}"); }
         }
     }
 
@@ -278,8 +291,8 @@ public class CustomerSpawner : MonoBehaviour
             if (!profileJsonMap.ContainsKey(pName)) continue;
 
             CustomerProfile profile = JsonUtility.FromJson<CustomerProfile>(profileJsonMap[pName]);
-            GameObject pillObj = Instantiate(CustomerPrefab, entrancePoint.position, Quaternion.identity);
-            Customer pill = pillObj.GetComponent<Customer>();
+            GameObject specificPrefab = prefabMap[pName];
+            GameObject pillObj = Instantiate(specificPrefab, entrancePoint.position, Quaternion.identity);            Customer pill = pillObj.GetComponent<Customer>();
             
             pill.profile = profile;
             newGroup.members.Add(pill);

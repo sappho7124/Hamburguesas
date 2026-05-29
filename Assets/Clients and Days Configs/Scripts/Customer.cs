@@ -17,9 +17,11 @@ public class Customer : MonoBehaviour
     private Renderer bodyRenderer;
     private NavMeshAgent agent;
 
+    public CustomerFaceController faceController;
+
     void Awake()
     {
-        bodyRenderer = GetComponentInChildren<Renderer>();
+        if (faceController == null) faceController = GetComponent<CustomerFaceController>();
         agent = GetComponent<NavMeshAgent>(); 
         SetInteractable(false, ""); 
     }
@@ -118,6 +120,27 @@ public class Customer : MonoBehaviour
                 bodyRenderer.material.color = Color.Lerp(Color.green, Color.red, patience);
             }
         }
+
+        
+
+        else if (currentState == State.WaitingInQueue)
+        {
+            if (myGroup != null && faceController != null)
+            {
+                float patience = Mathf.Clamp01(myGroup.waitTimer / myGroup.maxWaitTime);
+                // REPLACE color lerp with Face update
+                faceController.UpdateWaitMood(patience); 
+            }
+        }
+        else if (currentState == State.Seated)
+        {
+            if (targetSeat != null && targetSeat.linkedTableSpot != null && faceController != null)
+            {
+                float patience = OrderManager.Instance.GetWaitTimePercent(targetSeat.linkedTableSpot);
+                // REPLACE color lerp with Face update
+                faceController.UpdateWaitMood(patience);
+            }
+        }
     }
 
     public void PromoteToSeat(SittingSpot seat)
@@ -167,7 +190,12 @@ private void SitDown()
         if (targetSeat != null) targetSeat.FreeSeat(); 
         SetInteractable(false, "");
 
-        // --- FIXED: Strip out the Y-axis so they don't try to float/fly to an elevated door marker ---
+        // If they left because of time (waitTimer is maxed out roughly), they are Really Angry
+        if (faceController != null && faceController.CurrentMood == CustomerFaceController.Mood.Angry)
+        {
+            faceController.SetMood(CustomerFaceController.Mood.ReallyAngry);
+        }
+
         Vector3 groundExit = new Vector3(exitPoint.position.x, transform.position.y, exitPoint.position.z);
         MoveToClosestNavPoint(groundExit);
     }

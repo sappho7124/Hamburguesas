@@ -130,7 +130,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: f0af86f0cc4a36f4d9f8dd3a9c0ed51e, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -489,6 +489,9 @@ Transform:
   - {fileID: 9027923781450921050}
   - {fileID: 1306057810246071152}
   - {fileID: 4461071312672280711}
+  - {fileID: 3905325026565618703}
+  - {fileID: 2389533754816251620}
+  - {fileID: 8221560651678721691}
   - {fileID: 391785065995099810}
   - {fileID: 3155059443867478095}
   - {fileID: 8235101620402872156}
@@ -588,7 +591,7 @@ Transform:
   m_GameObject: {fileID: 3905010190594663978}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.26000002, y: 1.25, z: 0}
+  m_LocalPosition: {x: 0.26000002, y: 1.344, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -761,7 +764,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 32f4136cb4da85f4d8092ae4d7c18e74, type: 2}
+  - {fileID: 2100000, guid: f0af86f0cc4a36f4d9f8dd3a9c0ed51e, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -802,12 +805,15 @@ MonoBehaviour:
   - stockName: Bun
     itemDefinition: {fileID: 11400000, guid: 5eb4ef2803cfd57498cb6f8b1a052034, type: 2}
     prefabToSpawn: {fileID: 6332615666671438539, guid: e44708548ff2ab841a283d6e851f735f, type: 3}
-    maxThreshold: 4
+    maxThreshold: 6
     spawnPointCheckRadius: 0.05
     spawnPoints:
     - {fileID: 9027923781450921050}
     - {fileID: 1306057810246071152}
     - {fileID: 4461071312672280711}
+    - {fileID: 3905325026565618703}
+    - {fileID: 2389533754816251620}
+    - {fileID: 8221560651678721691}
   - stockName: Cheese
     itemDefinition: {fileID: 11400000, guid: ed48a38aa9876474fb7a99a1fee2886c, type: 2}
     prefabToSpawn: {fileID: 3664778327216106332, guid: 97ce8a89c70661d4cab5781d6f79d410, type: 3}
@@ -1040,6 +1046,37 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -0.053, y: 1.2529999, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4617367248454607802}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &5726423234828060091
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8221560651678721691}
+  m_Layer: 0
+  m_Name: Spawn_Bun (5)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8221560651678721691
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5726423234828060091}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.33, y: 1.9169999, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1285,6 +1322,37 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1.1444672, y: 0.010632217, z: 0.5196295}
   m_Center: {x: 0.11563915, y: 0.3750413, z: 0.000000029802322}
+--- !u!1 &7111934569753016884
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3905325026565618703}
+  m_Layer: 0
+  m_Name: Spawn_Bun (3)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3905325026565618703
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7111934569753016884}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.47, y: 1.759, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4617367248454607802}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7191041237358770192
 GameObject:
   m_ObjectHideFlags: 0
@@ -1352,7 +1420,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: f0af86f0cc4a36f4d9f8dd3a9c0ed51e, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1453,7 +1521,38 @@ Transform:
   m_GameObject: {fileID: 7720517454524103457}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.372, y: 1.14, z: 0}
+  m_LocalPosition: {x: 0.457, y: 1.14, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4617367248454607802}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &7778237237555801502
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2389533754816251620}
+  m_Layer: 0
+  m_Name: Spawn_Bun (4)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2389533754816251620
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7778237237555801502}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.218, y: 1.759, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1532,7 +1631,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 32f4136cb4da85f4d8092ae4d7c18e74, type: 2}
+  - {fileID: 2100000, guid: f0af86f0cc4a36f4d9f8dd3a9c0ed51e, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
