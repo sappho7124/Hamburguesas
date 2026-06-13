@@ -18,7 +18,7 @@ public class CustomerFaceController : MonoBehaviour
     public int materialIndex = 0;
 
     [Header("Face Grid Settings")]
-    public Vector2 tiling = new Vector2(0.33f, 0.33f);
+    // Note: Tiling is now configured directly on the Material's "Main Texture" properties!
     public FaceMapping[] faceMappings;
 
     private Material instancedFaceMaterial;
@@ -28,9 +28,8 @@ public class CustomerFaceController : MonoBehaviour
     {
         if (faceRenderer != null)
         {
-            // We instance the material so changing Sara 1's face doesn't change Sara 2's face
+            // Instance the material so changing this character's face doesn't change other characters
             instancedFaceMaterial = faceRenderer.materials[materialIndex];
-            instancedFaceMaterial.mainTextureScale = tiling;
         }
     }
 
@@ -49,7 +48,7 @@ public class CustomerFaceController : MonoBehaviour
         {
             if (mapping.mood == newMood)
             {
-                // Slide the texture to the correct face
+                // Slide the texture to the correct face (Changes Offset without touching Tiling)
                 instancedFaceMaterial.mainTextureOffset = mapping.uvOffset;
                 return;
             }
@@ -65,5 +64,14 @@ public class CustomerFaceController : MonoBehaviour
         if (patiencePercent < 0.5f) SetMood(Mood.Neutral);
         else if (patiencePercent < 0.85f) SetMood(Mood.Angry);
         else SetMood(Mood.ReallyAngry);
+    }
+
+    void OnDestroy()
+    {
+        // Clean up the instanced material to prevent memory leaks!
+        if (instancedFaceMaterial != null)
+        {
+            Destroy(instancedFaceMaterial);
+        }
     }
 }

@@ -1,0 +1,25 @@
+{
+  "overrides": [
+    {
+      "day": 1,
+      "triggerState": "BeforeOrder",
+      "yarnNode": "Sara_Day1_Intro",
+      "fallbackText": "Hola, es mi primer día aquí. Quisiera una hamburguesa simple, por favor.",
+      "moodName": "Happy"
+    },
+    {
+      "day": 1,
+      "triggerState": "AfterOrder",
+      "yarnNode": "Sara_Day1_Chat",
+      "fallbackText": "¡Sigo esperando mi hamburguesa simple! El clima está lindo hoy, ¿verdad?",
+      "moodName": "Neutral"
+    },
+    {
+      "day": 2,
+      "triggerState": "Queue",
+      "yarnNode": "Sara_Day2_QueueComplaining",
+      "fallbackText": "Esta fila no avanza. ¡Deberían contratar a más personas!",
+      "moodName": "Angry"
+    }
+  ]
+}

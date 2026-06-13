@@ -46,7 +46,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _BaseMap:
-        m_Texture: {fileID: 2800000, guid: c68c3ec124b5dbe47aa20af8e6d58809, type: 3}
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _BumpMap:
@@ -128,6 +128,7 @@ Material:
     m_Ints:
     - _DirectionalLight_HighlightMode: 0
     - _DirectionalLight_Use: 0
+    - _FrameIndex: 0
     - _OutlineMode: 0
     - _Outline_UseNormalMap: 0
     - _ToonMaterialVersion: 0
@@ -161,6 +162,8 @@ Material:
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0
+    - _GridColumns: 4
+    - _GridRows: 2
     - _Metallic: 0
     - _OcclusionStrength: 1
     - _OutlineFar: 100

@@ -11,6 +11,22 @@ public class DayConfig {
     public List<string> genericProfiles; 
 }
 [System.Serializable]
+public class DialogueOverride
+{
+    public int day; 
+    public string triggerState; 
+    public string yarnNode; 
+    public string fallbackText; 
+    public string moodName; 
+}
+
+[System.Serializable]
+public class DialogueOverrideConfig
+{
+    public List<DialogueOverride> overrides = new List<DialogueOverride>();
+}
+
+[System.Serializable]
 public class TimeBracket { 
     public float startTime; 
     public float endTime; 
@@ -24,7 +40,29 @@ public class GroupSizeWeight {
 }
 [System.Serializable]
 public class ScheduledNPC { public float time; public List<string> profileNames; [HideInInspector] public bool hasSpawned; }
+// Emotions
+[System.Serializable]
+public class EmotionSet
+{
+    public Sprite closedMouth;
+    public Sprite openMouth;
+}
 
+[System.Serializable]
+public class CharacterFaceSet
+{
+    public EmotionSet neutral;
+    public EmotionSet happy;
+    public EmotionSet angry;
+
+    // Helper to easily grab the right emotion based on the CustomerFaceController.Mood
+    public EmotionSet GetEmotion(CustomerFaceController.Mood mood)
+    {
+        if (mood == CustomerFaceController.Mood.Happy) return happy;
+        if (mood == CustomerFaceController.Mood.Angry || mood == CustomerFaceController.Mood.ReallyAngry || mood == CustomerFaceController.Mood.Puking) return angry;
+        return neutral; // Default/Fallback for Neutral, Scared, etc.
+    }
+}
 // --- GROUP CLASS ---
 public class CustomerGroup
 {
@@ -50,6 +88,8 @@ public class TableIsland
     }
 }
 
+
+
 // --- MANAGER CLASS ---
 public class CustomerSpawner : MonoBehaviour
 {
@@ -65,20 +105,26 @@ public class CustomerSpawner : MonoBehaviour
         public GameObject characterPrefab;
         [Tooltip("The JSON order/profile for this character")]
         public TextAsset profileJSON;
+        [Tooltip("The 6 emotion sprites for UI Dialogue")]
+        public CharacterFaceSet faceSet;
+        [Tooltip("Optional JSON for Dialogue Overrides (Yarn Nodes)")]
+        public TextAsset overridesJSON;
     }
+
 
 [Header("Character Roster")]
 public List<CharacterSetup> characterRoster;
 
 private Dictionary<string, string> profileJsonMap = new Dictionary<string, string>();
 private Dictionary<string, GameObject> prefabMap = new Dictionary<string, GameObject>();
+public Dictionary<string, CharacterFaceSet> faceMap = new Dictionary<string, CharacterFaceSet>();
 
+public Dictionary<string, DialogueOverrideConfig> overridesMap = new Dictionary<string, DialogueOverrideConfig>();
     [Header("Spawn Logic")]
     public Transform entrancePoint;
     public Transform exitPoint;
 
-    [Header("Restaurant Setup")]
-    public List<SittingSpot> allSittingSpots;
+    private List<SittingSpot> allSittingSpots = new List<SittingSpot>();
     
     [Header("Queue System")]
     public List<Transform> queueSpots; 
@@ -105,7 +151,15 @@ private Dictionary<string, GameObject> prefabMap = new Dictionary<string, GameOb
                 if (p != null && !string.IsNullOrEmpty(p.profileName))
                 {
                     profileJsonMap[p.profileName] = setup.profileJSON.text;
-                    prefabMap[p.profileName] = setup.characterPrefab; // Link the name to the specific prefab!
+                    prefabMap[p.profileName] = setup.characterPrefab; 
+                    faceMap[p.profileName] = setup.faceSet;
+
+                    // Parse Overrides if they exist!
+                    if (setup.overridesJSON != null)
+                    {
+                        DialogueOverrideConfig overConfig = JsonUtility.FromJson<DialogueOverrideConfig>(setup.overridesJSON.text);
+                        overridesMap[p.profileName] = overConfig;
+                    }
                 }
             }
             catch (System.Exception e) { Debug.LogError($"<color=red>[JSON CRASH]</color> '{setup.profileJSON.name}': {e.Message}"); }
@@ -114,6 +168,14 @@ private Dictionary<string, GameObject> prefabMap = new Dictionary<string, GameOb
 
     void Start()
     {
+        // AUTO-DETECT ALL SITTING SPOTS IN THE SCENE!
+        allSittingSpots = new List<SittingSpot>(FindObjectsByType<SittingSpot>(FindObjectsSortMode.None));
+        
+        if (allSittingSpots.Count == 0)
+        {
+            Debug.LogWarning("[CustomerSpawner] No Sitting Spots found in the scene! Customers will have nowhere to sit.");
+        }
+
         // Detect and categorize tables as soon as the game starts
         DetectTableIslands();
     }
@@ -286,13 +348,23 @@ private Dictionary<string, GameObject> prefabMap = new Dictionary<string, GameOb
 
         CustomerGroup newGroup = new CustomerGroup();
         
+        // Find the absolute closest point on the NavMesh to the entrance point
+        Vector3 safeSpawnPos = entrancePoint.position;
+        if (UnityEngine.AI.NavMesh.SamplePosition(entrancePoint.position, out UnityEngine.AI.NavMeshHit hit, 5.0f, UnityEngine.AI.NavMesh.AllAreas))
+        {
+            safeSpawnPos = hit.position;
+        }
+        
         foreach (string pName in profileNames)
         {
             if (!profileJsonMap.ContainsKey(pName)) continue;
 
             CustomerProfile profile = JsonUtility.FromJson<CustomerProfile>(profileJsonMap[pName]);
             GameObject specificPrefab = prefabMap[pName];
-            GameObject pillObj = Instantiate(specificPrefab, entrancePoint.position, Quaternion.identity);            Customer pill = pillObj.GetComponent<Customer>();
+            
+            // Spawn at the verified safe NavMesh position
+            GameObject pillObj = Instantiate(specificPrefab, safeSpawnPos, Quaternion.identity);            
+            Customer pill = pillObj.GetComponent<Customer>();
             
             pill.profile = profile;
             newGroup.members.Add(pill);
@@ -429,5 +501,12 @@ private Dictionary<string, GameObject> prefabMap = new Dictionary<string, GameOb
             }
         }
         return null; 
+    }
+
+    //Customer Helper
+    public CharacterFaceSet GetCustomerFaceSet(string profileName)
+    {
+        if (faceMap.ContainsKey(profileName)) return faceMap[profileName];
+        return null;
     }
 }

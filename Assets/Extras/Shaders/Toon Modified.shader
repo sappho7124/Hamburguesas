@@ -1,17 +1,17 @@
 Shader "Modified Toon/Toon 3D as 2D (URP)"{
     Properties{
         [Enum(UnityEngine.Rendering.CullMode)] _Cull ("Cull Mode (Off = Both Sides)", Float) = 2
-        [HideInInspector] _Color ("Script Target Color", Color) = (1,1,1,1) // Fixes C# material.color errors
+        [HideInInspector] _Color ("Script Target Color", Color) = (1,1,1,1) 
         
-        _BaseColor ("Base Color", Color) = (1,1,1,1)
-        _MainTex ("Main Texture", 2D) = "white" {}
+        [MainColor] _BaseColor ("Base Color", Color) = (1,1,1,1)
+        [MainTexture] _MainTex ("Main Texture", 2D) = "white" {}
 
         //Three Colors
         _1st_ShadeColor ("1st Shade Color", Color) = (0.5,0.5,0.5,1)
-        _1st_ShadeMap ("1st Shade Map", 2D) = "white" {}
+        [NoScaleOffset] _1st_ShadeMap ("1st Shade Map", 2D) = "white" {}
         [Toggle(_)] _Use_BaseAs1st ("Use BaseMap as 1st_ShadeMap", Integer ) = 0
         _2nd_ShadeColor ("2nd Shade Color", Color) = (0.1,0.1,0.1,1)
-        _2nd_ShadeMap ("2nd Shade Map", 2D) = "white" {}
+        [NoScaleOffset] _2nd_ShadeMap ("2nd Shade Map", 2D) = "white" {}
         [Toggle(_)] _Use_1stAs2nd ("Use 1st ShadeMap as 2nd ShadeMap", Integer ) = 0
         
         //Start and Feather
@@ -22,11 +22,11 @@ Shader "Modified Toon/Toon 3D as 2D (URP)"{
         
         _2DLightStrength ("2D Light Strength", Range(0,1)) = 1
 
-        _MaskTex("Mask", 2D) = "white" {}
-        _NormalMap("Normal Map", 2D) = "bump" {}
+        [NoScaleOffset] _MaskTex("Mask", 2D) = "white" {}
+        [NoScaleOffset] _NormalMap("Normal Map", 2D) = "bump" {}
         _BumpScale ("Normal Scale", Range(0, 1)) = 1
         
-        [HideInInspector] _White("Tint", Color) = (1,1,1,1) // Added to break SRP batching. Work around for issue with SRP Batching
+        [HideInInspector] _White("Tint", Color) = (1,1,1,1) 
         
         //Directional Light
         _DirectionalLight_Use ("Use Directional Light", Integer) = 0
@@ -37,7 +37,7 @@ Shader "Modified Toon/Toon 3D as 2D (URP)"{
 
         _DirectionalLight_ViewPosition ("Directional Light: View Position", Vector) = (0,0,1,0)
         _HighlightColor ("Highlight Color", Color) = (1,1,1,1)
-        _HighlightTex ("HighColor Map", 2D) = "white" {}
+        [NoScaleOffset] _HighlightTex ("HighColor Map", 2D) = "white" {}
         _DirectionalLight_HighlightMode ("Directional Light: Highlight Mode", Integer) = 0 //0: Hard, 1: Soft
         _DirectionalLight_HighlightStrength ("Directional Light: Highlight Strength", Range(0,1)) = 0.5
         _DirectionalLight_HighlightSize ("Directional Light: Highlight Size", Range(0,1)) = 0.3
@@ -45,53 +45,91 @@ Shader "Modified Toon/Toon 3D as 2D (URP)"{
         //Outline
         _OutlineMode("Outline Mode", Integer) = 0
         _OutlineWidth ("Outline Width", Float ) = 5
-        _OutlineWidthMap ("Outline Width Map", 2D) = "white" {}
+        [NoScaleOffset] _OutlineWidthMap ("Outline Width Map", 2D) = "white" {}
         _OutlineColor ("Outline Color", Color) = (0.1,0.1,0.1,1)
-        _OutlineTex ("Outline Tex", 2D) = "white" {}
+        [NoScaleOffset] _OutlineTex ("Outline Tex", 2D) = "white" {}
         _Outline_BaseColorBlend ("Blend Base Color to Outline", Range(0,1) ) = 0.5
         _Outline_LightColorBlend ("Blend Light Color to Outline", Range(0,1) ) = 0.5
         _OutlineOffsetZ ("Outline Z Offset", Float) = 0.75
         _OutlineNear ("Outline Near", Float ) = 0.5
         _OutlineFar ("Outline Far", Float ) = 100
         _Outline_UseNormalMap ("Outline: Use Outline Normal Map", Integer ) = 0
-        _Outline_NormalMap ("Outline Normal Map", 2D) = "bump" {}
+        [NoScaleOffset] _Outline_NormalMap ("Outline Normal Map", 2D) = "bump" {}
         [HideInInspector] _ToonMaterialVersion ("Toon Material Version", Integer ) = 0
-        
     }
+
+    // =================================================================================================
+    // MACRO DE CBUFFER COMPARTIDO (Para que el SRP Batcher acepte el Tiling en tiempo real en todos los pases)
+    // =================================================================================================
+    HLSLINCLUDE
+        #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+
+        CBUFFER_START(UnityPerMaterial)
+            half4 _Color;
+            half4 _BaseColor;
+            float _BumpScale;
+            float4 _1st_ShadeColor;
+            int _Use_BaseAs1st;
+            float4 _2nd_ShadeColor;
+            int _Use_1stAs2nd;
+            float _BaseTo1st_ShadeStart;
+            float _BaseTo1st_ShadeFeather;
+            float _1stTo2nd_ShadeStart;
+            float _1stTo2nd_ShadeFeather;
+            float _2DLightStrength;
+            int _DirectionalLight_Use;
+            float3 _DirectionalLight_Direction;
+            float4 _DirectionalLight_Color;
+            float _DirectionalLight_Intensity;
+            float _DirectionalLight_DiffuseStrength;
+            float3 _DirectionalLight_ViewPosition;
+            float4 _HighlightColor;
+            int _DirectionalLight_HighlightMode;
+            float _DirectionalLight_HighlightStrength;
+            float _DirectionalLight_HighlightSize;
+            float _OutlineOffsetZ;
+            float _OutlineWidth; 
+            float _OutlineNear; 
+            float _OutlineFar;
+            float4 _OutlineColor;
+            float _Outline_BaseColorBlend;
+            float _Outline_LightColorBlend;
+            int _Outline_UseNormalMap;
+
+            // ESTA ES LA VARIABLE QUE TU SCRIPT MODIFICA. AHORA ESTÁ DISPONIBLE GLOBALMENTE.
+            float4 _MainTex_ST;
+        CBUFFER_END
+    ENDHLSL
 
     SubShader{
         PackageRequirements {
-             "com.unity.render-pipelines.universal": "17.3.0" //Unity 6.3+
+             "com.unity.render-pipelines.universal": "17.3.0" 
         }
         Tags{
             "Queue" = "Transparent" "RenderType" = "Transparent" "RenderPipeline" = "UniversalPipeline"
         }
 
         Blend SrcAlpha OneMinusSrcAlpha, One OneMinusSrcAlpha
-        Cull [_Cull] // Now references the property at the top to toggle rendering faces
+        Cull [_Cull] 
         ZWrite On
 
         Stencil{
-            Ref 128 // Put this in the last bit of our stencil value for maximum compatibility with sprite mask
+            Ref 128 
             Comp always
             Pass replace
         }
 
+        // ====================================================================================
+        // PASS UNIVERSAL 2D (EL PASE PRINCIPAL)
+        // ====================================================================================
         Pass{
-            Tags{
-                "LightMode" = "Universal2D"
-            }
+            Tags{ "LightMode" = "Universal2D" }
 
             HLSLPROGRAM
             #include "Packages/com.unity.render-pipelines.universal/Shaders/2D/Include/Core2D.hlsl"
-
             #pragma vertex ToonVertex
             #pragma fragment ToonFragment
-
-            //USE_SHAPE_LIGHT keywords
             #include_with_pragmas "Packages/com.unity.render-pipelines.universal/Shaders/2D/Include/ShapeLightShared.hlsl"
-
-            // GPU Instancing
             #pragma multi_compile_instancing
             #pragma multi_compile _ DEBUG_DISPLAY
 
@@ -115,70 +153,19 @@ Shader "Modified Toon/Toon 3D as 2D (URP)"{
 
             float4 _White;
             
-            TEXTURE2D(_MainTex);
-            SAMPLER(sampler_MainTex);
-            UNITY_TEXTURE_STREAMING_DEBUG_VARS_FOR_TEX(_MainTex);
-
-            TEXTURE2D(_MaskTex);
-            SAMPLER(sampler_MaskTex);
-
-            TEXTURE2D(_NormalMap);
-            SAMPLER(sampler_NormalMap);
-            
-
-            CBUFFER_START(UnityPerMaterial)
-                half4 _Color;
-                half4 _BaseColor;
-                float _BumpScale;
-
-                //Three colors
-                float4 _1st_ShadeColor;
-                int _Use_BaseAs1st;
-                float4 _2nd_ShadeColor;
-                int _Use_1stAs2nd;
-
-                //Start and Feather
-                float _BaseTo1st_ShadeStart;
-                float _BaseTo1st_ShadeFeather;
-                float _1stTo2nd_ShadeStart;
-                float _1stTo2nd_ShadeFeather;
-            
-                float _2DLightStrength;
-            
-                int _DirectionalLight_Use;
-                float3 _DirectionalLight_Direction;
-                float4 _DirectionalLight_Color;
-                float _DirectionalLight_Intensity;
-                float _DirectionalLight_DiffuseStrength;
-
-                float3 _DirectionalLight_ViewPosition;
-                float4 _HighlightColor;
-                int _DirectionalLight_HighlightMode;
-                float _DirectionalLight_HighlightStrength;
-                float _DirectionalLight_HighlightSize;
-
-            CBUFFER_END
-
-//----------------------------------------------------------------------------------------------------------------------            
-            float4 _MainTex_ST;
-
+            TEXTURE2D(_MainTex);          SAMPLER(sampler_MainTex);
+            TEXTURE2D(_MaskTex);          SAMPLER(sampler_MaskTex);
+            TEXTURE2D(_NormalMap);        SAMPLER(sampler_NormalMap);
             TEXTURE2D(_1st_ShadeMap);
             TEXTURE2D(_2nd_ShadeMap);
-            
-            TEXTURE2D(_HighlightTex);
-            SAMPLER(sampler_HighlightTex);
-            float4 _HighlightTex_ST;
+            TEXTURE2D(_HighlightTex);     SAMPLER(sampler_HighlightTex);
 
-            // FIX: Absolute package paths so they work anywhere in your project
             #include "Packages/com.unity.toonshader/Runtime/Shaders/URP/ObjectTransform.hlsl"
             #include "Packages/com.unity.toonshader/Runtime/Shaders/URP/ShapeLight2D.hlsl"
             #include "Packages/com.unity.toonshader/Runtime/Shaders/UTSLighting.hlsl"
-
-            //_HDREmulationScale declaration
             #include "Packages/com.unity.render-pipelines.universal/Shaders/2D/Include/ShapeLightVariables.hlsl" 
             
             Varyings ToonVertex(Attributes input) {
-
                 Varyings o = (Varyings) 0;
                 UNITY_SETUP_INSTANCE_ID(input);
                 UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
@@ -186,7 +173,9 @@ Shader "Modified Toon/Toon 3D as 2D (URP)"{
                 o.positionCS = TransformObjectToHClip(input.positionOS);
                 const float3 normalWS = TransformObjectToWorldDir(input.normal);
     
-                o.uv = input.uv;
+                // ¡AQUI SE APLICA EL TILING Y OFFSET DE TU SCRIPT PARA TODO EL SHADER!
+                o.uv = TRANSFORM_TEX(input.uv, _MainTex); 
+
                 o.lightingUV = half2(ComputeScreenPos(o.positionCS / o.positionCS.w).xy);
                 o.normalWS = normalWS;
 
@@ -198,40 +187,28 @@ Shader "Modified Toon/Toon 3D as 2D (URP)"{
             }
 
             half4 CombinedShapeLightAndToon(ShapeLightResult shapeLightResult, SurfaceData2D surfaceData,
-                in float2 uv,
-                in float3 tangentWS, in float3 bitangentWS, in float3 normalWS, in float3 positionWS)
+                in float2 uv, in float3 tangentWS, in float3 bitangentWS, in float3 normalWS, in float3 positionWS)
             {
                 const half alpha = surfaceData.alpha;
-                
                 float3x3 tangentTransform = float3x3( tangentWS, bitangentWS, normalWS);
                 const float3 normalTS = surfaceData.normalTS;
-                float3 perturbedNormalWS = normalize(mul( normalTS, tangentTransform )); // Perturbed normals
+                float3 perturbedNormalWS = normalize(mul( normalTS, tangentTransform )); 
 
                 half4 light2dMod = shapeLightResult.mod; 
                 half4 light2dAdd = shapeLightResult.add; 
 
-                const float light2dIntensity = max(
-                    light2dMod.r * light2dAdd.r, max(
-                        light2dMod.g + light2dAdd.g,
-                        light2dMod.b + light2dAdd.b));
+                const float light2dIntensity = max(light2dMod.r * light2dAdd.r, max(light2dMod.g + light2dAdd.g, light2dMod.b + light2dAdd.b));
                 
                 const half4 mainTex = half4(surfaceData.albedo, alpha);
-                
-                // Incorporate the new _Color property so scripts tinting the item work natively
                 const float3 baseAlbedo = _BaseColor.rgb * _Color.rgb * mainTex.rgb;
 
-                //1st and 2nd Shade
-                const float4 firstShadeTex = lerp(
-                    SAMPLE_TEXTURE2D(_1st_ShadeMap, sampler_MainTex, TRANSFORM_TEX(uv, _MainTex)), mainTex,
-                    _Use_BaseAs1st);
+                // Todas las sombras e iluminaciones usan la UV compensada por tu script
+                const float4 firstShadeTex = lerp(SAMPLE_TEXTURE2D(_1st_ShadeMap, sampler_MainTex, uv), mainTex, _Use_BaseAs1st);
                 const float3 firstShadeAlbedo = _1st_ShadeColor.rgb * firstShadeTex.rgb; 
 
-                const float4 secondShadeTex = lerp(
-                    SAMPLE_TEXTURE2D(_2nd_ShadeMap, sampler_MainTex, TRANSFORM_TEX(uv, _MainTex)), firstShadeTex,
-                    _Use_1stAs2nd);
+                const float4 secondShadeTex = lerp(SAMPLE_TEXTURE2D(_2nd_ShadeMap, sampler_MainTex, uv), firstShadeTex, _Use_1stAs2nd);
                 const float3 secondShadeAlbedo = _2nd_ShadeColor.rgb * secondShadeTex.rgb;
                 
-                //perform 3 color linear shading with 2D colors and lights  
                 const float3 color2D = ThreeColorsLinearShading(
                     (baseAlbedo * light2dMod.rgb + light2dAdd.rgb).rgb,
                     (firstShadeAlbedo * light2dMod.rgb + light2dAdd.rgb).rgb,
@@ -239,9 +216,6 @@ Shader "Modified Toon/Toon 3D as 2D (URP)"{
                     _BaseTo1st_ShadeStart, _BaseTo1st_ShadeFeather,
                     _1stTo2nd_ShadeStart, _1stTo2nd_ShadeFeather, light2dIntensity);
                 
-
-
-                //Toon Directional Light
                 const float3 directionalLightColorAndUse = _DirectionalLight_Color.rgb * _DirectionalLight_Use; 
                 const float3 directionalLightDirection = normalize(-_DirectionalLight_Direction);
                 const float dotNL = 0.5 * dot( perturbedNormalWS, directionalLightDirection) + 0.5;
@@ -251,43 +225,35 @@ Shader "Modified Toon/Toon 3D as 2D (URP)"{
                     firstShadeAlbedo * directionalLightColorAndUse,
                     secondShadeAlbedo * directionalLightColorAndUse,
                     _BaseTo1st_ShadeStart, _BaseTo1st_ShadeFeather,
-                    _1stTo2nd_ShadeStart, _1stTo2nd_ShadeFeather,
-                    dotNL);
+                    _1stTo2nd_ShadeStart, _1stTo2nd_ShadeFeather, dotNL);
 
-                const float3 finalDiffuseColor = color2D * _2DLightStrength +
-                    toonDiffuseColor * _DirectionalLight_DiffuseStrength;
+                const float3 finalDiffuseColor = color2D * _2DLightStrength + toonDiffuseColor * _DirectionalLight_DiffuseStrength;
                 
-                //Highlight
                 const float3 viewDirection = normalize(_DirectionalLight_ViewPosition - positionWS);
                 const float3 halfDirection = normalize(viewDirection + directionalLightDirection);
                 float dotHN_01 = 0.5 * dot(halfDirection,perturbedNormalWS) + 0.5;
 
-                const float highlight =
-                    lerp( (1.0 - step(dotHN_01,(1.0 - pow(abs(_DirectionalLight_HighlightSize),5)))),
-                        pow(abs(dotHN_01),exp2(lerp(11,1,_DirectionalLight_HighlightSize))),
-                        _DirectionalLight_HighlightMode );
+                const float highlight = lerp( (1.0 - step(dotHN_01,(1.0 - pow(abs(_DirectionalLight_HighlightSize),5)))), pow(abs(dotHN_01),exp2(lerp(11,1,_DirectionalLight_HighlightSize))), _DirectionalLight_HighlightMode );
                 
-                
-                const float4 highlightTex = SAMPLE_TEXTURE2D(_HighlightTex, sampler_HighlightTex, TRANSFORM_TEX(uv, _HighlightTex));
+                const float4 highlightTex = SAMPLE_TEXTURE2D(_HighlightTex, sampler_HighlightTex, uv);
                 const float3 highlightAlbedo = highlightTex.rgb * _HighlightColor.rgb; 
                 const float3 highlightFactor = directionalLightColorAndUse * _DirectionalLight_HighlightStrength; 
                 
                 const float3 finalHighlightColor = highlightAlbedo * highlightFactor * highlight;
-                
                 const float3 finalColor = _HDREmulationScale * (finalDiffuseColor + finalHighlightColor);
 
-                // Allows Script Transparency Fade if code does material.color = new Color(r,g,b,alpha);
                 return float4(finalColor, alpha * _BaseColor.a * _Color.a);
             }
 
-            
             half4 ToonFragment(Varyings input) : SV_Target {
-                const half4 main = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, input.uv);
-                const half4 mask = SAMPLE_TEXTURE2D(_MaskTex, sampler_MaskTex, input.uv);
-                const half3 normalTS = UnpackNormalScale(SAMPLE_TEXTURE2D(_NormalMap, sampler_NormalMap, input.uv), _BumpScale);
+                // UVs listas para usarse, heredadas del vertex shader
+                float2 mainUV = input.uv; 
+                
+                const half4 main = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, mainUV);
+                const half4 mask = SAMPLE_TEXTURE2D(_MaskTex, sampler_MaskTex, mainUV);
+                const half3 normalTS = UnpackNormalScale(SAMPLE_TEXTURE2D(_NormalMap, sampler_NormalMap, mainUV), _BumpScale);
 
                 SurfaceData2D surfaceData;
-  
                 const float3 normalWS = normalize(input.normalWS);
                 const float3 tangentWS = normalize(input.tangentWS.xyz);
                 const float3 bitangentWS = normalize(cross(normalWS, tangentWS) * input.tangentWS.w);
@@ -296,59 +262,31 @@ Shader "Modified Toon/Toon 3D as 2D (URP)"{
                 
                 InitializeSurfaceData(main.rgb, alpha, mask, normalTS, surfaceData);
 
-                #if defined(DEBUG_DISPLAY)
-                SETUP_DEBUG_TEXTURE_DATA_2D_NO_TS(inputData, input.positionWS, input.positionCS, _MainTex);
-                surfaceData.normalWS = input.normalWS;
-                #endif
-
-                if (alpha == 0.0)
-                    discard;
+                if (alpha == 0.0) discard;
                 
                 ShapeLightResult shapeLightResult = CombinedShapeLight(mask, input.lightingUV);
-
                 
-                return CombinedShapeLightAndToon(shapeLightResult, surfaceData, input.uv,
-                    tangentWS, bitangentWS, normalWS, input.positionWS);
+                return CombinedShapeLightAndToon(shapeLightResult, surfaceData, mainUV, tangentWS, bitangentWS, normalWS, input.positionWS);
             }
-
-
             ENDHLSL
         }
 
-//----------------------------------------------------------------------------------------------------------------------
+        // ====================================================================================
+        // PASS OUTLINE (CONTORNO)
+        // ====================================================================================
         Pass {
             Name "Outline"
-            Tags {
-                "LightMode" = "SRPDefaultUnlit"
-            }
-//            Cull [_SRPDefaultUnlitColMode]
-//            ColorMask [_SPRDefaultUnlitColorMask]
+            Tags { "LightMode" = "SRPDefaultUnlit" }
             Blend SrcAlpha OneMinusSrcAlpha
-//            Stencil
-//            {
-//                Ref[_StencilNo]
-//                Comp[_StencilComp]
-//                Pass[_StencilOpPass]
-//                Fail[_StencilOpFail]
-//
-//            }
 
-            
             HLSLPROGRAM
             #pragma target 3.0
             #pragma vertex OutlineVertex
             #pragma fragment OutlineFragment
 
             #pragma multi_compile TOON_OUTLINE_NORMAL TOON_OUTLINE_POS
-            // Outline is implemented in UniversalToonOutline.hlsl.
-            // #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
-            // #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/Shaders/2D/Include/Core2D.hlsl"
-
-            //USE_SHAPE_LIGHT keywords
             #include_with_pragmas "Packages/com.unity.render-pipelines.universal/Shaders/2D/Include/ShapeLightShared.hlsl"
-
-            //_HDREmulationScale declaration
             #include "Packages/com.unity.render-pipelines.universal/Shaders/2D/Include/ShapeLightVariables.hlsl" 
             
             struct OutlineVertexInput {
@@ -366,113 +304,68 @@ Shader "Modified Toon/Toon 3D as 2D (URP)"{
                 UNITY_VERTEX_OUTPUT_STEREO
             };            
 
-            TEXTURE2D(_MainTex);
-            SAMPLER(sampler_MainTex);
-            float4 _MainTex_ST;
+            TEXTURE2D(_MainTex);            SAMPLER(sampler_MainTex);
+            TEXTURE2D(_MaskTex);            SAMPLER(sampler_MaskTex);
+            TEXTURE2D(_OutlineWidthMap);    SAMPLER(sampler_OutlineWidthMap);
+            TEXTURE2D(_OutlineTex);         SAMPLER(sampler_OutlineTex);
+            TEXTURE2D(_Outline_NormalMap);  SAMPLER(sampler_Outline_NormalMap);
 
-            TEXTURE2D(_MaskTex);
-            SAMPLER(sampler_MaskTex);
-            
-            TEXTURE2D(_OutlineWidthMap);
-            SAMPLER(sampler_OutlineWidthMap);
-            float4 _OutlineWidthMap_ST;
-
-            TEXTURE2D(_OutlineTex);
-            SAMPLER(sampler_OutlineTex);
-            float4 _OutlineTex_ST;
-
-            TEXTURE2D(_Outline_NormalMap);
-            SAMPLER(sampler_Outline_NormalMap);
-            float4 _Outline_NormalMap_ST;
-            int    _Outline_UseNormalMap;
-
-            CBUFFER_START(UnityPerMaterial)
-
-                float _2DLightStrength;
-                int _DirectionalLight_Use;
-                float4 _DirectionalLight_Color;
-                float _DirectionalLight_DiffuseStrength;
-            
-                half4 _Color;
-                half4 _BaseColor;
-                float _OutlineOffsetZ;
-                float _OutlineWidth; 
-                float _OutlineNear; 
-                float _OutlineFar;
-                float4 _OutlineColor;
-                float _Outline_BaseColorBlend;
-                float _Outline_LightColorBlend;
-                
-            CBUFFER_END
-
-            // FIX: Absolute package paths for Outline pass as well
             #include "Packages/com.unity.toonshader/Runtime/Shaders/URP/ObjectTransform.hlsl"
             #include "Packages/com.unity.toonshader/Runtime/Shaders/URP/ShapeLight2D.hlsl"
-            
+
             OutlineVertexOutput OutlineVertex(OutlineVertexInput v) {
                 OutlineVertexOutput o = (OutlineVertexOutput) 0;
                 UNITY_SETUP_INSTANCE_ID(input);
                 UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
 
-                const float2 uv = v.texcoord0;
-                o.uv0 = v.texcoord0;
+                // El outline obedece tu script de Tiling/Offset también
+                o.uv0 = TRANSFORM_TEX(v.texcoord0, _MainTex);
                 
                 const float4 objPos = mul (GetObjectToWorldMatrix(), float4(0,0,0,1) );
-
-                const float outlineWidthAlbedo = SAMPLE_TEXTURE2D_LOD(_OutlineWidthMap, sampler_OutlineWidthMap,
-                    TRANSFORM_TEX(uv, _OutlineWidthMap),0).r;
+                const float outlineWidthAlbedo = SAMPLE_TEXTURE2D_LOD(_OutlineWidthMap, sampler_OutlineWidthMap, o.uv0, 0).r;
                 const float outlineWidth = _OutlineWidth * 0.001 * outlineWidthAlbedo;
     
                 float finalOutlineWidth = outlineWidth * smoothstep( _OutlineFar, _OutlineNear, distance(objPos.rgb,_WorldSpaceCameraPos) );
+				float3 newPos; 
 
-				float3 newPos;
 #ifdef TOON_OUTLINE_NORMAL
-
-                //TBN
                 const float3 normalDir = UnityObjectToWorldNormal(v.normal);
                 const float3 tangentDir = normalize( mul( GetObjectToWorldMatrix(), float4( v.tangent.xyz, 0.0 ) ).xyz );
                 const float3 bitangentDir = normalize(cross(normalDir, tangentDir) * v.tangent.w);
                 float3x3 tangentTransform = float3x3(tangentDir, bitangentDir, normalDir);
 
-                //Outline normal map
-                const float4 customNormalMap = SAMPLE_TEXTURE2D_LOD(
-                    _Outline_NormalMap, sampler_Outline_NormalMap, TRANSFORM_TEX(uv, _Outline_NormalMap),0);
+                const float4 customNormalMap = SAMPLE_TEXTURE2D_LOD(_Outline_NormalMap, sampler_Outline_NormalMap, o.uv0, 0);
                 const float3 normalTS = UnpackNormal(customNormalMap);
                 const float3 outlineNormalMapWS = normalize(mul(normalTS.xyz, tangentTransform));
-                
                 const float3 outlineDir = lerp(v.normal, outlineNormalMapWS, _Outline_UseNormalMap); 
                 
-                newPos = float4(v.vertex.xyz + outlineDir * finalOutlineWidth,1);
+                newPos = v.vertex.xyz + outlineDir * finalOutlineWidth;
                 o.pos = TransformObjectToHClip(newPos);
 #elif TOON_OUTLINE_POS
                 const float3 normalizedPos = normalize(v.vertex.xyz);
                 const float signPN = sign(dot(normalizedPos,normalize(v.normal)));
-                o.pos = UnityObjectToClipPos(float4(v.vertex.xyz + signPN * normalizedPos * finalOutlineWidth, 1));
+                
+                newPos = v.vertex.xyz + signPN * normalizedPos * finalOutlineWidth;
+                o.pos = TransformObjectToHClip(newPos);
 #endif
                 const float scaledOutlineOffsetZ = _OutlineOffsetZ * -0.01;
                 o.pos.z = o.pos.z + scaledOutlineOffsetZ;
-                
                 o.lightingUV = half2(ComputeScreenPos(o.pos / o.pos.w).xy);
                 return o;
             }
 
-            
             half4 OutlineFragment(OutlineVertexOutput i) : SV_Target {
-
                 const half4 mask = SAMPLE_TEXTURE2D(_MaskTex, sampler_MaskTex, i.uv0);
                 const half2 lightingUV = i.lightingUV;
                 
-                const float2 Set_UV0 = i.uv0;
-                float4 _MainTex_var = SAMPLE_TEXTURE2D(_MainTex,sampler_MainTex, TRANSFORM_TEX(Set_UV0, _MainTex));
+                float4 _MainTex_var = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv0);
                 float3 Set_BaseColor = _BaseColor.rgb * _Color.rgb * _MainTex_var.rgb;
                 
-                const float3 outlineTex = tex2D(sampler_OutlineTex,TRANSFORM_TEX(Set_UV0, _OutlineTex)).rgb;
+                const float3 outlineTex = SAMPLE_TEXTURE2D(_OutlineTex, sampler_OutlineTex, i.uv0).rgb;
                 const float3 outlineAlbedo = outlineTex * _OutlineColor.rgb;
 
-                //Blend with baseColor
                 const float3 outlineBaseBlend = lerp(outlineAlbedo, outlineAlbedo * Set_BaseColor, _Outline_BaseColorBlend);
 
-                //Blend with light
                 ShapeLightResult shapeLightResult = CombinedShapeLight(mask, lightingUV);
                 const float3 color2D = (outlineBaseBlend.rgb * shapeLightResult.mod.rgb) + shapeLightResult.add.rgb;
                 const float3 colorToon = outlineBaseBlend.rgb * _DirectionalLight_Color.rgb * _DirectionalLight_Use;
@@ -483,91 +376,63 @@ Shader "Modified Toon/Toon 3D as 2D (URP)"{
                 
                 return float4(_HDREmulationScale * outlineBaseAndLightBlend,1.0);
             }
-            
-            
             ENDHLSL
         }
 
-
-//----------------------------------------------------------------------------------------------------------------------
+        // ====================================================================================
+        // PASS NORMALS RENDERING (Para las luces 2D integradas de Unity)
+        // ====================================================================================
         Pass{
-            Tags{
-                "LightMode" = "NormalsRendering"
-            }
-
+            Tags{ "LightMode" = "NormalsRendering" }
             HLSLPROGRAM
             #include "Packages/com.unity.render-pipelines.universal/Shaders/2D/Include/Core2D.hlsl"
-
-            #pragma vertex NormalsRenderingVertex
+            #pragma vertex CustomNormalsVertex
             #pragma fragment NormalsRenderingFragment
-
-            // GPU Instancing
             #pragma multi_compile_instancing
-
-            struct Attributes {
-                COMMON_2D_NORMALS_INPUTS
-            };
-
-            struct Varyings {
-                COMMON_2D_NORMALS_OUTPUTS
-            };
-
+            
+            struct Attributes { COMMON_2D_NORMALS_INPUTS };
+            struct Varyings { COMMON_2D_NORMALS_OUTPUTS };
             float4 _White;
-
+            
             #include "Packages/com.unity.render-pipelines.universal/Shaders/2D/Include/Normals2DCommon.hlsl"
-
-            Varyings NormalsRenderingVertex(Attributes input) {
-                return CommonNormalsVertex(input);
+            
+            // Función Wrapper para inyectarle el Offset de tu Script a las normales
+            Varyings CustomNormalsVertex(Attributes input) { 
+                Varyings output = CommonNormalsVertex(input); 
+                output.uv = TRANSFORM_TEX(input.uv, _MainTex); 
+                return output; 
             }
-
-            half4 NormalsRenderingFragment(Varyings input) : SV_Target {
-                return CommonNormalsFragment(input, _White);
-            }
+            
+            half4 NormalsRenderingFragment(Varyings input) : SV_Target { return CommonNormalsFragment(input, _White); }
             ENDHLSL
         }
 
+        // ====================================================================================
+        // PASS UNLIT (Respaldo)
+        // ====================================================================================
         Pass{
-            Tags{
-                "LightMode" = "UniversalForward" "Queue"="Transparent" "RenderType"="Transparent"
-            }
-
+            Tags{ "LightMode" = "UniversalForward" "Queue"="Transparent" "RenderType"="Transparent" }
             HLSLPROGRAM
             #include "Packages/com.unity.render-pipelines.universal/Shaders/2D/Include/Core2D.hlsl"
-
-            #pragma vertex UnlitVertex
+            #pragma vertex CustomUnlitVertex
             #pragma fragment UnlitFragment
-
-            // GPU Instancing
             #pragma multi_compile_instancing
-
-            struct Attributes {
-                COMMON_2D_INPUTS
-            };
-
-            struct Varyings {
-                COMMON_2D_OUTPUTS
-            };
-
+            
+            struct Attributes { COMMON_2D_INPUTS };
+            struct Varyings { COMMON_2D_OUTPUTS };
             float4 _White;
-
+            
             #include "Packages/com.unity.render-pipelines.universal/Shaders/2D/Include/2DCommon.hlsl"
-
-            Varyings UnlitVertex(Attributes input) {
-                return CommonUnlitVertex(input);
+            
+            // Función Wrapper para inyectarle el Offset de tu Script al respaldo visual
+            Varyings CustomUnlitVertex(Attributes input) { 
+                Varyings output = CommonUnlitVertex(input); 
+                output.uv = TRANSFORM_TEX(input.uv, _MainTex);
+                return output; 
             }
-
-            half4 UnlitFragment(Varyings input) : SV_Target {
-                return CommonUnlitFragment(input, _White);
-            }
+            
+            half4 UnlitFragment(Varyings input) : SV_Target { return CommonUnlitFragment(input, _White); }
             ENDHLSL
         }
-        
     }
-
-    //CustomEditor "UnityEditor.Rendering.Toon.UnityToon3Das2DGUI"
-
 }
-
-
-//[Note-sin: 2025-11-24] Texture that only needs one channel at the moment
-//1. _OutlineWidthMap

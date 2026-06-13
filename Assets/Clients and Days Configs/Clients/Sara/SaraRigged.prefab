@@ -265,6 +265,8 @@ MonoBehaviour:
       dirtyPlate: "\xA1Qu\xE9 asco, este plato est\xE1 sucio!"
       walkout: "\xA1Me voy!"
       customReactions: []
+  overrides:
+    overrides: []
   faceController: {fileID: 8809017651462803271}
 --- !u!114 &5712467054744853387
 MonoBehaviour:
@@ -278,15 +280,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e0e2e380e72847848af98ef1771d53f6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HighlightableObject
-  objectName: 
+  objectName: Hablar
   interactionVerb: 
-  uiAnchor: {fileID: 0}
+  uiAnchor: {fileID: 2204208505055679440}
   uiWorldOffset: {x: 0, y: 0, z: 0}
   slideInDistance: 0.5
   slideOutDistance: 0.2
   thicknessMultiplier: 1.2
   outlineTarget: {fileID: 0}
-  hoverColor: {r: 1, g: 1, b: 1, a: 1}
+  hoverColor: {r: 0, g: 0, b: 0, a: 1}
   maxOutlineWidth: 10
   animSpeed: 15
   baseNoiseAmount: 7
@@ -306,7 +308,29 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::InteractableObject
   manageUI: 0
   hideLockedState: 0
-  interactions: []
+  interactions:
+  - displayVerb: 
+    inputActionName: 
+    isFallbackAction: 1
+    isMainLock: 0
+    validItems: []
+    validColor: {r: 0, g: 0, b: 0, a: 0}
+    lockedColor: {r: 0, g: 0, b: 0, a: 0}
+    OnInteract:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 6659128706730125392}
+          m_TargetAssemblyTypeName: Customer, Assembly-CSharp
+          m_MethodName: InteractWithCustomer
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
   lockedVerb: Requires Tool
 --- !u!1 &1065612388704411504
 GameObject:

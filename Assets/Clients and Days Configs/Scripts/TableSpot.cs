@@ -56,9 +56,9 @@ public class TableSpot : MonoBehaviour
 
                     if (OrderManager.Instance.TryServeFood(this, plate, out moneyToSpawn, out customerDialogue, out reactionMood))
                     {
-                        RestaurantUIManager.Instance.ShowDialogue(OrderManager.Instance.GetActiveProfileName(this), customerDialogue);
+                        // FIXED: Pass reactionMood to the UI!
+                        RestaurantUIManager.Instance.ShowDialogue(OrderManager.Instance.GetActiveProfileName(this), customerDialogue, reactionMood);
                         
-                        // Apply the mood to the customer!
                         if (linkedSittingSpot.currentCustomer != null)
                             linkedSittingSpot.currentCustomer.faceController.SetMood(reactionMood);
 
@@ -66,9 +66,9 @@ public class TableSpot : MonoBehaviour
                     }
                     else
                     {
-                        RestaurantUIManager.Instance.ShowDialogue(OrderManager.Instance.GetActiveProfileName(this), customerDialogue);
+                        // FIXED: Pass reactionMood to the UI!
+                        RestaurantUIManager.Instance.ShowDialogue(OrderManager.Instance.GetActiveProfileName(this), customerDialogue, reactionMood);
                         
-                        // Apply the angry/rejected mood to the customer!
                         if (linkedSittingSpot.currentCustomer != null)
                             linkedSittingSpot.currentCustomer.faceController.SetMood(reactionMood);
 
