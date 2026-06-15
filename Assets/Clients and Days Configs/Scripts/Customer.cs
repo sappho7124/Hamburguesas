@@ -4,6 +4,7 @@ using System;
 
 public class Customer : MonoBehaviour
 {
+    private Animator animator;
     [HideInInspector] public CustomerProfile profile;
     [HideInInspector] public DialogueOverrideConfig overrides;
 
@@ -26,6 +27,13 @@ public class Customer : MonoBehaviour
         if (faceController == null) faceController = GetComponent<CustomerFaceController>();
         agent = GetComponent<NavMeshAgent>(); 
         SetInteractable(false, ""); 
+
+        if (faceController == null) faceController = GetComponent<CustomerFaceController>();
+
+        agent = GetComponent<NavMeshAgent>();
+        animator = GetComponent<Animator>();
+
+        SetInteractable(false, "");
     }
 
     private void SetInteractable(bool active, string verb)
@@ -74,6 +82,20 @@ public class Customer : MonoBehaviour
         SetInteractable(false, "");
         seat.ReserveSeat(this); 
         MoveToClosestNavPoint(targetSeat.transform.position); 
+    }
+
+    private void UpdateAnimations()
+    {
+        bool walking =
+            currentState == State.MovingToSeat ||
+            currentState == State.MovingToQueue ||
+            currentState == State.Leaving;
+
+        bool sitting =
+            currentState == State.Seated;
+
+        animator.SetBool("Walking", walking);
+        animator.SetBool("Sitting", sitting);
     }
 
     public void InitializeQueue(CustomerProfile p, Transform queueSpot, Transform exit, CustomerGroup group)
@@ -143,6 +165,7 @@ public class Customer : MonoBehaviour
                 faceController.UpdateWaitMood(patience);
             }
         }
+        UpdateAnimations();
     }
 
     public void PromoteToSeat(SittingSpot seat)

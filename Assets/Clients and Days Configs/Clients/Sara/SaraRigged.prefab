@@ -171,6 +171,7 @@ GameObject:
   - component: {fileID: 6659128706730125392}
   - component: {fileID: 5712467054744853387}
   - component: {fileID: 2744993044425528282}
+  - component: {fileID: 2259310153347713928}
   m_Layer: 6
   m_Name: SaraRigged
   m_TagString: Untagged
@@ -188,7 +189,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 4.7586374, y: 0.00000028627124, z: 3.3584256}
-  m_LocalScale: {x: 0.4, y: 0.4, z: 0.4}
+  m_LocalScale: {x: 0.3, y: 0.3, z: 0.3}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 8254183527836919207}
@@ -205,7 +206,7 @@ NavMeshAgent:
   m_Enabled: 1
   m_AgentTypeID: 0
   m_Radius: 0.5
-  m_Speed: 3.5
+  m_Speed: 2
   m_Acceleration: 8
   avoidancePriority: 50
   m_AngularSpeed: 120
@@ -332,6 +333,28 @@ MonoBehaviour:
             m_BoolArgument: 0
           m_CallState: 2
   lockedVerb: Requires Tool
+--- !u!95 &2259310153347713928
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 821806498603170434}
+  m_Enabled: 1
+  m_Avatar: {fileID: 9000000, guid: c5ce48e139a34b247b0539c607014331, type: 3}
+  m_Controller: {fileID: 9100000, guid: aec9923c1270b6647a64f651cd20a396, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &1065612388704411504
 GameObject:
   m_ObjectHideFlags: 0
@@ -1036,7 +1059,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CustomerFaceController
   faceRenderer: {fileID: 7733326266528415335}
   materialIndex: 0
-  tiling: {x: 0.25, y: 0.5}
   faceMappings:
   - mood: 1
     uvOffset: {x: 0, y: 0.5}
