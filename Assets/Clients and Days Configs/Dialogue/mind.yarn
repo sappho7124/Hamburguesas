@@ -1,0 +1,125 @@
+title: SundayNight
+---
+/// This happens right after talking to Don Julio, now the player is in Tomás' again
+
+Narrador: No es mi intención interrumpir tu tiempo de sueño, pero debo recordarte que el resto de tu vida depende de cómo te vaya mañana.
+Narrador: Y de cómo te vaya al día siguiente.
+Narrador: Y al siguiente.
+Narrador: Y al siguiente después ese.
+Narrador: Y en cada día luego de ese también.
+Narrador: ...
+Narrador: Pero no te preocupes por eso.
+Narrador: Solo tenlo presente.
+
+<<SetStatusEffect ProblemasDeSueno true>>
+
+Narrador: Oh, ¿qué es eso?
+Narrador: ...
+Narrador: Se siente extraño...
+Narrador: Jmm...
+Narrador: De alguna manera me hace sentir más conectado a ti...
+Narrador: ...
+Narrador: ¿Puedes oír esto?
+
+/// Fan noise
+
+Narrador: Viene de tu habitación, en este momento.
+Narrador: No sé por qué sueles ignorar ese hermoso sonido.
+Narrador: Puedo hacer que suene aún más fuerte, si quieres.
+
+/// Fan noise intensifies
+
+Narrador: Creo que es suficiente, tampoco quiero abrumarte.
+...
+Narrador: ¡Oh, ya sé!
+Narrador: ¿Puedes
+Narrador: ver
+Narrador: esto?
+
+/// The word "inútil" appears on the screen, huge
+
+Narrador: ¡Woh, jojo!
+Narrador: ¿Qué tal esto?
+
+/// The Words "basura", "idiota", "insuficiente", "patético", "decepcionante" & "vergüenza" start appearing all over the screen
+
+Narrador: Bueno, ya.
+
+/// The words disappear
+
+Narrador: Todo eso es lo que no quiero que seas, por cierto.
+Narrador: Trabajaremos juntos para evitarlo.
+Narrador: ...
+
+<<SetStatusEffect ProblemasDeSueno false>>
+
+Narrador: Por ahora duerme, mañana es un día importante.
+Narrador: ...
+Narrador: ...
+
+<<jump TutorialIntro>>
+
+===
+
+title: MondayNight
+position: 606,615
+---
+
+Narrador: Digamos que no estuvo tan mal.
+Narrador: ...
+Narrador: Aún así hay algo que se siente extraño...
+Narrador: ...
+Narrador: ¡Ah, sí, cómo pude olvidarlo!
+Narrador: No eres lo suficientemente bueno.
+
+<<SetStatusEffect ProblemasDeSueno true>>
+
+Narrador: Ahhh...
+Narrador: Mucho mejor.
+Narrador: Sí, sí, sabía que algo no cuadraba.
+Narrador: Hoy lograste sobrevivir, pero a cambio fuiste un desastre andante.
+Narrador: ¿Qué vas a hacer mañana?
+Narrador: ¿Vas a volver a tratar así a la gente y quedarte sin propinas?
+Narrador: ¿Seguro de que podrás volver a hacer el esfuerzo suficiente para compensar eso?
+Narrador: Je, a este paso deberías ir pensando en qué hacer cuando Don Julio te despida.
+Narrador: ...
+Narrador: Será el primero de muchos, por cierto.
+Narrador: Si es que vuelves a buscar trabajo, claro.
+Narrador: Jeje.
+Narrador: De por sí, ¿por qué hablamos de trabajo?
+Narrador: Ni siquiera has terminado la carrera.
+Narrador: ¿Harás eso algún día?
+Narrador: O...
+Narrador: ¿Vas a repetir lo del semestre anterior?
+Narrador: Jeje.
+Narrador: ...
+Narrador: No te preocupes por no ser suficiente.
+Narrador: Tan solo asegúrate de que nadie lo note.
+Narrador: Lo de hoy no se puede repetir.
+Narrador: Tienes que hacer más ganancias diarias, o Don Julio no te podrá seguir aguantando.
+Narrador: O peor, podría irse a la quiebra y quedar en la calle por tu culpa.
+Narrador: ...
+Narrador: Esperemos a ver si logras seguir con esto.
+Narrador: Todo depende de cómo te vaya maña-
+
+/// Knocking on door
+
+/// Banging on door
+
+/// More banging
+
+Tomas: (¿Quién es a esta hora?)
+
+/// Walking steps
+
+Tomas: ¿Hola?
+Tomas: ...
+Tomas: ¿Quién es?
+Tomas: ...
+Tomas: ¿Hay alguien ahí?
+
+/// Opening door
+
+/// Tomás POV (2d drawing): a horribly dismembered burger. Written on the floor, with sauce: "bASuRa"
+
+===

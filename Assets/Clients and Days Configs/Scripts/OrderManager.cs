@@ -136,13 +136,13 @@ public class OrderManager : MonoBehaviour
         foreach (var table in walkouts) HandleWalkout(table);
     }
     
-    public void HandleQueueWalkout(CustomerProfile profile)
+    public void HandleQueueWalkout(CustomerProfile profile, CustomerFaceController face)
     {
-        dailyScore += walkoutPenalty; // Usually a negative number
+        dailyScore += walkoutPenalty; 
         dailyAngryCustomers++;
         
         RestaurantUIManager.Instance.UpdateScore(totalSavedScore + dailyScore);
-        RestaurantUIManager.Instance.ShowDialogue(profile.profileName, profile.reactions.walkout);
+        RestaurantUIManager.Instance.ShowDialogue(profile.profileName, profile.reactions.walkout, CustomerFaceController.Mood.Angry, face);
     }
 
     private void HandleWalkout(TableSpot table)
@@ -152,7 +152,9 @@ public class OrderManager : MonoBehaviour
         PlayerPrefs.SetInt("RestaurantTotalScore", totalSavedScore);
         PlayerPrefs.Save();
         RestaurantUIManager.Instance.UpdateScore(totalSavedScore);
-        RestaurantUIManager.Instance.ShowDialogue(order.profile.profileName, order.profile.reactions.walkout);
+        
+        CustomerFaceController face = table.linkedSittingSpot.currentCustomer?.faceController;
+        RestaurantUIManager.Instance.ShowDialogue(order.profile.profileName, order.profile.reactions.walkout, CustomerFaceController.Mood.Angry, face);
 
         if (table.linkedSittingSpot.currentCustomer != null) table.linkedSittingSpot.currentCustomer.Leave();
         activeOrders.Remove(table);

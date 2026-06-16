@@ -1,3 +1,4 @@
+// Location: C:\Games\Unity\Hamburguesas\Assets\Clients and Days Configs\Scripts\Customer.cs
 using UnityEngine;
 using UnityEngine.AI; 
 using System;
@@ -22,14 +23,16 @@ public class Customer : MonoBehaviour
 
     public CustomerFaceController faceController;
 
+    [Header("Head Tracking Animation")]
+    public Transform headBone; // Map your Mixamo head bone here!
+    public float maxHeadTurnAngle = 75f;
+    public float headTurnSpeed = 6f;
+    public float lookRadius = 4f;
+    private float currentHeadWeight = 0f;
+
     void Awake()
     {
         if (faceController == null) faceController = GetComponent<CustomerFaceController>();
-        agent = GetComponent<NavMeshAgent>(); 
-        SetInteractable(false, ""); 
-
-        if (faceController == null) faceController = GetComponent<CustomerFaceController>();
-
         agent = GetComponent<NavMeshAgent>();
         animator = GetComponent<Animator>();
 
@@ -49,26 +52,16 @@ public class Customer : MonoBehaviour
         if (interactable != null) interactable.enabled = active;
     }
 
-    // --- NEW: Smart Navigation Helper ---
-    // Finds the closest valid spot on the floor so they don't try to walk inside solid tables
     private void MoveToClosestNavPoint(Vector3 targetPos)
     {
         agent.enabled = true;
-        if (NavMesh.SamplePosition(targetPos, out NavMeshHit hit, 2.0f, NavMesh.AllAreas))
-        {
-            agent.SetDestination(hit.position);
-        }
-        else
-        {
-            agent.SetDestination(targetPos); // Fallback
-        }
+        if (NavMesh.SamplePosition(targetPos, out NavMeshHit hit, 2.0f, NavMesh.AllAreas)) agent.SetDestination(hit.position);
+        else agent.SetDestination(targetPos);
     }
 
-    // --- NEW: Generous Arrival Check ---
     private bool HasArrived()
     {
         if (agent.pathPending) return false;
-        // As long as they get within 0.5 units (or the stopping distance), count it as arrived!
         return agent.remainingDistance <= agent.stoppingDistance + 0.4f;
     }
 
@@ -86,13 +79,8 @@ public class Customer : MonoBehaviour
 
     private void UpdateAnimations()
     {
-        bool walking =
-            currentState == State.MovingToSeat ||
-            currentState == State.MovingToQueue ||
-            currentState == State.Leaving;
-
-        bool sitting =
-            currentState == State.Seated;
+        bool walking = currentState == State.MovingToSeat || currentState == State.MovingToQueue || currentState == State.Leaving;
+        bool sitting = currentState == State.Seated;
 
         animator.SetBool("Walking", walking);
         animator.SetBool("Sitting", sitting);
@@ -112,47 +100,19 @@ public class Customer : MonoBehaviour
 
     void Update()
     {
-        if (currentState == State.MovingToSeat)
-        {
-            if (HasArrived()) SitDown();
-        }
-        else if (currentState == State.Leaving)
-        {
-            if (HasArrived()) Destroy(gameObject);
-        }
-        else if (currentState == State.MovingToQueue)
-        {
-            if (HasArrived())
-            {
+        if (currentState == State.MovingToSeat) { if (HasArrived()) SitDown(); }
+        else if (currentState == State.Leaving) { if (HasArrived()) Destroy(gameObject); }
+        else if (currentState == State.MovingToQueue) { 
+            if (HasArrived()) {
                 currentState = State.WaitingInQueue;
                 SetInteractable(true, "Preguntar Tiempo"); 
             }
         }
         else if (currentState == State.WaitingInQueue)
         {
-            if (myGroup != null && bodyRenderer != null)
-            {
-                float patience = Mathf.Clamp01(myGroup.waitTimer / myGroup.maxWaitTime);
-                bodyRenderer.material.color = Color.Lerp(Color.green, Color.red, patience);
-            }
-        }
-        else if (currentState == State.Seated)
-        {
-            if (targetSeat != null && targetSeat.linkedTableSpot != null && bodyRenderer != null)
-            {
-                float patience = OrderManager.Instance.GetWaitTimePercent(targetSeat.linkedTableSpot);
-                bodyRenderer.material.color = Color.Lerp(Color.green, Color.red, patience);
-            }
-        }
-
-        
-
-        else if (currentState == State.WaitingInQueue)
-        {
             if (myGroup != null && faceController != null)
             {
                 float patience = Mathf.Clamp01(myGroup.waitTimer / myGroup.maxWaitTime);
-                // REPLACE color lerp with Face update
                 faceController.UpdateWaitMood(patience); 
             }
         }
@@ -161,11 +121,33 @@ public class Customer : MonoBehaviour
             if (targetSeat != null && targetSeat.linkedTableSpot != null && faceController != null)
             {
                 float patience = OrderManager.Instance.GetWaitTimePercent(targetSeat.linkedTableSpot);
-                // REPLACE color lerp with Face update
                 faceController.UpdateWaitMood(patience);
             }
         }
         UpdateAnimations();
+    }
+
+    // --- NEW: Procedural Head Look At ---
+    void LateUpdate()
+    {
+        if (headBone == null || Camera.main == null) return;
+        
+        Transform camTransform = Camera.main.transform;
+        Vector3 lookDir = camTransform.position - headBone.position;
+        
+        float angleToPlayer = Vector3.Angle(transform.forward, lookDir);
+        bool shouldLook = (angleToPlayer <= maxHeadTurnAngle) && 
+                          (Vector3.Distance(transform.position, camTransform.position) <= lookRadius) &&
+                          (currentState != State.Leaving);
+
+        // Smoothly blend the tracking weight on top of the animator
+        currentHeadWeight = Mathf.MoveTowards(currentHeadWeight, shouldLook ? 1f : 0f, Time.deltaTime * headTurnSpeed);
+
+        if (currentHeadWeight > 0.01f)
+        {
+            Quaternion targetRot = Quaternion.LookRotation(lookDir);
+            headBone.rotation = Quaternion.Slerp(headBone.rotation, targetRot, currentHeadWeight);
+        }
     }
 
     public void PromoteToSeat(SittingSpot seat)
@@ -174,7 +156,6 @@ public class Customer : MonoBehaviour
         currentState = State.MovingToSeat;
         SetInteractable(false, ""); 
         seat.ReserveSeat(this);
-
         MoveToClosestNavPoint(targetSeat.transform.position);
     }
 
@@ -185,24 +166,18 @@ public class Customer : MonoBehaviour
             currentQueueSpot = newSpot;
             currentState = State.MovingToQueue;
             SetInteractable(false, ""); 
-            
             MoveToClosestNavPoint(currentQueueSpot.position);
         }
     }
 
     public bool IsLeaving() => currentState == State.Leaving;
 
-private void SitDown()
+    private void SitDown()
     {
         currentState = State.Seated;
-        
-        // Turn off AI physics so they snap cleanly into the chair coordinates
         agent.enabled = false; 
-        
         transform.position = targetSeat.transform.TransformPoint(targetSeat.customerOffset); 
-        
         transform.rotation = targetSeat.transform.rotation; 
-        
         targetSeat.OccupySpot();
         OrderManager.Instance.GenerateOrderForTable(targetSeat, profile);
 
@@ -215,25 +190,14 @@ private void SitDown()
         if (targetSeat != null) targetSeat.FreeSeat(); 
         SetInteractable(false, "");
 
-        // If they left because of time (waitTimer is maxed out roughly), they are Really Angry
         if (faceController != null && faceController.CurrentMood == CustomerFaceController.Mood.Angry)
-        {
             faceController.SetMood(CustomerFaceController.Mood.ReallyAngry);
-        }
 
-        // --- NAVMESH EXIT FIX ---
         Vector3 groundExit = new Vector3(exitPoint.position.x, transform.position.y, exitPoint.position.z);
-        
-        // Sample a wide area (5 units) around the exit point to find a valid spot
         if (UnityEngine.AI.NavMesh.SamplePosition(groundExit, out UnityEngine.AI.NavMeshHit hit, 5.0f, UnityEngine.AI.NavMesh.AllAreas))
-        {
             MoveToClosestNavPoint(hit.position);
-        }
         else
-        {
-            // Fallback if the exit is WAY off the map
             MoveToClosestNavPoint(groundExit);
-        }
     }
 
     public void InteractWithCustomer()
@@ -243,65 +207,50 @@ private void SitDown()
             int totalSeconds = Mathf.FloorToInt(myGroup.waitTimer);
             int minutes = totalSeconds / 60;
             int seconds = totalSeconds % 60;
-            
             string timeText = minutes > 0 ? $"{minutes} minutos y {seconds} segundos" : $"{seconds} segundos";
             
-            // FIXED: Pass current mood so they look angry/neutral while complaining
-            RestaurantUIManager.Instance.ShowDialogue(profile.profileName, $"Llevo esperando {timeText}. ¡Por favor apresúrate!", faceController.CurrentMood);
+            RestaurantUIManager.Instance.ShowDialogue(profile.profileName, $"Llevo esperando {timeText}. ¡Por favor apresúrate!", faceController.CurrentMood, faceController);
         }
         else if (currentState == State.Seated && targetSeat != null && targetSeat.linkedTableSpot != null)
         {
             string orderText = OrderManager.Instance.GetOrderText(targetSeat.linkedTableSpot);
-            
             if (!hasOrdered)
             {
                 hasOrdered = true;
-                // FIXED: Pass current mood
-                RestaurantUIManager.Instance.ShowDialogue(profile.profileName, $"Hola, me gustaría pedir: {orderText}.", faceController.CurrentMood);
+                RestaurantUIManager.Instance.ShowDialogue(profile.profileName, $"Hola, me gustaría pedir: {orderText}.", faceController.CurrentMood, faceController);
                 SetInteractable(true, "Repetir Orden");
             }
             else
             {
-                // FIXED: Pass current mood
-                RestaurantUIManager.Instance.ShowDialogue(profile.profileName, $"¿Otra vez? Yo pedí: {orderText}.", faceController.CurrentMood);
+                RestaurantUIManager.Instance.ShowDialogue(profile.profileName, $"¿Otra vez? Yo pedí: {orderText}.", faceController.CurrentMood, faceController);
             }
         }
     }
 
-        // --- NEW: THE MASTER INTERACTION HANDLER ---
-    // Link this directly to your InteractableObject's "OnInteract" Unity Event!
     public void HandleInteraction()
     {
         int currentDay = SaveManager.Instance != null ? SaveManager.Instance.CurrentSave.currentDay : 1;
         string triggerState = DetermineCurrentTriggerState();
 
-        if (string.IsNullOrEmpty(triggerState)) return; // Not ready to interact
+        if (string.IsNullOrEmpty(triggerState)) return; 
 
-        // 1. Check for Overrides!
         DialogueOverride currentOverride = GetOverrideForState(currentDay, triggerState);
 
         if (currentOverride != null)
         {
-            // Parse the mood from string to Enum
             CustomerFaceController.Mood overrideMood = CustomerFaceController.Mood.Neutral;
             Enum.TryParse(currentOverride.moodName, out overrideMood);
             
-            // --- FUTURE YARN INTEGRATION SPOT ---
-            // If (YarnIsActive) { YarnRunner.StartDialogue(currentOverride.yarnNode); return; }
+            RestaurantUIManager.Instance.ShowDialogue(profile.profileName, currentOverride.fallbackText, overrideMood, faceController);
             
-            // Fallback Text System
-            RestaurantUIManager.Instance.ShowDialogue(profile.profileName, currentOverride.fallbackText, overrideMood);
-            
-            // If they were supposed to order, we mark it true so they progress to "AfterOrder" next time
             if (triggerState == "BeforeOrder") 
             {
                 hasOrdered = true;
                 SetInteractable(true, "Hablar");
             }
-            return; // Stop here! Override handled it.
+            return; 
         }
 
-        // 2. STANDARD BEHAVIOR (If no override was found)
         ExecuteStandardInteraction(triggerState);
     }
 
@@ -316,18 +265,10 @@ private void SitDown()
     private DialogueOverride GetOverrideForState(int day, string state)
     {
         if (overrides == null || overrides.overrides == null) return null;
-
-        foreach (var ov in overrides.overrides)
-        {
-            if (ov.day == day && ov.triggerState == state)
-            {
-                return ov;
-            }
-        }
+        foreach (var ov in overrides.overrides) if (ov.day == day && ov.triggerState == state) return ov;
         return null;
     }
 
-    // Moved the old hardcoded logic here to act as the default fallback
     private void ExecuteStandardInteraction(string state)
     {
         if (state == "Queue" && myGroup != null)
@@ -335,21 +276,20 @@ private void SitDown()
             int totalSeconds = Mathf.FloorToInt(myGroup.waitTimer);
             int minutes = totalSeconds / 60;
             int seconds = totalSeconds % 60;
-            
             string timeText = minutes > 0 ? $"{minutes} minutos y {seconds} segundos" : $"{seconds} segundos";
-            RestaurantUIManager.Instance.ShowDialogue(profile.profileName, $"Llevo esperando {timeText}. ¡Por favor apresúrate!", faceController.CurrentMood);
+            RestaurantUIManager.Instance.ShowDialogue(profile.profileName, $"Llevo esperando {timeText}. ¡Por favor apresúrate!", faceController.CurrentMood, faceController);
         }
         else if (state == "BeforeOrder" && targetSeat != null && targetSeat.linkedTableSpot != null)
         {
             hasOrdered = true;
             string orderText = OrderManager.Instance.GetOrderText(targetSeat.linkedTableSpot);
-            RestaurantUIManager.Instance.ShowDialogue(profile.profileName, $"Hola, me gustaría pedir: {orderText}.", faceController.CurrentMood);
+            RestaurantUIManager.Instance.ShowDialogue(profile.profileName, $"Hola, me gustaría pedir: {orderText}.", faceController.CurrentMood, faceController);
             SetInteractable(true, "Repetir Orden");
         }
         else if (state == "AfterOrder" && targetSeat != null && targetSeat.linkedTableSpot != null)
         {
             string orderText = OrderManager.Instance.GetOrderText(targetSeat.linkedTableSpot);
-            RestaurantUIManager.Instance.ShowDialogue(profile.profileName, $"¿Otra vez? Yo pedí: {orderText}.", faceController.CurrentMood);
+            RestaurantUIManager.Instance.ShowDialogue(profile.profileName, $"¿Otra vez? Yo pedí: {orderText}.", faceController.CurrentMood, faceController);
         }
     }
 }

@@ -1,3 +1,4 @@
+// Location: C:\Games\Unity\Hamburguesas\Assets\Clients and Days Configs\Scripts\RestaurantUIManager.cs
 using UnityEngine;
 using TMPro;
 using System.Collections;
@@ -14,6 +15,19 @@ public class RestaurantUIManager : MonoBehaviour
     public TextMeshProUGUI moneyText;
     public TextMeshProUGUI shiftTimeText; 
 
+    [Header("Sprite Clock Settings")]
+    public UnityEngine.UI.Image clockImage;
+    public Sprite[] clockSprites;
+    public UnityEngine.UI.Image pauseIconOverlay;
+    
+    [Header("Clock Animation")]
+    [Tooltip("How many seconds between each 'tick'.")]
+    public float tickInterval = 1.0f;
+    [Tooltip("Minimum angle the clock will snap to when ticking.")]
+    public float minTickAngle = 5f;
+    [Tooltip("Maximum angle the clock will snap to when ticking.")]
+    public float maxTickAngle = 15f;
+
     [Header("Dialogue UI Settings")]
     public RectTransform dialoguePanelRect; 
     public TextMeshProUGUI dialogueText;
@@ -28,14 +42,22 @@ public class RestaurantUIManager : MonoBehaviour
     public float mouthAnimationSpeed = 0.15f; 
 
     [Header("Dialogue Options (Pre-Setup)")]
-    public GameObject optionsContainer; // Optional now!
-    public UnityEngine.UI.Button[] optionButtons; // Array of exactly 5 buttons
+    public GameObject optionsContainer;
+    public UnityEngine.UI.Button[] optionButtons;
 
+    // Internal State
     private Coroutine dialogueCoroutine;
     private bool isTyping = false;
     private bool isSliding = false; 
     private string currentFullText = "";
     private EmotionSet currentEmotionSet;
+    
+    // Ticking State
+    private RectTransform clockRect;
+    private float tickTimer = 0f;
+    private int currentTickSide = 1; // 1 = Right, -1 = Left
+    
+    public bool IsDialogueActive => isTyping || isSliding;
 
     void Awake()
     {
@@ -45,20 +67,13 @@ public class RestaurantUIManager : MonoBehaviour
         dialogueText.text = ""; 
         if (dialogueFaceImage) dialogueFaceImage.gameObject.SetActive(false);
         if (shiftTimeText) shiftTimeText.text = "00:00";
+        if (pauseIconOverlay) pauseIconOverlay.gameObject.SetActive(false);
 
-        // Hide options container initially
+        if (clockImage != null) clockRect = clockImage.rectTransform;
+
         if (optionsContainer) optionsContainer.SetActive(false);
-        
-        // NEW: Also forcefully hide all individual buttons just in case there is no container
-        if (optionButtons != null)
-        {
-            foreach (var btn in optionButtons)
-            {
-                if (btn != null) btn.gameObject.SetActive(false);
-            }
-        }
+        if (optionButtons != null) foreach (var btn in optionButtons) if (btn != null) btn.gameObject.SetActive(false);
 
-        // Snap panel off-screen immediately
         if (dialoguePanelRect)
             dialoguePanelRect.anchoredPosition = new Vector2(dialoguePanelRect.anchoredPosition.x, hiddenY);
     }
@@ -71,23 +86,14 @@ public class RestaurantUIManager : MonoBehaviour
         }
     }
 
-    public void ShowDialogue(string characterName, string text, CustomerFaceController.Mood mood = CustomerFaceController.Mood.Neutral)
+    public void ShowDialogue(string characterName, string text, CustomerFaceController.Mood mood = CustomerFaceController.Mood.Neutral, CustomerFaceController speakerFace = null)
     {
         if (dialogueCoroutine != null) StopCoroutine(dialogueCoroutine);
         
-        // Hide options when normal dialogue plays
         if (optionsContainer) optionsContainer.SetActive(false);
+        if (optionButtons != null) foreach (var btn in optionButtons) if (btn != null) btn.gameObject.SetActive(false);
         
-        // NEW: Forcefully hide the buttons directly
-        if (optionButtons != null)
-        {
-            foreach (var btn in optionButtons)
-            {
-                if (btn != null) btn.gameObject.SetActive(false);
-            }
-        }
-        
-        dialogueCoroutine = StartCoroutine(TypewriterRoutine(characterName, text, mood));
+        dialogueCoroutine = StartCoroutine(TypewriterRoutine(characterName, text, mood, speakerFace));
     }
 
     private void SkipAnimation()
@@ -96,14 +102,13 @@ public class RestaurantUIManager : MonoBehaviour
         isTyping = false; 
     }
 
-    private IEnumerator TypewriterRoutine(string characterName, string text, CustomerFaceController.Mood mood)
+    private IEnumerator TypewriterRoutine(string characterName, string text, CustomerFaceController.Mood mood, CustomerFaceController speakerFace)
     {
         isSliding = true;
         isTyping = true;
         currentFullText = text;
         dialogueText.text = $"";
 
-        // Face setup
         currentEmotionSet = null;
         if (CustomerSpawner.Instance != null && dialogueFaceImage != null)
         {
@@ -125,7 +130,6 @@ public class RestaurantUIManager : MonoBehaviour
                 dialoguePanelRect.anchoredPosition = new Vector2(dialoguePanelRect.anchoredPosition.x, newY);
                 yield return null;
             }
-            
             dialoguePanelRect.anchoredPosition = new Vector2(dialoguePanelRect.anchoredPosition.x, visibleY);
             isSliding = false;
         }
@@ -139,13 +143,16 @@ public class RestaurantUIManager : MonoBehaviour
 
             dialogueText.text = $"{text.Substring(0, i)}";
 
-            if (currentEmotionSet != null)
+            if (currentEmotionSet != null || speakerFace != null)
             {
                 mouthTimer += typingSpeed;
                 if (mouthTimer >= mouthAnimationSpeed)
                 {
                     isMouthOpen = !isMouthOpen;
-                    dialogueFaceImage.sprite = isMouthOpen ? currentEmotionSet.openMouth : currentEmotionSet.closedMouth;
+                    if (currentEmotionSet != null) dialogueFaceImage.sprite = isMouthOpen ? currentEmotionSet.openMouth : currentEmotionSet.closedMouth;
+                    
+                    if (speakerFace != null) speakerFace.SetTalking(isMouthOpen);
+
                     mouthTimer = 0f;
                 }
             }
@@ -157,7 +164,9 @@ public class RestaurantUIManager : MonoBehaviour
 
         isTyping = false;
         dialogueText.text = $"{currentFullText}";
+        
         if (currentEmotionSet != null && dialogueFaceImage != null) dialogueFaceImage.sprite = currentEmotionSet.closedMouth;
+        if (speakerFace != null) speakerFace.SetTalking(false);
 
         yield return new WaitForSeconds(dialogueDisplayTime);
 
@@ -178,23 +187,20 @@ public class RestaurantUIManager : MonoBehaviour
 
     public void DisplayDialogueOptions(List<string> options, Action<int> onOptionSelected)
     {
-        // REMOVED: if (optionsContainer == null) return; (This caused the script to abort entirely without a container)
         if (optionButtons == null || optionButtons.Length == 0) return;
 
         if (dialogueCoroutine != null) StopCoroutine(dialogueCoroutine);
         if (dialoguePanelRect) dialoguePanelRect.anchoredPosition = new Vector2(dialoguePanelRect.anchoredPosition.x, visibleY);
 
-        // Turn on container if it exists
         if (optionsContainer) optionsContainer.SetActive(true);
 
         for (int i = 0; i < optionButtons.Length; i++)
         {
-            if (optionButtons[i] == null) continue; // Safety check
+            if (optionButtons[i] == null) continue; 
 
             if (options != null && i < options.Count)
             {
                 optionButtons[i].gameObject.SetActive(true);
-                
                 TextMeshProUGUI btnText = optionButtons[i].GetComponentInChildren<TextMeshProUGUI>();
                 if (btnText != null) btnText.text = options[i];
 
@@ -202,29 +208,68 @@ public class RestaurantUIManager : MonoBehaviour
                 optionButtons[i].onClick.RemoveAllListeners();
                 optionButtons[i].onClick.AddListener(() => 
                 {
-                    // Hide UI upon clicking
                     if (optionsContainer) optionsContainer.SetActive(false);
                     foreach (var btn in optionButtons) { if (btn != null) btn.gameObject.SetActive(false); }
-
                     onOptionSelected?.Invoke(capturedIndex);
                 });
             }
-            else
-            {
-                optionButtons[i].gameObject.SetActive(false);
-            }
+            else optionButtons[i].gameObject.SetActive(false);
         }
     }
 
     public void UpdateScore(int newScore) { if (scoreText != null) scoreText.text = $"{newScore}"; }
     public void UpdateMoney(int newMoney) { if (moneyText != null) moneyText.text = $"{newMoney}"; }
-    public void UpdateShiftTimer(float currentTimer, float maxTimer)
+    
+    public void UpdateShiftTimer(float currentTimer, float maxTimer, bool isPaused)
     {
-        if (shiftTimeText == null) return;
-        float remaining = Mathf.Max(0, maxTimer - currentTimer);
-        int minutes = Mathf.FloorToInt(remaining / 60);
-        int seconds = Mathf.FloorToInt(remaining % 60);
-        shiftTimeText.text = string.Format("{0:00}:{1:00}", minutes, seconds);
-        shiftTimeText.color = remaining <= 30f ? Color.red : Color.white;
+        // 1. Text Update (Optional / Debug)
+        if (shiftTimeText != null)
+        {
+            float remaining = Mathf.Max(0, maxTimer - currentTimer);
+            int minutes = Mathf.FloorToInt(remaining / 60);
+            int seconds = Mathf.FloorToInt(remaining % 60);
+            shiftTimeText.text = string.Format("{0:00}:{1:00}", minutes, seconds);
+            shiftTimeText.color = remaining <= 30f ? Color.red : Color.white;
+        }
+
+        // 2. Sprite Sheet Progress Update
+        if (clockImage != null && clockSprites != null && clockSprites.Length > 0 && maxTimer > 0)
+        {
+            float progress = Mathf.Clamp01(currentTimer / maxTimer);
+            int targetIndex = Mathf.FloorToInt(progress * (clockSprites.Length - 1));
+            clockImage.sprite = clockSprites[targetIndex];
+            
+            // --- NEW: Ticking Animation ---
+            if (clockRect != null)
+            {
+                if (isPaused)
+                {
+                    // Snap back to normal immediately when paused
+                    clockRect.localRotation = Quaternion.identity; 
+                    tickTimer = tickInterval; // Pre-load the timer so it ticks immediately when unpaused
+                }
+                else
+                {
+                    tickTimer += Time.deltaTime;
+                    if (tickTimer >= tickInterval)
+                    {
+                        tickTimer -= tickInterval; 
+                        currentTickSide = -currentTickSide; // Swap sides (-1 to 1)
+                        
+                        // Generate a random angle between min and max
+                        float randomAngle = UnityEngine.Random.Range(minTickAngle, maxTickAngle);
+                        
+                        // Apply rotation (Z-axis)
+                        clockRect.localRotation = Quaternion.Euler(0, 0, randomAngle * currentTickSide);
+                    }
+                }
+            }
+        }
+
+        // 3. Pause Icon Overlay Update
+        if (pauseIconOverlay != null)
+        {
+            pauseIconOverlay.gameObject.SetActive(isPaused);
+        }
     }
 }

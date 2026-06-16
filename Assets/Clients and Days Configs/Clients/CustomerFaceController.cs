@@ -8,8 +8,10 @@ public class CustomerFaceController : MonoBehaviour
     public struct FaceMapping
     {
         public Mood mood;
-        [Tooltip("The X,Y offset for this face on the texture atlas")]
+        [Tooltip("The X,Y offset for this face when the mouth is CLOSED")]
         public Vector2 uvOffset; 
+        [Tooltip("The X,Y offset for this face when the mouth is OPEN (Talking)")]
+        public Vector2 openMouthUV; 
     }
 
     [Header("References")]
@@ -18,17 +20,18 @@ public class CustomerFaceController : MonoBehaviour
     public int materialIndex = 0;
 
     [Header("Face Grid Settings")]
-    // Note: Tiling is now configured directly on the Material's "Main Texture" properties!
     public FaceMapping[] faceMappings;
 
     private Material instancedFaceMaterial;
     public Mood CurrentMood { get; private set; } = Mood.Neutral;
+    
+    private bool isTalking = false;
 
     void Awake()
     {
         if (faceRenderer != null)
         {
-            // Instance the material so changing this character's face doesn't change other characters
+            // Instance the material so changing this character's face doesn't change others
             instancedFaceMaterial = faceRenderer.materials[materialIndex];
         }
     }
@@ -40,25 +43,33 @@ public class CustomerFaceController : MonoBehaviour
 
     public void SetMood(Mood newMood)
     {
-        if (instancedFaceMaterial == null) return;
-        
         CurrentMood = newMood;
+        UpdateFaceVisuals();
+    }
+
+    public void SetTalking(bool talking)
+    {
+        isTalking = talking;
+        UpdateFaceVisuals();
+    }
+
+    private void UpdateFaceVisuals()
+    {
+        if (instancedFaceMaterial == null) return;
 
         foreach (var mapping in faceMappings)
         {
-            if (mapping.mood == newMood)
+            if (mapping.mood == CurrentMood)
             {
-                // Slide the texture to the correct face (Changes Offset without touching Tiling)
-                instancedFaceMaterial.mainTextureOffset = mapping.uvOffset;
+                // Slide the texture to the correct face based on talking state
+                instancedFaceMaterial.mainTextureOffset = isTalking ? mapping.openMouthUV : mapping.uvOffset;
                 return;
             }
         }
     }
 
-    // Helper for the wait timer: Translates 0.0 to 1.0 into escalating anger
     public void UpdateWaitMood(float patiencePercent)
     {
-        // Don't override extreme reactions if they are reacting to food
         if (CurrentMood == Mood.Puking || CurrentMood == Mood.Dead || CurrentMood == Mood.Scared) return;
 
         if (patiencePercent < 0.5f) SetMood(Mood.Neutral);
@@ -68,10 +79,6 @@ public class CustomerFaceController : MonoBehaviour
 
     void OnDestroy()
     {
-        // Clean up the instanced material to prevent memory leaks!
-        if (instancedFaceMaterial != null)
-        {
-            Destroy(instancedFaceMaterial);
-        }
+        if (instancedFaceMaterial != null) Destroy(instancedFaceMaterial);
     }
 }

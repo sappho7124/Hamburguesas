@@ -1,0 +1,330 @@
+title: TutorialIntro
+position: -575,-937
+---
+/// The next step in the tutorial sequence
+<<declare $nextTutorialStep = 1>>
+/// Whether the player has the "irritabilidad" status effect on
+<<declare $hasIrritabilidad = false>>
+
+/// This happens right after Sunday night's conversation with the narrator, the player is now alone in the restaurant's kitchen
+
+Narrador: Te noto algo tenso.
+Narrador: Parece que anoche te mantuve despierto más de la cuenta.
+Narrador: ...
+Narrador: Lo siento, me emocioné un poco.
+Narrador: ...
+Narrador: Bueno, ¡es hora de mostrarle al pueblo el gran talento que tienes!
+Narrador: Ayer fue incríble, solo debes harcerlo de nuevo, ya sabes cómo.
+
+<<jump TutorialStart>>
+
+===
+
+title: TutorialStart
+position: -573,-737
+---
+
+Narrador: ¿Qué, no sabes qué hacer?
+Narrador: ...
+Narrador: Jaja, supongo que por un momento yo también olvidé cómo eres.
+Narrador: A ver...
+Narrador: Para preparar una hamburguesa primero ve a la nevera y presiona E para abrirla.
+
+<<jump TutorialStep_1_OpenFridge>>
+
+===
+
+title: TutorialStep_1_OpenFridge
+position: -145,-901
+---
+/// Every tutorial step is triggered by the player doing the action described at the start of the node. Additionally, a tutorial step can only be triggered if the step preceding it has already been triggered
+
+/// The player opens the fridge
+
+Narrador: ¡Genial! Ahora acércate al pan y presiona E para agarrarlo.
+
+<<set $nextTutorialStep = 2>>
+
+<<jump TutorialStep_2_GrabBread>>
+
+===
+
+title: TutorialStep_2_GrabBread
+position: -150,-727
+---
+
+/// The player grabs a piece of bread
+
+Narrador: Listo, con la rueda del mouse puedes alejarlo o acercarlo a ti.
+Narrador: Acércalo a ti o camina hacia atrás para sacarlo de la nevera,
+luego llévalo al mesón del centro y presiona G para soltarlo ahí.
+
+<<set $nextTutorialStep = 3>>
+
+<<jump TutorialStep_3_PlaceBread>>
+
+===
+
+title: TutorialStep_3_PlaceBread
+position: -154,-559
+---
+
+/// The player places a piece of bread on the table
+
+Narrador: Oh, espera, ese pan está al revés, la parte plana debe ir hacia arriba, ¿no?
+Narrador: Hmmm...
+Narrador: Oh, ya, agárralo de nuevo y presiona R para comenzar a rotarlo.
+Narrador: Muévelo con el mouse hasta que esté como quieres y luego sí lo sueltas con G.
+
+<<set $nextTutorialStep = 4>>
+
+<<jump TutorialStep_4_RotateBread>>
+
+===
+
+title: TutorialStep_4_RotateBread
+position: -148,-379
+---
+
+/// The player places a piece of bread on the table
+
+Narrador: Eso, trae los otros ingredientes que le quieras poner a tu hamburguesa.
+Narrador: Colócalos sobre el pan, como armando una torre.
+
+<<set $nextTutorialStep = 5>>
+
+<<jump TutorialStep_5_GrabMeat>>
+
+===
+
+title: TutorialStep_5_GrabMeat
+position: -149,-192
+---
+
+/// The player grabs a patty
+
+Narrador: Para cocinar la carne llévala a la estufa y colócala sobre ella, luego presiona E para encender la estufa.
+
+<<set $nextTutorialStep = 6>>
+
+<<jump TutorialStep_6_CookMeat>>
+
+===
+
+title: TutorialStep_6_CookMeat
+position: -150,-28
+---
+
+/// The player places a patty on the stove and turns it on
+
+Narrador: La carne se cocina rápido, así que debes estar pendiente de que no se queme.
+Narrador: Presiona E para apagar la estufa cuando esté lista, y colócala en la hamburguesa.
+
+<<set $nextTutorialStep = 7>>
+
+<<jump TutorialStep_7_PlaceMeat>>
+
+===
+
+title: TutorialStep_7_PlaceMeat
+position: -159,152
+---
+
+/// The player places a patty on the table or on an unfinished burger
+
+Narrador: ¡Muy bien! Cuando sientas que tu hamburguesa esté lista.
+Narrador: Presiona E sobre el mesón para que se arme y un palillo caerá sobre ella uniendo todos los ingredientes (no preguntes).
+
+<<set $nextTutorialStep = 8>>
+
+<<jump TutorialStep_8_BuildBurger>>
+
+===
+
+title: TutorialStep_8_BuildBurger
+position: -160,365
+---
+
+/// The player builds a burger
+
+Narrador: ¡Perfecto! Agarra la hamgurguesa terminada y colócala sobre un plato vacío.
+
+<<set $nextTutorialStep = 9>>
+
+<<jump TutorialStep_9_PlaceBurger>>
+
+===
+
+title: TutorialStep_9_PlaceBurger
+position: -158,563
+---
+
+/// The player places a burger on a plate
+
+Narrador: Ya lo puedes llevar a la mesa de un cliente.
+Narrador: Agarra el plato con E y ve hacia las mesas de afuera.
+
+<<set $nextTutorialStep = 10>>
+
+<<jump TutorialStep_10_GoToTable>>
+
+===
+
+title: TutorialStep_10_GoToTable
+position: -164,768
+---
+
+/// The player hovers on a table while holding a burger on a plate
+
+Narrador: Presiona Q mientras miras hacia la mesa para poner el platillo sobre ella.
+
+<<set $nextTutorialStep = 11>>
+
+<<jump TutorialEnd>>
+
+===
+
+title: TutorialEnd
+position: 67,955
+---
+
+/// The player places a plate with a burger on a table for customers
+
+Narrador: ¡Y listo, el cliente tiene su cena servida!
+Narrador: Puedes seguir armando todas las hamburguesas que quieras para practicar, o ir sacando y preparando ingredientes para dejarlos listos.
+Narrador: Si te quedas sin ingredientes solo debes abrir la nevera y cerrarla, ¡cuando la abras de nuevo volverá a estar llena!
+Narrador: ...
+Narrador: Eso es otra de esas cosas que es mejor no preguntar cómo funcionan...
+Narrador: Pero bueno, ¡a trabajar!
+Narrador: Cuando te sientas preparado para recibir a los clientes, presiona la campana de la cocina con E, y el reloj se pondrá en marcha.
+Narrador: Interactúa con los clientes y ellos te dirán qué quieren.
+Narrador: Cocina bien la carne y haz que las hamburguesas se vean bonitas, eso es importante.
+Narrador: ...
+Narrador: ¡Eso es todo!
+Narrador: ...
+Narrador: Recuerda no arruinarlo, ¿sí?
+Narrador: No es que piense que lo harás, pero ajá.
+Narrador: Tú sabes a qué me refiero.
+Narrador: ...
+Narrador: ¿Seguro de que puedes con esto?
+Narrador: ¿SEGURO?
+Narrador: ¿SEGURÍSIMO?
+Narrador: ¿SEGURISISÍSIMO?
+
+<<set $hasIrritabilidad = true>>
+<<SetStatusEffect Irritabilidad true>>
+
+/// The player now has the "irritabilidad" status effect on. This will make the game ignore whatever dialogue option the player chooses and go with a specific response (the meanest) every time. How this is handled is explained in the "clients" yarn file 
+
+Tomas: Que sí. #angry
+
+Narrador: Wow.
+Narrador: Calmado.
+Narrador: No querrás hablarle así a los clientes.
+Narrador: Ojo ahí, te pueden dejar sin propina.
+Narrador: ...
+Narrador: A trabajar, te dejo tranquilo.
+
+/// The player hovers over the kitchen bell. Before they can ring it:
+
+Lucas: ¿Buenas?...
+Lucas: ...
+Lucas: ¡Buenas!
+
+/// Knocking on door.
+
+/// The player walks to the door
+
+<<jump LucasBringsVegetables>>
+
+===
+
+title: TutorialFuckUp_1_ThrowSomething
+position: 178,-182
+---
+/// Tutorial fuck-ups are triggered by unexpected actions made by the player during the tutorial, decribed at the beginning of each fuck-up node. They don't disturb the flow of tutorial steps
+
+/// The player throws something
+
+<<once>>
+    Narrador: Jeje, sí.
+    Narrador: Con eso mandas las cosas a volar.
+    Narrador: Podría servirte de algo, creo.
+<<endonce>>
+
+<<jump TutorialFuckUpReroute>>
+
+===
+
+title: TutorialFuckUp_2_DropSomething
+position: 413,-182
+---
+
+/// The player drops something on the floor
+
+<<once>>
+    Narrador: Ups. Manos de mantequilla.
+    Narrador: No pasa nada si algo se cae al suelo, puedes agarrarlo de nuevo...
+    Narrador: Igual tratemos de no darle a la gente comida pisoteada.
+<<endonce>>
+
+<<jump TutorialFuckUpReroute>>
+
+===
+
+title: TutorialFuckUp_3_BurnSomething
+position: 676,-192
+---
+
+/// The player burns something and sets it on fire
+
+<<once>>
+    Narrador: ¡Oh, no! ¡Se está quemando!
+    Narrador: ¡Vamos a morir en un incendio, AAAAAAAAH!
+    Narrador: Es un chiste, agarra la cosa quemada y métela en la nevera para apagar el fuego.
+    Narrador: Sí, yo... tampoco entiendo muy bien cómo funciona eso...
+    Narrador: No pienses mucho al respecto.
+<<endonce>>
+
+/// The player put the thing on fire in the fridge and it stops burning
+
+<<once>>
+    Narrador: Ahora, podrías poner eso en la hamburguesa, pero no creo que nadie quiera como cena un pedazo de carbón.
+    Narrador: Te recomendaría tirarla en el bote de basura de allá y cocinar una nueva, pero tú verás.
+<<endonce>>
+
+<<jump TutorialFuckUpReroute>>
+
+===
+
+title: TutorialFuckUpReroute
+position: 414,45
+---
+
+/// This node makes it so tutorial lines continue as intended, going back to the step the player was in before they fucked up
+
+<<if $nextTutorialStep== 1>>
+    <<jump TutorialStep_1_OpenFridge>>
+<<elseif $nextTutorialStep == 2>>
+    <<jump TutorialStep_2_GrabBread>>
+<<elseif $nextTutorialStep == 3>>
+    <<jump TutorialStep_3_PlaceBread>>
+<<elseif $nextTutorialStep == 4>>
+    <<jump TutorialStep_4_RotateBread>>
+<<elseif $nextTutorialStep == 5>>
+    <<jump TutorialStep_5_GrabMeat>>
+<<elseif $nextTutorialStep == 6>>
+    <<jump TutorialStep_6_CookMeat>>
+<<elseif $nextTutorialStep == 7>>
+    <<jump TutorialStep_7_PlaceMeat>>
+<<elseif $nextTutorialStep == 8>>
+    <<jump TutorialStep_8_BuildBurger>>
+<<elseif $nextTutorialStep == 9>>
+    <<jump TutorialStep_9_PlaceBurger>>
+<<elseif $nextTutorialStep == 10>>
+    <<jump TutorialStep_10_GoToTable>>
+<<else>>
+    <<jump TutorialEnd>>
+<<endif>>
+
+===

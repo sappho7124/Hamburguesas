@@ -1,0 +1,165 @@
+title: NarratorIntroduction
+position: 12,12
+---
+/// The name of the player
+<<declare $playerName = "Burgo">>
+/// Last scene visited
+<<declare $lastScene= 1>>
+
+/// Triggered by starting a new game
+
+/// This happens in Tomás' mind, just a black backgroud
+
+Narrador: Nada de lo que haces vale la pena.
+Narrador: No eres más que un vulgar y mediocre pedazo de basura.
+
+/// Ignore the next commented lines for now, the player's name is not fundamental to the prologue
+
+    /// Narrador: ¿Cuál es el nombre apropiado para un pedazo de basura?
+
+    /// The player must enter their name to continue
+
+    /// Narrador: No engañas a nadie, {$playerName}.
+
+Narrador: Cada vez te cuesta más cumplir tus promesas vacías.
+Narrador: Pronto todos verán lo patético que eres en realidad.
+
+<<jump DonJulioScene1>>
+===
+
+title: DonJulioScene1
+color: yellow
+position: 16,187
+---
+/// The player is now talking with Don Julio in the Restaurant's kitchen during Sunday night
+
+Don Julio: ¡Fua! ¿Quién hubiera imaginado que un chino tan flacuchento iba a salir con semejante talento pa' la cocina, eh? #happy
+
+<<if visited("NarratorManipulation")>>
+    <<detour NarratorResetComment>>
+<<endif>>
+
+-> Tomas: No es nada, solo cocino de vez en cuando.
+-> Tomas: Jeje... gracias.
+-> Tomas: Flacuchenta su abuela, gordo hijueputa.
+    Don Julio: ¿Cómo me dijo, chino marica? #angry
+    <<jump NarratorManipulation>>
+
+Don Julio: 50 hamburguesas en 1 hora, señor, y todas bien bonitas. No, eso se ven es pero una belleza, y huelen lo más de bueno. #happy
+Don Julio: Eso lo que es es dedicación, profesionalismo, ESENCIA. Así es que lo quiero yo chino, concentrado en lo que es. #happy
+Don Julio: Mire, si uste me sigue trabajando así, aquí lo que va es a pasarla bueno, relajao. #happy
+<<jump DonJulioScene2>>
+===
+
+title: DonJulioScene2
+color: yellow
+position: 19,377
+---
+Don Julio: Uste llega, fiun, fan, alista las cositas, pam-pam-pam, atiende a la gente, les cocina sus hamburguesitas, lava los platicos así bien juicioso, cha-cha-cha, y a las 10 de la noche, 10 y media, ya se está yendo para la casita, ¿qué le parece? #happy
+
+<<if visited("NarratorManipulation") && $lastScene == 3>>
+    <<detour NarratorResetComment>>
+<<endif>>
+
+-> Tomas: Sí señor, con toda.
+-> Tomas: No gracias, eso suena a mucho trabajo para una sola persona.
+    Don Julio: Ah, listo... pues será buscar a alguien más, qué se le va a hacer. #sad
+    <<set $lastScene = 2>>
+    <<jump NarratorManipulation>>
+
+Don Julio: ¡Fino! Mire, fírmeme aquí para finiquitar la vuelta y tenga las llaves para que cierre ahorita y abra mañana. #happy
+Don Julio: No se le olvide, bien puntual a las 2 de la tarde, ¿oyó? #happy
+
+-> Tomas: Sí señor.
+-> Tomas: Ajá.
+-> Tomas: Agh... supongo.
+
+Don Julio: Así es que es, juicioso. #happy
+<<jump DonJulioScene3>>
+===
+
+title: DonJulioScene3
+color: yellow
+position: 29,569
+---
+Don Julio: Bueno, se me cuida chino, en lo que yo entrego los domicilios de la noche uste termine de organizar la cocina y cierra con candado cuando salga. #happy
+
+<<if visited("NarratorManipulation") && $lastScene == 5>>
+    <<detour NarratorResetComment>>
+<<endif>>
+
+-> Tomas: Listo, hasta luego Don Julio.
+    <<set $lastScene = 6>>
+-> Tomas: Que sí, viejo fastidioso.
+    Don Julio: ...¿Cómo? #angry
+    <<set $lastScene = 4>>
+
+<<jump NarratorManipulation>>
+===
+
+title: NarratorManipulation
+position: 312,389
+---
+
+/// Screen darkens, vignette effect
+
+<<if visited_count("NarratorManipulation") == 0>>
+    <<if $lastScene == 2>>
+        Narrador: Deberías aceptar sus términos.
+    <<elseif $lastScene neq 6>>
+        Narrador: Hey, hey. ¿de dónde te sacas la audacia para insultar a tu jefe?
+    <<endif>>
+    Narrador: Después de buscar trabajo por tanto tiempo por fin conseguiste ALGO.
+    Narrador: No deberías arruinar tu oportunidad de impresionar a la única persona en este basurero que confía en ti, por más ingenuo que sea Don Julio al hacer eso.
+    Narrador: Tu mamá tenía razón, definitivamente no sirves para nada.
+    Narrador: ¿Qué planeas hacer cuando el señor te despida?
+    Narrador: ¿Eh?
+    Narrador: ¿Vas a rogarle al del supermercado por otra oportunidad?
+    Narrador: Él supo apenas te vio que estaría mejor sin empleados que contigo.
+    Narrador: Tu esfuerzo de hoy fue suficiente para que Don Julio no notara inmediatamente que eres un fraude.
+    Narrador: Si es demasiado para ti deberías regresar a la ciudad con tu mamá, y rascarte la barriga hasta que comience el semestre.
+    Narrador: Es lo único que haces bien, la verdad.
+    Narrador: Incluso si no te preocupa lo que la gente piense de ti, tú sabes lo que piensas de ti mismo.
+    Narrador: ...
+    Narrador: Lo siento, eso sonó feo.
+    Narrador: Solo quiero ayudarte a no destruir tu vida...
+    Narrador: ...
+    Narrador: Déjame intentar algo. <<if $lastScene neq 6>>
+<<elseif visited_count("NarratorManipulation") == 1 && $lastScene neq 6>>
+    Narrador: Agh... ¿de verdad?
+<<elseif $lastScene neq 6>>
+    Narrador: No sé cuántas veces debo repetirlo, pero este trabajo es tu última oportunidad para demostrar que sirves para algo.
+    Narrador: Trata de conservarlo, ¿sí?
+<<endif>>
+
+/// Fade to black for 2 seconds
+
+<<wait 2>>
+
+<<if $lastScene == 1>>
+    <<jump DonJulioScene1>>
+<<elseif $lastScene == 2>>
+    <<set $lastScene = 3>>
+    <<jump DonJulioScene3>>
+<<elseif $lastScene == 4>>
+    <<set $lastScene = 5>>
+    <<jump DonJulioScene3>>
+<<else>>
+    <<jump SundayNight>>
+<<endif>>
+
+===
+
+title: NarratorResetComment
+position: -261,388
+---
+<<if visited_count("NarratorManipulation") == 1>>
+    Narrador: Te quedaste mirando al vacío por un momento, pensando en cómo todo podría salir mal.
+    Narrador: Por fortuna, solo fue un pensamiento.
+    Narrador: No hace falta que pierdas tiempo preocupándote por esas cosas.
+<<else>>
+    Narrador: Por favor no desperdicies más tiempo imaginando tragedias, tienes trabajo que hacer.
+<<endif>>
+
+<<return>>
+===

@@ -1,0 +1,343 @@
+title: LucasBringsVegetables
+color: red
+position: 114,-119
+---
+/// Whether the player tried to be nice to Lucas or Sara
+<<declare $triedNice = true>>
+/// Whether the player is currently in the angry route
+<<declare $inAngryRoute = false>>
+
+/// This is triggered by the player walking to the restaurant door and interacting with Lucas after his interruption at the end of the tutorial
+
+Lucas: Ehhh, se supone que vengo a entregar el pedido de verduras de Don Julio, pero ajá.
+
+-> Tomas: ¿Cómo así? #angry #choice
+    <<set $triedNice = false>>
+-> Tomas: Ehhh, sí señor, yo le recibo. #choice
+
+Tomas: ¿Cómo así? #angry
+
+<<if $triedNice == true>>
+    <<set $lastScene = 7>>
+    <<detour TomasConfusion>>
+<<endif>>
+
+Lucas: Pues, con lo de la policía y todo eso.
+
+<<set $triedNice = true>>
+
+-> Tomas: ¿De qué habla o qué? #angry #choice
+    <<set $triedNice = false>>
+-> Tomas: Ah, sí. Terrible la cosa. #choice
+
+Tomas: ¿De qué habla o qué? #angry
+
+<<if $triedNice == true>>
+    <<set $lastScene = 8>>
+    <<detour TomasConfusion>>
+<<endif>>
+
+Lucas: ¿Usted trabaja aquí y no supo?
+
+<<set $triedNice = true>>
+
+-> Tomas: ¿Qué cosa? #choice
+-> Tomas: Creo que no. #choice
+-> Tomas: ¿Qué? Hable claro, gonorrea. #angry #choice
+    <<set $triedNice = false>>
+
+Tomas: ¿Qué? Hable claro, gonorrea. #angry
+
+<<if $triedNice == true>>
+    <<set $lastScene = 9>>
+    <<detour TomasConfusion>>
+<<endif>>
+
+Lucas: ¡Pues que anoche el man se enlocó y despedazó las hamburguesas de una gente!
+
+<<set $triedNice = true>>
+
+-> Tomas: ...¿Cómo? #choice
+-> Tomas: Él nunca haría eso. #choice
+-> Tomas: Sí, claro. Le recibo las verduras. #choice
+-> Tomas: Vaya a hablar mierda a otra parte. #angry #choice
+    <<set $triedNice = false>>
+
+Tomas: Vaya a hablar mierda a otra parte. #angry
+
+Lucas: Más bien usted no ande de grosero, ¿me recibe las verduras o no? #angry
+
+<<if $triedNice == true>>
+    <<set $lastScene = 10>>
+    <<detour TomasConfusion>>
+<<endif>>
+
+-> Tomas: ...Sí, qué pena.
+    Lucas: Agh, gracias.
+-> Tomas: Espere, ¿Qué fue lo de Don Julio?
+    Lucas: Agh...
+    Lucas: Yo debo ir regresando al trabajo.
+    Lucas: Ahí nos hablamos, ¿sí?.
+
+/// A bag appears before the player
+
+Lucas: Hasta luego.
+
+/// Lucas leaves
+
+Narrador: Puedes llevar eso a la cocina, o... no.
+Narrador: Los ingredientes aparecerán en la nevera de todas maneras...
+Narrador: ...
+Narrador: Okay, admito que simplemente no sé cómo funciona eso.
+Narrador: Toca la campana para comenzar el turno cuando estés listo.
+
+/// The player eventually rings the bell
+
+===
+
+title: TomasConfusion
+color: purple
+position: 367,55
+---
+
+<<if $lastScene == 7>>
+    Tomas: (Eso no es lo que quería decir...) #afraid
+<<elseif $lastScene == 8>>
+    Tomas: (Ocurrió de nuevo.) #afraid
+<<elseif $lastScene == 9>>
+    Tomas: (¡E-e-ey! Yo no quería sonar así.) #afraid
+<<else>>
+    Tomas: No sé qué me pasa... #sad
+    Lucas: Agh...
+    Lucas: ...
+    Lucas: A veces tampoco quiero hablar con gente...
+    Lucas: Muchas veces...
+    Lucas: ...
+    Lucas: La mayoría del tiempo.
+    Lucas: Pero trato de no fastidiar a los demás con mi actitud.
+    Lucas: ¿Me recibe las verduras?
+<<endif>>
+
+<<return>>
+
+===
+
+title: SaraIntroduction
+color: green
+position: 94,78
+---
+
+/// Triggered by interacting with Sara after she ate
+
+Sara: Muchas gracias, estuvo muy bueno todo.
+
+-> Tomas: Con gusto. #happy #choice
+-> Tomas: Ya sé, yo lo preparé. #angry #choice
+-> Tomas: Ajá. #choice
+
+Tomas: Ya sé, yo lo preparé. #angry
+
+Sara: ¡Pfft! Jajaja, presumido. #happy
+
+<<jump SaraStartsConversation>>
+
+===
+
+title: SaraStartsConversation
+color: green
+position: 131,288
+---
+<<set $triedNice = true>>
+
+Sara: Entonces tú eres el nuevo cocinero del que hablan.
+
+-> Tomas: Ehhh, sí. (Conversar con ella)
+-> Tomas: No. (Dejarla en paz) #angry
+    <<set $triedNice = false>>
+    <<jump NarratorWarningAngryRoute>>
+
+Sara: Wow, entonces mi papá tenía razón, tus hamburguesas son mejores que las de Don Julio.
+
+-> Tomas: Oh, ¡gracias! #happy
+-> Tomas: Tu padre exagera.
+    Sara: ¡No, de verdad lo son!
+-> Tomas: Ok.
+    Sara: Jaja.
+
+Sara: La verdad no venía desde hace muuucho tiempo, pero cuando escuché lo de anoche me ganó la curiosidad y supe que era mi momento de regresar.
+Sara: Casi todo Villa Grasa pensó lo mismo, por lo que veo.
+Sara: ¿Cómo ves la cosa?
+
+-> Tomas: En realidad ni siquira estoy seguro de cuál es el chisme.
+    Sara: Oh, ya veo. Bueno, te cuento.
+-> Tomas: No tengo idea. Debo volver al trabajo, adiós.
+    <<jump SaraIsDismissed>>
+-> Tomas: No me importa, la verdad. Igual tengo que seguir viniendo a este trabajo de mierda.
+    Sara: Eso es muy trágico.
+    Sara: Te cuento entonces, con eso por lo menos te distraes un rato, jeje.
+
+Sara: ¿Tú conoces a Laura, la profe de yoga? Bueno, supongo que no, ya que eres nuevo en el pueblo.
+Sara: Ehhh, equis, Laura es una profe de yoga en el gimnasio, ¿sí? Esta mañana mi mamá estuvo en su clase y ella les contó TODO.
+Sara: Anoche ella y Camilo estaban en su casa viendo "La Mansión de las Estrellas" y les dio pereza cocinar, así que pidieron unas hamburguesas de Don Julio.
+Sara: Esperaron y esperaron, pero nada que llegaban, Camilo estaba HAMBRIENTO. Ya se estaban quedando dormidos, cuando sonó el timbre.
+Sara: Laura dice que Camilo no se demoró ni un minuto en pararse y correr hasta la puerta, y cuando abrió vio la escena de terror:
+Sara: El pan espichado, los tomates restregados, la carne despedazada y la salsa de tomate salpicada por todas partes.
+Sara: Lo que iba a ser su cena parecía una masacre grotesca ahí mismo en la puerta de su casa.
+Sara: Cuando trataron de llamar a la policía nadie les contestó, así que salieron corriendo para la casa de una vecina y descubrieron algo aún peor:
+Sara: TODAS las casas estaban IGUALES, Había hamburguesas despedazadas por toda la cuadra.
+Sara: La gente estaba llorando y corriendondo por todas partes, horrorizados con la escena, y algunos policías trataban de controlar el caos mientras los demás buscaban al criminal.
+Sara: Al final encontraron a Don Julio inconsciente frente a la iglesia, lo despertaron, le preguntaron qué pasó y dijo que no sabía, que él solo había dejado los pedidos en las puertas y se había ido...
+Sara: Pero sus manos y ropa estaban cubiertas de salsa.
+
+<<jump SaraQuestions>>
+
+===
+
+title: NarratorWarningAngryRoute
+position: -190,130
+---
+
+<<if visited("NarratorWarningAngryRoute") == true>>
+    Narrador: Okay... como prefieras.
+    <<set $inAngryRoute = true>>
+
+    <<jump SaraIsDismissed>>
+
+<<else>>
+    Narrador: No quiero ser una molestia de nuevo, pero...
+    Narrador: ¿Estás seguro?
+    Narrador: Ella se ve agradable, podrías intentar hablarle.
+
+    <<jump SaraStartsConversation>>
+<<endif>>
+
+===
+
+title: SaraIsDismissed
+color: green
+position: -384,366
+---
+
+Sara: Oh... okay XD.
+
+===
+
+title: SaraQuestions
+color: green
+position: 142,561
+---
+
+-> Tomas: Eso suena bastante extraño... <<if visited("SaraResponseExtrano") == false>>
+    <<jump SaraResponseExtrano>>
+-> Tomas: ¿Tú crees que Don Julio hizo esas cosas? <<if visited("SaraResponseCosas") == false>>
+    <<jump SaraResponseCosas>>
+-> Tomas: Pero, ¿Por qué Don Julio se fue de las casas sin recibir el dinero? <<if visited("SaraResponseDinero") == false>>
+    <<jump SaraResponseDinero>>
+-> Tomas: ¿Si tu papá ha probado mis hamburguesas quiere decir que ustedes también pidieron anoche? <<if visited("SaraResponseAnoche") == false>>
+    <<jump SaraResponseAnoche>>
+-> Tomas: Qué locura. Bueno, debo seguir con el trabajo.
+
+
+Sara: ¡CIERTO! Perdón, no quise quitarte tanto tiempo, me distraje con el chisme. #happy
+Sara: Espera, ¿qué hora-? ¡AAAAAAAAH! VOY TARDE PARA EL ENSAYO. #afraid
+Sara: FUE UN GUSTO CONOCERTE, AHÍ NOS VEMOS. #afraid
+
+/// Sara leaves in a rush
+
+<<set $hasIrritabilidad = false>>
+<<SetStatusEffect Irritabilidad false>>
+
+<<if $triedNice== true>>
+    Narrador: Oh, parece que ya no quieres cachetear a nadie...
+    Narrador: ¿Qué cambió?
+    Narrador: Bueno, lo bueno es que ahora podrás tratar mejor a la gente, supongo.
+    Narrador: Si así lo deseas, claro.
+    Narrador: Siempre puedes hacer enojar a la gente por diversión.
+    Narrador: ...
+    Narrador: A menos de que te moleste quedarte sin propina.
+<<else>>
+    Narrador: Te dije, ¿a que sí?
+    Narrador: Una emoción negativa no te quita el derecho de convivir con los demás.
+    Narrador: Perdón si te insistí demasiado.
+    Narrador: Realmente creo que si hubieses evitado hablarle solo habrías acabado aún más frustrado.
+<<endif>>
+
+Narrador: Por cierto, ¿por qué estabas así?
+Narrador: ...
+Narrador: ¿Es porque dudé de ti?
+Narrador: ...
+Narrador: ¿O acaso te molesté mucho anoche?
+Narrador: ...
+Narrador: Dejémoslo en que fue un día muy pesado.
+
+<<jump MondayNight>>
+
+===
+
+title: SaraResponseExtrano
+color: green
+position: -136,527
+---
+
+Sara: Sí, ¿cierto? Suena demasiado loco.
+Sara: La verdad no entiendo por qué alguien haría algo así, pero debo confesarte que toda esta situación me emociona un poco jeje. #happy
+Sara: La última vez que pasó algo interesante en Villa Grasa fue cuando el alcalde quiso demoler la primaria para construir un casino JSJSJSJS. #dead
+Sara: Se suponía que sería "la gran atracción turística del Valle Grasoso" que nos pondría en el mapa y activaría el comercio, pero todos sabían que eso pura MIERDA, ay, perdón.
+Sara: formaron un comité para funar al alcalde, ¡y lo lograron! #happy
+Sara: Bueno, de hecho no tuvieron que hacer nada, porque como siempre el alcalde se funó solo XD.
+Sara: Salió a decir en TeleManteca que estudiar era para la gente de ciudad y que los niños de su pueblo debían era aprender a apostar para que invirtieran en su negocio de NFTs. #dead
+Sara: ...
+Sara: La verdad sí estaban bonitos los NFTs, yo le habría comprado uno... #dead
+Sara: Equis, el punto es que la gente está conmocionada con la situación.
+
+<<jump SaraQuestions>>
+
+===
+
+title: SaraResponseCosas
+color: green
+position: 407,546
+---
+
+Sara: Oh, no no, nadie piensa eso, por dios, jajaja. Don Julio siempre ha sido un amor, todos estamos es preocupados por él. #happy
+Sara: Mi papá dice que desde que su esposa se enfermó no ha sido el mismo.
+Sara: Ellos dos estudiaron juntos desde niños y mi papá le ayudó a gestionar todo cuando él quiso abrir el restaurante con ella.
+Sara: Yo la verdad nunca he hablado mucho con él, pero aquí en el pueblo todos le tienen mucho aprecio.
+Sara: Apenas lo encontraron la gente asumió que alguien le había hecho algo o que lo trataron de inculpar de alguna manera.
+Sara: Aunque sí hay algunos que piensan que estaba tan desesperado que no pudo con la frustración y por eso lo hizo...
+Sara: Igual la policía lo está interrogando ahorita solo para entender qué ocurrió.
+
+<<jump SaraQuestions>>
+
+===
+
+title: SaraResponseDinero
+color: green
+position: -48,751
+---
+
+Sara: Ah, es que normalmente Don Julio solo deja los pedidos en la puerta.
+Sara: Con lo pequeño que es Villa Grasa literalmente todos se conocen, así que él solo añade los pedidos a la cuenta de la gente y ellos eventualmente le pagan durante la semana cuando vienen a comer.
+Sara: No es como que hayan muchos otros restaurantes a donde ir de todos modos jsjs.
+Sara: ...
+Sara: Hm. Tal vez por eso la epidemia de colesterol alto está tan fuera de control... #dead
+
+<<jump SaraQuestions>>
+
+===
+
+title: SaraResponseAnoche
+color: green
+position: 334,747
+---
+
+Sara: ¡Sí, sí! Anoche anoche él pidió un domicilio también, pero no fue como los demás si eso te preguntas, no nos comimos la comida del piso jajaja. #happy
+Sara: Don Julio timbró y esperó a que abriera porque quería saludar a mi papá.
+Sara: Él entró, se sentaron en la sala y hablaron un rato, yo solo lo vi un momento cuando bajé a calentar mis macarrones con queso, pero por lo que pude escuchar desde la cocina no parecía estar muy bien.
+Sara: La verdad siento mucho pesar, hace tiempo que su esposa está ya muy malita... #sad
+Sara: De todos modos él ha seguido trabajando y esforzándose por mantener el negocio a flote, por más mal que estuviera no me lo imagino destrozando las hamburguesas que hiciste con tanto esfuerzo.
+Sara: Debe tener mucha confianza en ti para haberte dejado las llaves del local. #happy
+
+<<jump SaraQuestions>>
+
+===

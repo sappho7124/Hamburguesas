@@ -54,24 +54,18 @@ public class TableSpot : MonoBehaviour
                     string customerDialogue;
                     CustomerFaceController.Mood reactionMood;
 
+                    CustomerFaceController face = linkedSittingSpot.currentCustomer != null ? linkedSittingSpot.currentCustomer.faceController : null;
+
                     if (OrderManager.Instance.TryServeFood(this, plate, out moneyToSpawn, out customerDialogue, out reactionMood))
                     {
-                        // FIXED: Pass reactionMood to the UI!
-                        RestaurantUIManager.Instance.ShowDialogue(OrderManager.Instance.GetActiveProfileName(this), customerDialogue, reactionMood);
-                        
-                        if (linkedSittingSpot.currentCustomer != null)
-                            linkedSittingSpot.currentCustomer.faceController.SetMood(reactionMood);
-
+                        if (face != null) face.SetMood(reactionMood);
+                        RestaurantUIManager.Instance.ShowDialogue(OrderManager.Instance.GetActiveProfileName(this), customerDialogue, reactionMood, face);
                         StartCoroutine(EatRoutine(plate, eqPlate, moneyToSpawn));
                     }
                     else
                     {
-                        // FIXED: Pass reactionMood to the UI!
-                        RestaurantUIManager.Instance.ShowDialogue(OrderManager.Instance.GetActiveProfileName(this), customerDialogue, reactionMood);
-                        
-                        if (linkedSittingSpot.currentCustomer != null)
-                            linkedSittingSpot.currentCustomer.faceController.SetMood(reactionMood);
-
+                        if (face != null) face.SetMood(reactionMood);
+                        RestaurantUIManager.Instance.ShowDialogue(OrderManager.Instance.GetActiveProfileName(this), customerDialogue, reactionMood, face);
                         rejectedPlates.Add(plate);
                     }
                     break; 

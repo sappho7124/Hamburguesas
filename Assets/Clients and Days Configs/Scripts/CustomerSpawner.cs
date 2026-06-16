@@ -53,14 +53,27 @@ public class CharacterFaceSet
 {
     public EmotionSet neutral;
     public EmotionSet happy;
+    public EmotionSet sad;
+    public EmotionSet scared;
+    public EmotionSet puking;
+    public EmotionSet dead;
     public EmotionSet angry;
+    public EmotionSet reallyAngry;
 
     // Helper to easily grab the right emotion based on the CustomerFaceController.Mood
     public EmotionSet GetEmotion(CustomerFaceController.Mood mood)
     {
-        if (mood == CustomerFaceController.Mood.Happy) return happy;
-        if (mood == CustomerFaceController.Mood.Angry || mood == CustomerFaceController.Mood.ReallyAngry || mood == CustomerFaceController.Mood.Puking) return angry;
-        return neutral; // Default/Fallback for Neutral, Scared, etc.
+        switch (mood)
+        {
+            case CustomerFaceController.Mood.Happy: return happy;
+            case CustomerFaceController.Mood.Sad: return sad;
+            case CustomerFaceController.Mood.Scared: return scared;
+            case CustomerFaceController.Mood.Puking: return puking;
+            case CustomerFaceController.Mood.Dead: return dead;
+            case CustomerFaceController.Mood.Angry: return angry;
+            case CustomerFaceController.Mood.ReallyAngry: return reallyAngry;
+            default: return neutral; // Fallback
+        }
     }
 }
 // --- GROUP CLASS ---
@@ -240,14 +253,24 @@ public Dictionary<string, DialogueOverrideConfig> overridesMap = new Dictionary<
         catch (System.Exception e) { Debug.LogError($"<color=red>[JSON CRASH]</color> Day Config: {e.Message}"); }
     }
 
+// Inside CustomerSpawner.cs -> Replace Update() with this:
+
     void Update()
     {
         ManageQueueFlow();
 
+        // Detect all forms of time pausing: Shift hasn't started, game paused, or active dialogue!
+        bool isPaused = !isShiftActive || Time.timeScale == 0f || RestaurantUIManager.Instance.IsDialogueActive;
+        
+        float maxDuration = (currentDay != null && currentDay.shiftDuration > 0) ? currentDay.shiftDuration : 100f; // Failsafe prior to shift
+        
+        if (RestaurantUIManager.Instance != null) {
+            RestaurantUIManager.Instance.UpdateShiftTimer(shiftTimer, maxDuration, isPaused);
+        }
+
         if (!isShiftActive) return;
 
         shiftTimer += Time.deltaTime;
-        RestaurantUIManager.Instance.UpdateShiftTimer(shiftTimer, currentDay.shiftDuration);
 
         if (shiftTimer >= currentDay.shiftDuration)
         {
@@ -255,7 +278,6 @@ public Dictionary<string, DialogueOverrideConfig> overridesMap = new Dictionary<
             return;
         }
 
-        // 1. Process Scheduled Spawns
         foreach (var npc in currentDay.scheduledNPCs)
         {
             if (!npc.hasSpawned && shiftTimer >= npc.time)
@@ -265,7 +287,6 @@ public Dictionary<string, DialogueOverrideConfig> overridesMap = new Dictionary<
             }
         }
 
-        // 2. Process Generic Spawns
         TimeBracket currentBracket = GetCurrentTimeBracket();
         if (currentBracket != null && currentBracket.spawnInterval > 0 && currentDay.genericProfiles.Count > 0)
         {
@@ -273,15 +294,10 @@ public Dictionary<string, DialogueOverrideConfig> overridesMap = new Dictionary<
             if (timeSinceLastGenericSpawn >= currentBracket.spawnInterval)
             {
                 timeSinceLastGenericSpawn = 0f;
-                
-                // Determine group size based on weighted random
                 int groupSize = DetermineGroupSize(currentBracket);
                 
                 List<string> groupProfiles = new List<string>();
-                for (int i = 0; i < groupSize; i++)
-                {
-                    groupProfiles.Add(currentDay.genericProfiles[Random.Range(0, currentDay.genericProfiles.Count)]);
-                }
+                for (int i = 0; i < groupSize; i++) groupProfiles.Add(currentDay.genericProfiles[Random.Range(0, currentDay.genericProfiles.Count)]);
                 TrySpawnCustomerGroup(groupProfiles);
             }
         }
@@ -406,7 +422,7 @@ public Dictionary<string, DialogueOverrideConfig> overridesMap = new Dictionary<
                 if (group.waitTimer >= group.maxWaitTime)
                 {
                     group.isLeaving = true;
-                    OrderManager.Instance.HandleQueueWalkout(group.members[0].profile);
+                    OrderManager.Instance.HandleQueueWalkout(group.members[0].profile, group.members[0].faceController);;
                     foreach (var member in group.members) member.Leave();
                 }
             }

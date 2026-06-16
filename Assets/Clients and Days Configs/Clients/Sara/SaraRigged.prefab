@@ -189,7 +189,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 4.7586374, y: 0.00000028627124, z: 3.3584256}
-  m_LocalScale: {x: 0.3, y: 0.3, z: 0.3}
+  m_LocalScale: {x: 0.4, y: 0.4, z: 0.4}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 8254183527836919207}
@@ -269,6 +269,10 @@ MonoBehaviour:
   overrides:
     overrides: []
   faceController: {fileID: 8809017651462803271}
+  headBone: {fileID: 8683967391748682658}
+  maxHeadTurnAngle: 75
+  headTurnSpeed: 6
+  lookRadius: 4
 --- !u!114 &5712467054744853387
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1061,21 +1065,29 @@ MonoBehaviour:
   materialIndex: 0
   faceMappings:
   - mood: 1
-    uvOffset: {x: 0, y: 0.5}
-  - mood: 0
-    uvOffset: {x: 0, y: 0.5}
-  - mood: 2
-    uvOffset: {x: 0.25, y: 0.5}
-  - mood: 3
-    uvOffset: {x: 0.5, y: 0.5}
-  - mood: 4
     uvOffset: {x: 0.75, y: 0.5}
+    openMouthUV: {x: 0.75, y: 0}
+  - mood: 0
+    uvOffset: {x: 0, y: 0.75}
+    openMouthUV: {x: 0, y: 0.25}
+  - mood: 2
+    uvOffset: {x: 0.25, y: 0.75}
+    openMouthUV: {x: 0.25, y: 0.25}
+  - mood: 3
+    uvOffset: {x: 0.5, y: 0.75}
+    openMouthUV: {x: 0.5, y: 0.25}
+  - mood: 4
+    uvOffset: {x: 0.75, y: 0.75}
+    openMouthUV: {x: 0.75, y: 0.25}
   - mood: 5
-    uvOffset: {x: 0, y: 0}
+    uvOffset: {x: 0, y: 0.5}
+    openMouthUV: {x: 0, y: 0}
   - mood: 6
-    uvOffset: {x: 0.25, y: 0}
+    uvOffset: {x: 0.25, y: 0.5}
+    openMouthUV: {x: 0.25, y: 0}
   - mood: 7
-    uvOffset: {x: 0.5, y: 0}
+    uvOffset: {x: 0.5, y: 0.5}
+    openMouthUV: {x: 0.5, y: 0}
 --- !u!1 &4445485363007703315
 GameObject:
   m_ObjectHideFlags: 0

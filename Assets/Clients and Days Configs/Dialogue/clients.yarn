@@ -1,0 +1,132 @@
+title: MondayClient1
+position: 26,-44
+---
+
+/// Triggered by the player interacting with the client
+
+Cliente1: Hola, quiero una hamburguesa doble carne con queso y tomate, por favor.
+
+/// Since the player is under the "irritabilidad" status effect, Unity must be prepared to ignore the line sent by Yarn Spinner when the player selects a non-mean option. This is done by putting a #choice tag at the end of every dialogue option, and telling Unity to ignore any lines that have that tag when the "irritabilidad" status effect is active.
+
+/// The outcome of selecting a non-mean dialogue option can only happen if "irritabilidad" is not active, and if it does happen the node is interrupted after that, because the default flow is the consecuence of the mean option.
+
+/// The player's mean line appears again after the options, since it must be sent in any case after the player's selection is ignored, and it is ignored if "irritabilidad" isn't active, for in that case selecting the mean option would already send the original line.
+
+/// In order to make dialogue options bypass "irritabilidad" for narrative purposes, the #choice tag must simply not be included. The outcomes of non-mean options are shown in some nodes here to illustrate how it would be done in the rest of the game, but they were not written for the events of monday since getting "irritabilidad" is unavoidable that day.
+
+-> Tomas: Sí señora, ya se la preparo. #choice
+    <<if $hasIrritabilidad== false>>
+        Cliente1: ¡Muchas gracias! #happy
+        <<stop>>
+    <<endif>>
+-> Tomas: Agh, bueno. #angry #choice
+
+Tomas: Agh, bueno. <<if $hasIrritabilidad== true>> #angry
+
+Cliente1: Hm, estos jóvenes de hoy en día son muy groseros. #angry
+
+===
+
+title: MondayClient2
+position: 278,-48
+---
+
+/// Triggered by the player interacting with the client
+
+Cliente2: Buenas, ¿me da por favor una hamburguesa con queso, tomate y pepino? #happy
+
+-> Tomas: Claro, con gusto. #choice
+    <<if $hasIrritabilidad== false>>
+        Cliente2: ¡Muchas gracias! #happy
+        <<stop>>
+    <<endif>>
+-> Tomas: Queso, tomate y pepino, sí señor. #choice
+    <<if $hasIrritabilidad== false>>
+        Cliente2: ¡Así es, gracias! #happy
+        <<stop>>
+    <<endif>>
+-> Tomas: Combinación de mierda, pero bueno. #angry #choice
+
+Tomas: Combinación de mierda, pero bueno. <<if $hasIrritabilidad== true>> #angry
+
+Cliente2: Eh, ¿Perdón? #afraid
+
+===
+
+title: MondayClient3
+position: 28,116
+---
+
+/// Triggered by the player interacting with the client
+
+Cliente3: Uy, yo hoy tengo un hambre es pero bárbara. La verdad no sé qué pedir, todo suena tan bueno.
+Cliente3: ¿Usted qué me recomienda? #happy
+
+-> Tomas: Hmmm, a mí me gusta la doble carne. #choice
+    <<if $hasIrritabilidad== false>>
+        Cliente3: ¡Oh genial! No me importa. Deme una de queso, por favor. #happy
+        <<stop>>
+    <<endif>>
+-> Tomas: Diría que la de tomate y pepino es una buena opción. #Choice
+    <<if $hasIrritabilidad== false>>
+        Cliente3: Esa ya la comí ayer, jmmm... Deme una de queso, por favor. #happy
+        <<stop>>
+    <<endif>>
+-> Tomas: La verdad no estoy seguro... #choice
+    <<if $hasIrritabilidad== false>>
+        Cliente3: Oh, jmmm... Deme una de queso, por favor. #happy
+        <<stop>>
+    <<endif>>
+-> Tomas: Yo qué sé, pida rápido que hay más gente esperando. #angry #choice
+
+Tomas: Yo qué sé, pida rápido que hay más gente esperando. <<if $hasIrritabilidad== true>> #angry
+
+Cliente3: Uy, pues como diga, ¿no? Don Julio no le habla a uno así, debería darle pena. #angry
+Cliente3: Deme una de queso pues. #angry
+
+===
+
+title: MondayClient4
+position: 283,108
+---
+
+/// Triggered by the player interacting with the client
+
+Cliente4: Qué cosa tan rara lo de anoche, ¿no?
+Cliente4: ¿Usted sabe algo joven?
+
+-> Tomas: De hecho no, ¿qué pasó? #choice
+-> Tomas: Yo tampoco entiendo muy bien qué ocurrió. #choice
+-> Tomas: ¿Va a pedir algo de comer o no? #angry #choice
+
+Tomas: ¿Va a pedir algo de comer o no? <<if $hasIrritabilidad== true>> #angry
+
+Cliente4: Ay, perdón, no lo quise molestar... #afraid
+Cliente4: Deme con tomate y queso, por favor... #sad
+Cliente4: Gracias, qué pena... #sad
+
+===
+
+title: MondayClient5
+color: green
+position: 25,281
+---
+
+/// Triggered by the player interacting with the client
+
+Sara: Hola, me gustaría ordenar una...
+Sara: Hmmm...
+Sara: Ehhh...
+Sara: Hmmm...
+Sara: Una... de queso y pepino, por favor.
+Sara: No, no, de tomate con queso.
+Sara: Sí, tomate y queso, por favor.
+
+-> Tomas: Tomate y queso, listo. #choice
+-> Tomas: Meh. Ajá. #angry #choice
+
+Tomas: Meh. Ajá. <<if $hasIrritabilidad== true>> #angry
+
+Sara: ¡Gracias! #happy
+
+===
