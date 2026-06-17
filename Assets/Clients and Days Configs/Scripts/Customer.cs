@@ -14,7 +14,7 @@ public class Customer : MonoBehaviour
     private Transform currentQueueSpot;
     private CustomerGroup myGroup; 
     
-    private enum State { MovingToSeat, Seated, Leaving, MovingToQueue, WaitingInQueue }
+    private enum State { MovingToSeat, Seated, Leaving, MovingToQueue, WaitingInQueue, FinishedEating}
     private State currentState;
 
     private bool hasOrdered = false;
@@ -179,8 +179,6 @@ public class Customer : MonoBehaviour
         transform.position = targetSeat.transform.TransformPoint(targetSeat.customerOffset); 
         transform.rotation = targetSeat.transform.rotation; 
         targetSeat.OccupySpot();
-        OrderManager.Instance.GenerateOrderForTable(targetSeat, profile);
-
         SetInteractable(true, "Tomar Orden");
     }
 
@@ -200,55 +198,48 @@ public class Customer : MonoBehaviour
             MoveToClosestNavPoint(groundExit);
     }
 
-    public void InteractWithCustomer()
-    {
-        if (currentState == State.WaitingInQueue && myGroup != null)
-        {
-            int totalSeconds = Mathf.FloorToInt(myGroup.waitTimer);
-            int minutes = totalSeconds / 60;
-            int seconds = totalSeconds % 60;
-            string timeText = minutes > 0 ? $"{minutes} minutos y {seconds} segundos" : $"{seconds} segundos";
-            
-            RestaurantUIManager.Instance.ShowDialogue(profile.profileName, $"Llevo esperando {timeText}. ¡Por favor apresúrate!", faceController.CurrentMood, faceController);
-        }
-        else if (currentState == State.Seated && targetSeat != null && targetSeat.linkedTableSpot != null)
-        {
-            string orderText = OrderManager.Instance.GetOrderText(targetSeat.linkedTableSpot);
-            if (!hasOrdered)
-            {
-                hasOrdered = true;
-                RestaurantUIManager.Instance.ShowDialogue(profile.profileName, $"Hola, me gustaría pedir: {orderText}.", faceController.CurrentMood, faceController);
-                SetInteractable(true, "Repetir Orden");
-            }
-            else
-            {
-                RestaurantUIManager.Instance.ShowDialogue(profile.profileName, $"¿Otra vez? Yo pedí: {orderText}.", faceController.CurrentMood, faceController);
-            }
-        }
-    }
-
+// --- MASTER INTERACTION HANDLER ---
+    // Link this directly to your InteractableObject's "OnInteract" Unity Event!
     public void HandleInteraction()
     {
-        int currentDay = SaveManager.Instance != null ? SaveManager.Instance.CurrentSave.currentDay : 1;
         string triggerState = DetermineCurrentTriggerState();
-
         if (string.IsNullOrEmpty(triggerState)) return; 
 
-        DialogueOverride currentOverride = GetOverrideForState(currentDay, triggerState);
-
-        if (currentOverride != null)
+        // 1. MAIN EVENT: Taking the order OR Talking after eating!
+        if (triggerState == "BeforeOrder" || triggerState == "PostMeal")
         {
-            CustomerFaceController.Mood overrideMood = CustomerFaceController.Mood.Neutral;
-            Enum.TryParse(currentOverride.moodName, out overrideMood);
+            RestaurantYarnView yarnView = FindAnyObjectByType<RestaurantYarnView>();
+            if (yarnView != null) yarnView.currentSpeakerFace = faceController;
+
+            Yarn.Unity.DialogueRunner runner = FindAnyObjectByType<Yarn.Unity.DialogueRunner>();
             
-            RestaurantUIManager.Instance.ShowDialogue(profile.profileName, currentOverride.fallbackText, overrideMood, faceController);
-            
-            if (triggerState == "BeforeOrder") 
+            // Choose the correct Yarn Node based on the state!
+            string targetNode = triggerState == "BeforeOrder" ? profile.yarnNodeName : profile.yarnPostMealNodeName; 
+
+            if (runner != null && !string.IsNullOrEmpty(targetNode))
             {
-                hasOrdered = true;
-                SetInteractable(true, "Hablar");
+                try 
+                {
+                    YarnGameLogic.Instance.currentInteractingCustomer = this;
+                    runner.StartDialogue(targetNode);
+                    
+                    if (triggerState == "BeforeOrder")
+                    {
+                        hasOrdered = true;
+                        SetInteractable(true, "Repetir Orden");
+                    }
+                    else if (triggerState == "PostMeal")
+                    {
+                        // Turn off interaction so you can't talk to them again while they are leaving
+                        SetInteractable(false, "");
+                    }
+                    return; 
+                }
+                catch (System.Exception)
+                {
+                    Debug.LogWarning($"[Yarn] Node '{targetNode}' missing or invalid! Using generic C# fallback.");
+                }
             }
-            return; 
         }
 
         ExecuteStandardInteraction(triggerState);
@@ -259,6 +250,7 @@ public class Customer : MonoBehaviour
         if (currentState == State.WaitingInQueue) return "Queue";
         if (currentState == State.Seated && !hasOrdered) return "BeforeOrder";
         if (currentState == State.Seated && hasOrdered) return "AfterOrder";
+        if (currentState == State.FinishedEating) return "PostMeal"; // Added this!
         return "";
     }
 
@@ -269,6 +261,12 @@ public class Customer : MonoBehaviour
         return null;
     }
 
+    public void MarkAsFinishedEating()
+    {
+        currentState = State.FinishedEating;
+        SetInteractable(true, "Hablar");
+    }
+
     private void ExecuteStandardInteraction(string state)
     {
         if (state == "Queue" && myGroup != null)
@@ -277,18 +275,21 @@ public class Customer : MonoBehaviour
             int minutes = totalSeconds / 60;
             int seconds = totalSeconds % 60;
             string timeText = minutes > 0 ? $"{minutes} minutos y {seconds} segundos" : $"{seconds} segundos";
+            
             RestaurantUIManager.Instance.ShowDialogue(profile.profileName, $"Llevo esperando {timeText}. ¡Por favor apresúrate!", faceController.CurrentMood, faceController);
         }
         else if (state == "BeforeOrder" && targetSeat != null && targetSeat.linkedTableSpot != null)
         {
             hasOrdered = true;
             string orderText = OrderManager.Instance.GetOrderText(targetSeat.linkedTableSpot);
+            
             RestaurantUIManager.Instance.ShowDialogue(profile.profileName, $"Hola, me gustaría pedir: {orderText}.", faceController.CurrentMood, faceController);
             SetInteractable(true, "Repetir Orden");
         }
         else if (state == "AfterOrder" && targetSeat != null && targetSeat.linkedTableSpot != null)
         {
             string orderText = OrderManager.Instance.GetOrderText(targetSeat.linkedTableSpot);
+            
             RestaurantUIManager.Instance.ShowDialogue(profile.profileName, $"¿Otra vez? Yo pedí: {orderText}.", faceController.CurrentMood, faceController);
         }
     }

@@ -35,6 +35,11 @@ public class InteractionController : MonoBehaviour
     public float rotationSensitivity = 0.5f;
     public float precisionRotationMultiplier = 0.1f; 
 
+    [Header("Dialogue Camera Settings")]
+    public float cameraLockSpeed = 5f;
+    private bool isDialogueLocked = false;
+    private Transform dialogueTargetHead;
+    private Quaternion originalCameraRotation;
     // Internal State
     private HighlightableObject currentHoverObject; 
     private Rigidbody heldObjectRB;
@@ -77,6 +82,19 @@ public class InteractionController : MonoBehaviour
 
     void Update()
     {
+        // NEW: If we are locked in dialogue, hijack the camera!
+        if (isDialogueLocked && dialogueTargetHead != null)
+        {
+            Vector3 direction = (dialogueTargetHead.position - playerCamera.transform.position).normalized;
+            Quaternion targetRotation = Quaternion.LookRotation(direction);
+            
+            // Smoothly look at the head (using unscaled time so it works while paused!)
+            playerCamera.transform.rotation = Quaternion.Slerp(playerCamera.transform.rotation, targetRotation, Time.unscaledDeltaTime * cameraLockSpeed);
+            
+            // Do not process normal physics/hovering while talking
+            return;
+        }
+
         if (isHolding)
         {
             HandleInputHolding();
@@ -92,6 +110,36 @@ public class InteractionController : MonoBehaviour
     void FixedUpdate()
     {
         if (isHolding && heldObjectRB != null) MoveHeldObjectSnappy();
+    }
+
+    public void ToggleDialogueMode(bool enable, Transform targetHead = null)
+    {
+        isDialogueLocked = enable;
+        dialogueTargetHead = targetHead;
+
+        if (playerController != null)
+        {
+            // Lock the player's movement and looking
+            playerController.SetInputLock(enable, enable);
+        }
+
+        if (enable)
+        {
+            originalCameraRotation = playerCamera.transform.rotation;
+            
+            // Unlock and show the mouse cursor for clicking options!
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
+        else
+        {
+            // Hide the cursor and lock it back to the game
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+            
+            // Snap camera back
+            playerCamera.transform.rotation = originalCameraRotation;
+        }
     }
 
     // --- INPUT: NOTHING HELD (Using Normal Map) ---
@@ -235,6 +283,7 @@ public class InteractionController : MonoBehaviour
     void ToggleRotationMode(bool enable)
     {
         IsRotationMode = enable;
+        StoryFlowManager.Instance.ReportAction("RotateBread");
         
         // Lock player camera/movement via the PlayerController
         if (playerController != null) playerController.SetInputLock(enable, enable);
@@ -313,6 +362,12 @@ public class InteractionController : MonoBehaviour
         // Hide Hover UI immediately if it was visible
         if(currentHoverObject) currentHoverObject.ToggleHighlight(false);
         OnInteractableHover?.Invoke(false, null, "", "", false); 
+
+        if (itemScript != null && itemScript.itemDefinition != null)
+        {
+            if (itemScript.itemDefinition.itemName == "Pan") StoryFlowManager.Instance.ReportAction("GrabBread");
+            if (itemScript.itemDefinition.itemName == "Carne") StoryFlowManager.Instance.ReportAction("GrabMeat");
+        }
     }
 
     void Drop()

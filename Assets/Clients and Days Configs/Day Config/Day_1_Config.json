@@ -1,0 +1,25 @@
+{
+  "shiftDuration": 240.0,
+  "scheduledNPCs": [
+    {
+      "time": 10.0,
+      "profileNames": [ "Cliente1" ],
+      "hasSpawned": false
+    },
+    {
+      "time": 50.0,
+      "profileNames": [ "Cliente2" ],
+      "hasSpawned": false
+    },
+    {
+      "time": 100.0,
+      "profileNames": [ "Cliente3", "Cliente4" ],
+      "hasSpawned": false
+    },
+    {
+      "time": 180.0,
+      "profileNames": [ "Sara" ],
+      "hasSpawned": false
+    }
+  ]
+}

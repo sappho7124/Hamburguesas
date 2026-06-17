@@ -145,6 +145,7 @@ public class BurgerAssemblyStation : MonoBehaviour
 
 private IEnumerator AssembleBurgerRoutine(List<GrabbableItem> ingredients, Vector3 centerPosition)
     {
+        StoryFlowManager.Instance.ReportAction("BuildBurger");
         // 1. FREEZE INGREDIENTS INSTANTLY
         // We strip rigidbodies immediately so the player can't knock them over while the skewer is falling
         foreach (var ingredient in ingredients)

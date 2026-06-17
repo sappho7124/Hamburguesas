@@ -495,6 +495,74 @@
                     "isPartOfComposite": true
                 }
             ]
+        },
+        {
+            "name": "UI",
+            "id": "7b7cc504-2dbc-424c-b445-8696a978d5ae",
+            "actions": [
+                {
+                    "name": "Select",
+                    "type": "Button",
+                    "id": "3a2d6c01-504f-4f87-b06d-e4c4a880eeed",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "UI up",
+                    "type": "Button",
+                    "id": "5ff635ef-5fd8-4a47-818b-d8c5cd6d00ba",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "UI down",
+                    "type": "Button",
+                    "id": "b9545c18-ae30-4af7-8cc2-5631fbc641a9",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "af2063e4-1844-432f-9678-7290035028b1",
+                    "path": "",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Select",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "8830e2fc-8c12-4a25-b6da-369c4ba76019",
+                    "path": "",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "UI up",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "6109ebe8-2758-4d7a-8467-33ef9d51439f",
+                    "path": "",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "UI down",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
         }
     ],
     "controlSchemes": []

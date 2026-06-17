@@ -4,20 +4,20 @@ using System.Linq;
 
 // --- DAY JSON DATA CLASSES ---
 [System.Serializable]
-public class DayConfig {
-    public float shiftDuration; 
-    public List<TimeBracket> spawnRates;
+public class DayConfig
+{
+    public float shiftDuration;
     public List<ScheduledNPC> scheduledNPCs;
-    public List<string> genericProfiles; 
 }
+
 [System.Serializable]
 public class DialogueOverride
 {
-    public int day; 
-    public string triggerState; 
-    public string yarnNode; 
-    public string fallbackText; 
-    public string moodName; 
+    public int day;
+    public string triggerState;
+    public string yarnNode;
+    public string fallbackText;
+    public string moodName;
 }
 
 [System.Serializable]
@@ -27,19 +27,13 @@ public class DialogueOverrideConfig
 }
 
 [System.Serializable]
-public class TimeBracket { 
-    public float startTime; 
-    public float endTime; 
-    public float spawnInterval; 
-    public List<GroupSizeWeight> groupSizeWeights;
+public class ScheduledNPC
+{
+    public float time;
+    public List<string> profileNames;
+    [HideInInspector] public bool hasSpawned;
 }
-[System.Serializable]
-public class GroupSizeWeight { 
-    public int groupSize; 
-    public int weight; 
-}
-[System.Serializable]
-public class ScheduledNPC { public float time; public List<string> profileNames; [HideInInspector] public bool hasSpawned; }
+
 // Emotions
 [System.Serializable]
 public class EmotionSet
@@ -60,7 +54,6 @@ public class CharacterFaceSet
     public EmotionSet angry;
     public EmotionSet reallyAngry;
 
-    // Helper to easily grab the right emotion based on the CustomerFaceController.Mood
     public EmotionSet GetEmotion(CustomerFaceController.Mood mood)
     {
         switch (mood)
@@ -72,11 +65,11 @@ public class CharacterFaceSet
             case CustomerFaceController.Mood.Dead: return dead;
             case CustomerFaceController.Mood.Angry: return angry;
             case CustomerFaceController.Mood.ReallyAngry: return reallyAngry;
-            default: return neutral; // Fallback
+            default: return neutral;
         }
     }
 }
-// --- GROUP CLASS ---
+
 public class CustomerGroup
 {
     public List<Customer> members = new List<Customer>();
@@ -85,111 +78,123 @@ public class CustomerGroup
     public bool isLeaving = false;
 }
 
-// --- NEW: TABLE ISLAND CLASS ---
 public class TableIsland
 {
     public List<SittingSpot> spots = new List<SittingSpot>();
-    public bool isClosedLoop; // True if it's a private table, false if it's an open chain (like a Bar)
+    public bool isClosedLoop;
 
     public bool IsEmpty()
     {
         foreach (var spot in spots)
         {
-            if (spot.isOccupied || spot.isReserved) return false;
+            if (spot.isOccupied || spot.isReserved)
+                return false;
         }
+
         return true;
     }
 }
 
+[System.Serializable]
+public class CharacterSetup
+{
+    [Tooltip("The 3D Prefab for this character")]
+    public GameObject characterPrefab;
 
+    [Tooltip("The JSON order/profile for this character")]
+    public TextAsset profileJSON;
 
-// --- MANAGER CLASS ---
+    [Tooltip("The 6 emotion sprites for UI Dialogue")]
+    public CharacterFaceSet faceSet;
+
+    [Tooltip("Optional JSON for Dialogue Overrides (Yarn Nodes)")]
+    public TextAsset overridesJSON;
+}
+
 public class CustomerSpawner : MonoBehaviour
 {
     public static CustomerSpawner Instance;
 
-    [Header("Day & Profile JSONs")]
-    public TextAsset currentDayConfigJSON;
+    [Header("Day Configs (Index 0 = Day 1)")]
+    public List<TextAsset> weeklyDayConfigs;
 
-    [System.Serializable]
-    public class CharacterSetup
-    {
-        [Tooltip("The 3D Prefab for this character")]
-        public GameObject characterPrefab;
-        [Tooltip("The JSON order/profile for this character")]
-        public TextAsset profileJSON;
-        [Tooltip("The 6 emotion sprites for UI Dialogue")]
-        public CharacterFaceSet faceSet;
-        [Tooltip("Optional JSON for Dialogue Overrides (Yarn Nodes)")]
-        public TextAsset overridesJSON;
-    }
+    [Header("Character Roster")]
+    public List<CharacterSetup> characterRoster;
 
+    private Dictionary<string, string> profileJsonMap = new Dictionary<string, string>();
+    private Dictionary<string, GameObject> prefabMap = new Dictionary<string, GameObject>();
+    public Dictionary<string, CharacterFaceSet> faceMap = new Dictionary<string, CharacterFaceSet>();
+    public Dictionary<string, DialogueOverrideConfig> overridesMap = new Dictionary<string, DialogueOverrideConfig>();
 
-[Header("Character Roster")]
-public List<CharacterSetup> characterRoster;
-
-private Dictionary<string, string> profileJsonMap = new Dictionary<string, string>();
-private Dictionary<string, GameObject> prefabMap = new Dictionary<string, GameObject>();
-public Dictionary<string, CharacterFaceSet> faceMap = new Dictionary<string, CharacterFaceSet>();
-
-public Dictionary<string, DialogueOverrideConfig> overridesMap = new Dictionary<string, DialogueOverrideConfig>();
     [Header("Spawn Logic")]
     public Transform entrancePoint;
     public Transform exitPoint;
 
     private List<SittingSpot> allSittingSpots = new List<SittingSpot>();
-    
+
     [Header("Queue System")]
-    public List<Transform> queueSpots; 
+    public List<Transform> queueSpots;
 
     private List<CustomerGroup> queueGroups = new List<CustomerGroup>();
-    private List<TableIsland> tableIslands = new List<TableIsland>(); // NEW: Stores detected tables
+    private List<TableIsland> tableIslands = new List<TableIsland>();
 
     private DayConfig currentDay;
     private bool isShiftActive = false;
     private float shiftTimer = 0f;
-    private float timeSinceLastGenericSpawn = 0f;
 
     void Awake()
     {
-        if (Instance == null) Instance = this;
-        else Destroy(gameObject);
+        if (Instance == null)
+            Instance = this;
+        else
+            Destroy(gameObject);
 
         foreach (var setup in characterRoster)
         {
-            if (setup.profileJSON == null || setup.characterPrefab == null) continue;
+            if (setup.profileJSON == null || setup.characterPrefab == null)
+                continue;
+
             try
             {
-                CustomerProfile p = JsonUtility.FromJson<CustomerProfile>(setup.profileJSON.text);
+                CustomerProfile p =
+                    JsonUtility.FromJson<CustomerProfile>(setup.profileJSON.text);
+
                 if (p != null && !string.IsNullOrEmpty(p.profileName))
                 {
                     profileJsonMap[p.profileName] = setup.profileJSON.text;
-                    prefabMap[p.profileName] = setup.characterPrefab; 
+                    prefabMap[p.profileName] = setup.characterPrefab;
                     faceMap[p.profileName] = setup.faceSet;
 
-                    // Parse Overrides if they exist!
                     if (setup.overridesJSON != null)
                     {
-                        DialogueOverrideConfig overConfig = JsonUtility.FromJson<DialogueOverrideConfig>(setup.overridesJSON.text);
+                        DialogueOverrideConfig overConfig =
+                            JsonUtility.FromJson<DialogueOverrideConfig>(
+                                setup.overridesJSON.text);
+
                         overridesMap[p.profileName] = overConfig;
                     }
                 }
             }
-            catch (System.Exception e) { Debug.LogError($"<color=red>[JSON CRASH]</color> '{setup.profileJSON.name}': {e.Message}"); }
+            catch (System.Exception e)
+            {
+                Debug.LogError(
+                    $"[JSON CRASH] '{setup.profileJSON.name}': {e.Message}");
+            }
         }
     }
 
     void Start()
     {
-        // AUTO-DETECT ALL SITTING SPOTS IN THE SCENE!
-        allSittingSpots = new List<SittingSpot>(FindObjectsByType<SittingSpot>(FindObjectsSortMode.None));
-        
+        allSittingSpots =
+            new List<SittingSpot>(
+                FindObjectsByType<SittingSpot>(FindObjectsSortMode.None));
+
         if (allSittingSpots.Count == 0)
         {
-            Debug.LogWarning("[CustomerSpawner] No Sitting Spots found in the scene! Customers will have nowhere to sit.");
+            Debug.LogWarning(
+                "[CustomerSpawner] No Sitting Spots found in the scene! Customers will have nowhere to sit.");
         }
 
-        // Detect and categorize tables as soon as the game starts
         DetectTableIslands();
     }
 
@@ -211,6 +216,7 @@ public Dictionary<string, DialogueOverrideConfig> overridesMap = new Dictionary<
             while (queue.Count > 0)
             {
                 SittingSpot current = queue.Dequeue();
+
                 foreach (var neighbor in current.connectedSpots)
                 {
                     if (neighbor != null && unvisited.Contains(neighbor))
@@ -222,53 +228,76 @@ public Dictionary<string, DialogueOverrideConfig> overridesMap = new Dictionary<
                 }
             }
 
-            // Determine if it's a Closed Loop (Normal Table) or an Open Chain (Bar).
-            // A group is an Open Chain if it has > 2 seats AND has end-points (seats with only 1 connection).
-            // Otherwise, it's considered a Closed Loop (Private).
-            bool hasEnds = newIsland.spots.Any(s => s.connectedSpots.Count <= 1) && newIsland.spots.Count > 2;
+            bool hasEnds =
+                newIsland.spots.Any(s => s.connectedSpots.Count <= 1) &&
+                newIsland.spots.Count > 2;
+
             newIsland.isClosedLoop = !hasEnds;
 
             tableIslands.Add(newIsland);
         }
 
-        Debug.Log($"[Seating System] Initialization complete. Detected {tableIslands.Count} total isolated seating groups. " + 
-                  $"({tableIslands.Count(t => t.isClosedLoop)} Private Tables, {tableIslands.Count(t => !t.isClosedLoop)} Open Chains).");
+        Debug.Log(
+            $"[Seating System] Initialization complete. Detected {tableIslands.Count} total isolated seating groups. " +
+            $"({tableIslands.Count(t => t.isClosedLoop)} Private Tables, {tableIslands.Count(t => !t.isClosedLoop)} Open Chains).");
     }
 
-    public void StartShift()
+    public void StartShift(int dayNumber)
     {
-        if (isShiftActive || currentDayConfigJSON == null) return;
+        if (isShiftActive || weeklyDayConfigs.Count == 0)
+            return;
+
+        int dayIndex =
+            Mathf.Clamp(dayNumber - 1, 0, weeklyDayConfigs.Count - 1);
+
+        TextAsset dayJson = weeklyDayConfigs[dayIndex];
 
         try
         {
-            currentDay = JsonUtility.FromJson<DayConfig>(currentDayConfigJSON.text);
-            if (currentDay.scheduledNPCs == null) currentDay.scheduledNPCs = new List<ScheduledNPC>();
-            if (currentDay.genericProfiles == null) currentDay.genericProfiles = new List<string>();
-            if (currentDay.spawnRates == null) currentDay.spawnRates = new List<TimeBracket>();
+            currentDay = JsonUtility.FromJson<DayConfig>(dayJson.text);
+
+            if (currentDay.scheduledNPCs == null)
+                currentDay.scheduledNPCs = new List<ScheduledNPC>();
+
+            foreach (var npc in currentDay.scheduledNPCs)
+                npc.hasSpawned = false;
 
             isShiftActive = true;
             shiftTimer = 0f;
-            timeSinceLastGenericSpawn = 0f;
-        }
-        catch (System.Exception e) { Debug.LogError($"<color=red>[JSON CRASH]</color> Day Config: {e.Message}"); }
-    }
 
-// Inside CustomerSpawner.cs -> Replace Update() with this:
+            Debug.Log(
+                $"[CustomerSpawner] Shift Started for Day {dayNumber}. Loading: {dayJson.name}");
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"[JSON CRASH] Day Config: {e.Message}");
+        }
+    }
 
     void Update()
     {
         ManageQueueFlow();
 
-        // Detect all forms of time pausing: Shift hasn't started, game paused, or active dialogue!
-        bool isPaused = !isShiftActive || Time.timeScale == 0f || RestaurantUIManager.Instance.IsDialogueActive;
-        
-        float maxDuration = (currentDay != null && currentDay.shiftDuration > 0) ? currentDay.shiftDuration : 100f; // Failsafe prior to shift
-        
-        if (RestaurantUIManager.Instance != null) {
-            RestaurantUIManager.Instance.UpdateShiftTimer(shiftTimer, maxDuration, isPaused);
+        bool isPaused =
+            !isShiftActive ||
+            Time.timeScale == 0f ||
+            RestaurantUIManager.Instance.IsDialogueActive;
+
+        float maxDuration =
+            (currentDay != null && currentDay.shiftDuration > 0)
+                ? currentDay.shiftDuration
+                : 100f;
+
+        if (RestaurantUIManager.Instance != null)
+        {
+            RestaurantUIManager.Instance.UpdateShiftTimer(
+                shiftTimer,
+                maxDuration,
+                isPaused);
         }
 
-        if (!isShiftActive) return;
+        if (!isShiftActive)
+            return;
 
         shiftTimer += Time.deltaTime;
 
@@ -286,124 +315,117 @@ public Dictionary<string, DialogueOverrideConfig> overridesMap = new Dictionary<
                 TrySpawnCustomerGroup(npc.profileNames);
             }
         }
-
-        TimeBracket currentBracket = GetCurrentTimeBracket();
-        if (currentBracket != null && currentBracket.spawnInterval > 0 && currentDay.genericProfiles.Count > 0)
-        {
-            timeSinceLastGenericSpawn += Time.deltaTime;
-            if (timeSinceLastGenericSpawn >= currentBracket.spawnInterval)
-            {
-                timeSinceLastGenericSpawn = 0f;
-                int groupSize = DetermineGroupSize(currentBracket);
-                
-                List<string> groupProfiles = new List<string>();
-                for (int i = 0; i < groupSize; i++) groupProfiles.Add(currentDay.genericProfiles[Random.Range(0, currentDay.genericProfiles.Count)]);
-                TrySpawnCustomerGroup(groupProfiles);
-            }
-        }
     }
-
-    private void EndShift()
+        private void EndShift()
     {
-        if (!isShiftActive) return; // Prevent double calls
+        if (!isShiftActive)
+            return;
+
         isShiftActive = false;
-        
-        // Clean up remaining queue
+
         foreach (var group in queueGroups)
         {
-            foreach (var member in group.members) if (member != null) member.Leave();
+            foreach (var member in group.members)
+            {
+                if (member != null)
+                    member.Leave();
+            }
         }
+
         queueGroups.Clear();
 
-        // Trigger the End Of Day UI!
         if (EndOfDayManager.Instance != null)
         {
             EndOfDayManager.Instance.ShowEndOfDaySummary();
         }
-        else
-        {
-            Debug.LogWarning("[CustomerSpawner] EndOfDayManager not found! Cannot show summary.");
-        }
     }
 
-    private TimeBracket GetCurrentTimeBracket()
-    {
-        foreach (var bracket in currentDay.spawnRates)
-            if (shiftTimer >= bracket.startTime && shiftTimer <= bracket.endTime) return bracket;
-        return null; 
-    }
-
-    // --- WEIGHTED RANDOM FOR GROUP SIZE ---
-    private int DetermineGroupSize(TimeBracket bracket)
-    {
-        if (bracket.groupSizeWeights == null || bracket.groupSizeWeights.Count == 0) return 1;
-
-        int totalWeight = bracket.groupSizeWeights.Sum(w => w.weight);
-        int randomRoll = Random.Range(0, totalWeight);
-
-        foreach (var w in bracket.groupSizeWeights)
-        {
-            randomRoll -= w.weight;
-            if (randomRoll < 0) return w.groupSize;
-        }
-
-        return 1;
-    }
-
-    // --- GROUP SPAWNING & QUEUE BATCHING ---
     public void TrySpawnCustomerGroup(List<string> profileNames)
     {
-        if (profileNames == null || profileNames.Count == 0) return;
+        if (profileNames == null || profileNames.Count == 0)
+            return;
 
         int currentQueueSize = queueGroups.Sum(g => g.members.Count);
+
         if (currentQueueSize + profileNames.Count > queueSpots.Count)
         {
-            Debug.LogWarning($"<color=#FF00FF>[REJECTED]</color> Group of {profileNames.Count} arrived, but the line is too long!");
+            Debug.LogWarning(
+                $"<color=#FF00FF>[REJECTED]</color> Group of {profileNames.Count} arrived, but the line is too long!");
             return;
         }
 
         CustomerGroup newGroup = new CustomerGroup();
-        
-        // Find the absolute closest point on the NavMesh to the entrance point
+
         Vector3 safeSpawnPos = entrancePoint.position;
-        if (UnityEngine.AI.NavMesh.SamplePosition(entrancePoint.position, out UnityEngine.AI.NavMeshHit hit, 5.0f, UnityEngine.AI.NavMesh.AllAreas))
+
+        if (UnityEngine.AI.NavMesh.SamplePosition(
+            entrancePoint.position,
+            out UnityEngine.AI.NavMeshHit hit,
+            5.0f,
+            UnityEngine.AI.NavMesh.AllAreas))
         {
             safeSpawnPos = hit.position;
         }
-        
+
         foreach (string pName in profileNames)
         {
-            if (!profileJsonMap.ContainsKey(pName)) continue;
+            if (!profileJsonMap.ContainsKey(pName))
+                continue;
 
-            CustomerProfile profile = JsonUtility.FromJson<CustomerProfile>(profileJsonMap[pName]);
+            CustomerProfile profile =
+                JsonUtility.FromJson<CustomerProfile>(
+                    profileJsonMap[pName]);
+
             GameObject specificPrefab = prefabMap[pName];
-            
-            // Spawn at the verified safe NavMesh position
-            GameObject pillObj = Instantiate(specificPrefab, safeSpawnPos, Quaternion.identity);            
-            Customer pill = pillObj.GetComponent<Customer>();
-            
-            pill.profile = profile;
-            newGroup.members.Add(pill);
 
-            if (profile.queueWaitTime < newGroup.maxWaitTime) newGroup.maxWaitTime = profile.queueWaitTime;
+            GameObject customerObj =
+                Instantiate(
+                    specificPrefab,
+                    safeSpawnPos,
+                    Quaternion.identity);
+
+            Customer customer =
+                customerObj.GetComponent<Customer>();
+
+            customer.profile = profile;
+            newGroup.members.Add(customer);
+
+            if (profile.queueWaitTime < newGroup.maxWaitTime)
+                newGroup.maxWaitTime = profile.queueWaitTime;
         }
 
-        if (newGroup.members.Count == 0) return;
+        if (newGroup.members.Count == 0)
+            return;
 
-        List<SittingSpot> cluster = FindAvailableCluster(newGroup.members.Count);
+        List<SittingSpot> cluster =
+            FindAvailableCluster(newGroup.members.Count);
+
         if (cluster != null)
         {
             for (int i = 0; i < newGroup.members.Count; i++)
-                newGroup.members[i].Initialize(newGroup.members[i].profile, cluster[i], exitPoint);
+            {
+                newGroup.members[i].Initialize(
+                    newGroup.members[i].profile,
+                    cluster[i],
+                    exitPoint);
+            }
         }
         else
         {
             int queueIndexStart = currentQueueSize;
+
             for (int i = 0; i < newGroup.members.Count; i++)
             {
-                Transform qSpot = queueSpots[queueIndexStart + i];
-                newGroup.members[i].InitializeQueue(newGroup.members[i].profile, qSpot, exitPoint, newGroup); 
+                Transform qSpot =
+                    queueSpots[queueIndexStart + i];
+
+                newGroup.members[i].InitializeQueue(
+                    newGroup.members[i].profile,
+                    qSpot,
+                    exitPoint,
+                    newGroup);
             }
+
             queueGroups.Add(newGroup);
         }
     }
@@ -419,15 +441,24 @@ public Dictionary<string, DialogueOverrideConfig> overridesMap = new Dictionary<
             if (!group.isLeaving)
             {
                 group.waitTimer += Time.deltaTime;
+
                 if (group.waitTimer >= group.maxWaitTime)
                 {
                     group.isLeaving = true;
-                    OrderManager.Instance.HandleQueueWalkout(group.members[0].profile, group.members[0].faceController);;
-                    foreach (var member in group.members) member.Leave();
+
+                    OrderManager.Instance.HandleQueueWalkout(
+                        group.members[0].profile,
+                        group.members[0].faceController);
+
+                    foreach (var member in group.members)
+                    {
+                        member.Leave();
+                    }
                 }
             }
 
-            if (group.isLeaving || group.members.All(m => m == null || m.IsLeaving()))
+            if (group.isLeaving ||
+                group.members.All(m => m == null || m.IsLeaving()))
             {
                 queueGroups.RemoveAt(i);
                 queueShifted = true;
@@ -437,7 +468,9 @@ public Dictionary<string, DialogueOverrideConfig> overridesMap = new Dictionary<
         for (int i = 0; i < queueGroups.Count; i++)
         {
             CustomerGroup group = queueGroups[i];
-            List<SittingSpot> cluster = FindAvailableCluster(group.members.Count);
+
+            List<SittingSpot> cluster =
+                FindAvailableCluster(group.members.Count);
 
             if (cluster != null)
             {
@@ -445,7 +478,7 @@ public Dictionary<string, DialogueOverrideConfig> overridesMap = new Dictionary<
                 {
                     group.members[j].PromoteToSeat(cluster[j]);
                 }
-                
+
                 queueGroups.RemoveAt(i);
                 queueShifted = true;
                 i--;
@@ -455,13 +488,16 @@ public Dictionary<string, DialogueOverrideConfig> overridesMap = new Dictionary<
         if (queueShifted)
         {
             int spotIndex = 0;
+
             foreach (var group in queueGroups)
             {
                 foreach (var member in group.members)
                 {
                     if (spotIndex < queueSpots.Count)
                     {
-                        member.UpdateQueueSpot(queueSpots[spotIndex]);
+                        member.UpdateQueueSpot(
+                            queueSpots[spotIndex]);
+
                         spotIndex++;
                     }
                 }
@@ -469,44 +505,57 @@ public Dictionary<string, DialogueOverrideConfig> overridesMap = new Dictionary<
         }
     }
 
-    // --- REWORKED: TABLE EXCLUSIVITY SEARCH ---
-    private List<SittingSpot> FindAvailableCluster(int requiredSize)
+    private List<SittingSpot> FindAvailableCluster(
+        int requiredSize)
     {
         foreach (var table in tableIslands)
         {
-            // If it's a Closed Loop (Normal private table), it MUST be completely empty. Strangers don't share!
-            if (table.isClosedLoop && !table.IsEmpty()) continue;
+            if (table.isClosedLoop && !table.IsEmpty())
+                continue;
 
-            // Grab available seats inside this specific island
-            List<SittingSpot> availableSeats = table.spots.Where(s => !s.isOccupied && !s.isReserved).ToList();
+            List<SittingSpot> availableSeats =
+                table.spots
+                    .Where(s => !s.isOccupied && !s.isReserved)
+                    .ToList();
 
-            // Quick capacity check
-            if (availableSeats.Count < requiredSize) continue;
+            if (availableSeats.Count < requiredSize)
+                continue;
 
-            HashSet<SittingSpot> globalVisited = new HashSet<SittingSpot>();
+            HashSet<SittingSpot> globalVisited =
+                new HashSet<SittingSpot>();
 
             foreach (var startSeat in availableSeats)
             {
-                if (globalVisited.Contains(startSeat)) continue;
+                if (globalVisited.Contains(startSeat))
+                    continue;
 
-                List<SittingSpot> currentCluster = new List<SittingSpot>();
-                Queue<SittingSpot> queue = new Queue<SittingSpot>();
-                HashSet<SittingSpot> localVisited = new HashSet<SittingSpot>();
+                List<SittingSpot> currentCluster =
+                    new List<SittingSpot>();
+
+                Queue<SittingSpot> queue =
+                    new Queue<SittingSpot>();
+
+                HashSet<SittingSpot> localVisited =
+                    new HashSet<SittingSpot>();
 
                 queue.Enqueue(startSeat);
                 localVisited.Add(startSeat);
                 globalVisited.Add(startSeat);
 
-                while (queue.Count > 0 && currentCluster.Count < requiredSize)
+                while (queue.Count > 0 &&
+                       currentCluster.Count < requiredSize)
                 {
                     SittingSpot current = queue.Dequeue();
                     currentCluster.Add(current);
 
-                    if (currentCluster.Count == requiredSize) return currentCluster; 
+                    if (currentCluster.Count == requiredSize)
+                        return currentCluster;
 
                     foreach (var neighbor in current.connectedSpots)
                     {
-                        if (neighbor != null && availableSeats.Contains(neighbor) && !localVisited.Contains(neighbor))
+                        if (neighbor != null &&
+                            availableSeats.Contains(neighbor) &&
+                            !localVisited.Contains(neighbor))
                         {
                             localVisited.Add(neighbor);
                             globalVisited.Add(neighbor);
@@ -516,13 +565,16 @@ public Dictionary<string, DialogueOverrideConfig> overridesMap = new Dictionary<
                 }
             }
         }
-        return null; 
+
+        return null;
     }
 
-    //Customer Helper
-    public CharacterFaceSet GetCustomerFaceSet(string profileName)
+    public CharacterFaceSet GetCustomerFaceSet(
+        string profileName)
     {
-        if (faceMap.ContainsKey(profileName)) return faceMap[profileName];
+        if (faceMap.ContainsKey(profileName))
+            return faceMap[profileName];
+
         return null;
     }
 }

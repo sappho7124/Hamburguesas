@@ -49,6 +49,8 @@ public class ItemSizeWeight { public int size; public int weight; } // <--- NEW:
 [System.Serializable]
 public class CustomerProfile { 
     public string profileName; 
+    public string yarnNodeName; // <-- FIX: Add this line!
+    public string yarnPostMealNodeName; // <-- NEW: Yarn node for after they eat!
     public float idealTemp; 
     public float walkoutTime = 120f; 
     public float queueWaitTime = 45f; 
@@ -171,6 +173,28 @@ public class OrderManager : MonoBehaviour
             orderStartTime = Time.time 
         };
         activeOrders[sittingSpot.linkedTableSpot] = newOrder;
+    }
+
+    public void SetManualOrder(TableSpot table, CustomerProfile profile, string commaSeparatedIngredients)
+    {
+        if (table == null) return;
+
+        // Split the string from Yarn (e.g. "Pan, Carne, Queso, Tomate") into a list
+        List<string> generatedOrder = new List<string>();
+        string[] rawItems = commaSeparatedIngredients.Split(',');
+        foreach (string item in rawItems)
+        {
+            generatedOrder.Add(item.Trim());
+        }
+
+        ActiveOrder newOrder = new ActiveOrder { 
+            profile = profile, 
+            expectedIngredients = generatedOrder, 
+            orderStartTime = Time.time 
+        };
+        
+        activeOrders[table] = newOrder;
+        Debug.Log($"[OrderManager] Yarn set order for {profile.profileName}: {commaSeparatedIngredients}");
     }
 
     public bool HasActiveOrder(TableSpot table) => activeOrders.ContainsKey(table);

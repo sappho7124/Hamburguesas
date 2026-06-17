@@ -30,7 +30,6 @@ Narrador: Jaja, supongo que por un momento yo también olvidé cómo eres.
 Narrador: A ver...
 Narrador: Para preparar una hamburguesa primero ve a la nevera y presiona E para abrirla.
 
-<<jump TutorialStep_1_OpenFridge>>
 
 ===
 
@@ -44,8 +43,6 @@ position: -145,-901
 Narrador: ¡Genial! Ahora acércate al pan y presiona E para agarrarlo.
 
 <<set $nextTutorialStep = 2>>
-
-<<jump TutorialStep_2_GrabBread>>
 
 ===
 
@@ -61,7 +58,6 @@ luego llévalo al mesón del centro y presiona G para soltarlo ahí.
 
 <<set $nextTutorialStep = 3>>
 
-<<jump TutorialStep_3_PlaceBread>>
 
 ===
 
@@ -78,7 +74,6 @@ Narrador: Muévelo con el mouse hasta que esté como quieres y luego sí lo suel
 
 <<set $nextTutorialStep = 4>>
 
-<<jump TutorialStep_4_RotateBread>>
 
 ===
 
@@ -93,7 +88,6 @@ Narrador: Colócalos sobre el pan, como armando una torre.
 
 <<set $nextTutorialStep = 5>>
 
-<<jump TutorialStep_5_GrabMeat>>
 
 ===
 
@@ -107,7 +101,6 @@ Narrador: Para cocinar la carne llévala a la estufa y colócala sobre ella, lue
 
 <<set $nextTutorialStep = 6>>
 
-<<jump TutorialStep_6_CookMeat>>
 
 ===
 
@@ -122,7 +115,6 @@ Narrador: Presiona E para apagar la estufa cuando esté lista, y colócala en la
 
 <<set $nextTutorialStep = 7>>
 
-<<jump TutorialStep_7_PlaceMeat>>
 
 ===
 
@@ -137,7 +129,6 @@ Narrador: Presiona E sobre el mesón para que se arme y un palillo caerá sobre 
 
 <<set $nextTutorialStep = 8>>
 
-<<jump TutorialStep_8_BuildBurger>>
 
 ===
 
@@ -151,7 +142,6 @@ Narrador: ¡Perfecto! Agarra la hamgurguesa terminada y colócala sobre un plato
 
 <<set $nextTutorialStep = 9>>
 
-<<jump TutorialStep_9_PlaceBurger>>
 
 ===
 
@@ -166,7 +156,6 @@ Narrador: Agarra el plato con E y ve hacia las mesas de afuera.
 
 <<set $nextTutorialStep = 10>>
 
-<<jump TutorialStep_10_GoToTable>>
 
 ===
 

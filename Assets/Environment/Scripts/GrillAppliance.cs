@@ -40,6 +40,7 @@ public class GrillAppliance : MonoBehaviour
 
     public void ToggleGrill()
     {
+        StoryFlowManager.Instance.ReportAction("CookMeat");
         isOn = !isOn;
         UpdateStateVisuals();
         

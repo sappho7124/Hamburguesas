@@ -25,6 +25,7 @@ Tomas: Agh, bueno. <<if $hasIrritabilidad== true>> #angry
 
 Cliente1: Hm, estos jóvenes de hoy en día son muy groseros. #angry
 
+<<set_order "Pan, Carne, Carne, Queso, Tomate, Pan">>
 ===
 
 title: MondayClient2
@@ -50,7 +51,7 @@ Cliente2: Buenas, ¿me da por favor una hamburguesa con queso, tomate y pepino? 
 Tomas: Combinación de mierda, pero bueno. <<if $hasIrritabilidad== true>> #angry
 
 Cliente2: Eh, ¿Perdón? #afraid
-
+<<set_order "Pan, Queso, Tomate, Pepino, Pan">>
 ===
 
 title: MondayClient3
@@ -83,7 +84,7 @@ Tomas: Yo qué sé, pida rápido que hay más gente esperando. <<if $hasIrritabi
 
 Cliente3: Uy, pues como diga, ¿no? Don Julio no le habla a uno así, debería darle pena. #angry
 Cliente3: Deme una de queso pues. #angry
-
+<<set_order "Pan, Queso, Pan">>
 ===
 
 title: MondayClient4
@@ -104,7 +105,7 @@ Tomas: ¿Va a pedir algo de comer o no? <<if $hasIrritabilidad== true>> #angry
 Cliente4: Ay, perdón, no lo quise molestar... #afraid
 Cliente4: Deme con tomate y queso, por favor... #sad
 Cliente4: Gracias, qué pena... #sad
-
+<<set_order "Pan, Tomate, Queso, Pan">>
 ===
 
 title: MondayClient5
@@ -128,5 +129,5 @@ Sara: Sí, tomate y queso, por favor.
 Tomas: Meh. Ajá. <<if $hasIrritabilidad== true>> #angry
 
 Sara: ¡Gracias! #happy
-
+<<set_order "Pan, Tomate, Queso, Pan">>
 ===

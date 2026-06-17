@@ -58,6 +58,7 @@ public class TableSpot : MonoBehaviour
 
                     if (OrderManager.Instance.TryServeFood(this, plate, out moneyToSpawn, out customerDialogue, out reactionMood))
                     {
+                        StoryFlowManager.Instance.ReportAction("ServeTable");
                         if (face != null) face.SetMood(reactionMood);
                         RestaurantUIManager.Instance.ShowDialogue(OrderManager.Instance.GetActiveProfileName(this), customerDialogue, reactionMood, face);
                         StartCoroutine(EatRoutine(plate, eqPlate, moneyToSpawn));
@@ -134,7 +135,7 @@ public class TableSpot : MonoBehaviour
         eqPlate.SetPhysics(true);
         plate.enabled = true;
 
-        if (moneyPrefab != null && moneyToSpawn > 0)
+    if (moneyPrefab != null && moneyToSpawn > 0)
         {
             GameObject moneyObj = Instantiate(moneyPrefab, transform.position + Vector3.up * 0.2f, Quaternion.identity);
             MoneyPickup pickup = moneyObj.GetComponent<MoneyPickup>();
@@ -143,8 +144,17 @@ public class TableSpot : MonoBehaviour
 
         if (linkedSittingSpot.currentCustomer != null)
         {
-            linkedSittingSpot.currentCustomer.Leave();
+            // If they have a post-meal conversation, make them wait!
+            if (!string.IsNullOrEmpty(linkedSittingSpot.currentCustomer.profile.yarnPostMealNodeName))
+            {
+                linkedSittingSpot.currentCustomer.MarkAsFinishedEating();
+            }
+            else
+            {
+                // Normal customer, leave immediately
+                linkedSittingSpot.currentCustomer.Leave();
+            }
         }
         isEating = false;
-    }
+    } // End of EatRoutine
 }

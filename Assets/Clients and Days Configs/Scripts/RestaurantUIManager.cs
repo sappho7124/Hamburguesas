@@ -1,4 +1,3 @@
-// Location: C:\Games\Unity\Hamburguesas\Assets\Clients and Days Configs\Scripts\RestaurantUIManager.cs
 using UnityEngine;
 using TMPro;
 using System.Collections;
@@ -21,11 +20,8 @@ public class RestaurantUIManager : MonoBehaviour
     public UnityEngine.UI.Image pauseIconOverlay;
     
     [Header("Clock Animation")]
-    [Tooltip("How many seconds between each 'tick'.")]
     public float tickInterval = 1.0f;
-    [Tooltip("Minimum angle the clock will snap to when ticking.")]
     public float minTickAngle = 5f;
-    [Tooltip("Maximum angle the clock will snap to when ticking.")]
     public float maxTickAngle = 15f;
 
     [Header("Dialogue UI Settings")]
@@ -45,6 +41,11 @@ public class RestaurantUIManager : MonoBehaviour
     public GameObject optionsContainer;
     public UnityEngine.UI.Button[] optionButtons;
 
+    [Header("Narrator Settings")]
+    [Tooltip("A full screen black Image with 0 alpha (set raycast target to false)")]
+    public UnityEngine.UI.Image narratorDarknessOverlay;
+    public float darknessFadeSpeed = 3f;
+
     // Internal State
     private Coroutine dialogueCoroutine;
     private bool isTyping = false;
@@ -55,7 +56,7 @@ public class RestaurantUIManager : MonoBehaviour
     // Ticking State
     private RectTransform clockRect;
     private float tickTimer = 0f;
-    private int currentTickSide = 1; // 1 = Right, -1 = Left
+    private int currentTickSide = 1; 
     
     public bool IsDialogueActive => isTyping || isSliding;
 
@@ -76,6 +77,8 @@ public class RestaurantUIManager : MonoBehaviour
 
         if (dialoguePanelRect)
             dialoguePanelRect.anchoredPosition = new Vector2(dialoguePanelRect.anchoredPosition.x, hiddenY);
+
+        if (narratorDarknessOverlay) narratorDarknessOverlay.color = new Color(0, 0, 0, 0);
     }
 
     void Update()
@@ -86,14 +89,14 @@ public class RestaurantUIManager : MonoBehaviour
         }
     }
 
-    public void ShowDialogue(string characterName, string text, CustomerFaceController.Mood mood = CustomerFaceController.Mood.Neutral, CustomerFaceController speakerFace = null)
+    public void ShowDialogue(string characterName, string text, CustomerFaceController.Mood mood = CustomerFaceController.Mood.Neutral, CustomerFaceController speakerFace = null, Action onComplete = null)
     {
         if (dialogueCoroutine != null) StopCoroutine(dialogueCoroutine);
         
         if (optionsContainer) optionsContainer.SetActive(false);
         if (optionButtons != null) foreach (var btn in optionButtons) if (btn != null) btn.gameObject.SetActive(false);
         
-        dialogueCoroutine = StartCoroutine(TypewriterRoutine(characterName, text, mood, speakerFace));
+        dialogueCoroutine = StartCoroutine(TypewriterRoutine(characterName, text, mood, speakerFace, onComplete));
     }
 
     private void SkipAnimation()
@@ -102,12 +105,20 @@ public class RestaurantUIManager : MonoBehaviour
         isTyping = false; 
     }
 
-    private IEnumerator TypewriterRoutine(string characterName, string text, CustomerFaceController.Mood mood, CustomerFaceController speakerFace)
+    private IEnumerator TypewriterRoutine(string characterName, string text, CustomerFaceController.Mood mood, CustomerFaceController speakerFace, Action onComplete)
     {
         isSliding = true;
         isTyping = true;
         currentFullText = text;
         dialogueText.text = $"";
+
+        // --- NARRATOR DARKNESS ---
+        bool isNarrator = characterName.ToLower().Contains("narrador");
+        if (narratorDarknessOverlay != null)
+        {
+            float targetAlpha = isNarrator ? 0.85f : 0f;
+            StartCoroutine(FadeDarkness(targetAlpha));
+        }
 
         currentEmotionSet = null;
         if (CustomerSpawner.Instance != null && dialogueFaceImage != null)
@@ -126,7 +137,8 @@ public class RestaurantUIManager : MonoBehaviour
         {
             while (isSliding && Mathf.Abs(dialoguePanelRect.anchoredPosition.y - visibleY) > 1f)
             {
-                float newY = Mathf.Lerp(dialoguePanelRect.anchoredPosition.y, visibleY, Time.deltaTime * slideSpeed);
+                // FIX: Usar unscaledDeltaTime para que se mueva aunque el juego esté en pausa (Time.timeScale = 0)
+                float newY = Mathf.Lerp(dialoguePanelRect.anchoredPosition.y, visibleY, Time.unscaledDeltaTime * slideSpeed);
                 dialoguePanelRect.anchoredPosition = new Vector2(dialoguePanelRect.anchoredPosition.x, newY);
                 yield return null;
             }
@@ -150,16 +162,18 @@ public class RestaurantUIManager : MonoBehaviour
                 {
                     isMouthOpen = !isMouthOpen;
                     if (currentEmotionSet != null) dialogueFaceImage.sprite = isMouthOpen ? currentEmotionSet.openMouth : currentEmotionSet.closedMouth;
-                    
                     if (speakerFace != null) speakerFace.SetTalking(isMouthOpen);
-
                     mouthTimer = 0f;
                 }
             }
 
             char c = i > 0 ? text[i - 1] : ' ';
-            if (c == '.' || c == '!' || c == '?') yield return new WaitForSeconds(typingSpeed * 4f);
-            else yield return new WaitForSeconds(typingSpeed);
+            
+            // FIX: Usar WaitForSecondsRealtime para que el texto corra aunque el juego esté en pausa
+            if (c == '.' || c == '!' || c == '?') 
+                yield return new WaitForSecondsRealtime(typingSpeed * 4f);
+            else 
+                yield return new WaitForSecondsRealtime(typingSpeed);
         }
 
         isTyping = false;
@@ -168,19 +182,52 @@ public class RestaurantUIManager : MonoBehaviour
         if (currentEmotionSet != null && dialogueFaceImage != null) dialogueFaceImage.sprite = currentEmotionSet.closedMouth;
         if (speakerFace != null) speakerFace.SetTalking(false);
 
-        yield return new WaitForSeconds(dialogueDisplayTime);
+        // Esperar a que el jugador presione Click Izquierdo para avanzar
+        yield return null; 
+        yield return new WaitUntil(() => Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame);
 
+        // Avisarle a Yarn Spinner que ya puede continuar a la siguiente línea
+        onComplete?.Invoke();
+    }
+
+        private IEnumerator FadeDarkness(float targetAlpha)
+    {
+        if (narratorDarknessOverlay == null) yield break;
+        
+        Color c = narratorDarknessOverlay.color;
+        while (Mathf.Abs(c.a - targetAlpha) > 0.01f)
+        {
+            c.a = Mathf.Lerp(c.a, targetAlpha, Time.unscaledDeltaTime * darknessFadeSpeed);
+            narratorDarknessOverlay.color = c;
+            yield return null;
+        }
+        c.a = targetAlpha;
+        narratorDarknessOverlay.color = c;
+    }
+
+    public void HideDialoguePanel()
+    {
+        if (dialogueCoroutine != null) StopCoroutine(dialogueCoroutine);
+        
+        // Fade darkness away when dialogue ends
+        if (narratorDarknessOverlay != null) StartCoroutine(FadeDarkness(0f));
+        
+        StartCoroutine(SlidePanelAway());
+    }
+
+    private IEnumerator SlidePanelAway()
+    {
         if (dialoguePanelRect != null)
         {
             while (Mathf.Abs(dialoguePanelRect.anchoredPosition.y - hiddenY) > 1f)
             {
-                float newY = Mathf.Lerp(dialoguePanelRect.anchoredPosition.y, hiddenY, Time.deltaTime * slideSpeed);
+                // FIX: Usar unscaledDeltaTime aquí también
+                float newY = Mathf.Lerp(dialoguePanelRect.anchoredPosition.y, hiddenY, Time.unscaledDeltaTime * slideSpeed);
                 dialoguePanelRect.anchoredPosition = new Vector2(dialoguePanelRect.anchoredPosition.x, newY);
                 yield return null;
             }
             dialoguePanelRect.anchoredPosition = new Vector2(dialoguePanelRect.anchoredPosition.x, hiddenY);
         }
-
         dialogueText.text = "";
         if (dialogueFaceImage != null) dialogueFaceImage.gameObject.SetActive(false);
     }
@@ -202,7 +249,13 @@ public class RestaurantUIManager : MonoBehaviour
             {
                 optionButtons[i].gameObject.SetActive(true);
                 TextMeshProUGUI btnText = optionButtons[i].GetComponentInChildren<TextMeshProUGUI>();
-                if (btnText != null) btnText.text = options[i];
+                
+                // --- STRIP TOMAS PREFIX ---
+                string cleanText = options[i];
+                if (cleanText.StartsWith("Tomas: ")) cleanText = cleanText.Substring(7);
+                if (cleanText.StartsWith("Tomás: ")) cleanText = cleanText.Substring(7); // Handle accent just in case
+                
+                if (btnText != null) btnText.text = cleanText;
 
                 int capturedIndex = i; 
                 optionButtons[i].onClick.RemoveAllListeners();
@@ -222,7 +275,6 @@ public class RestaurantUIManager : MonoBehaviour
     
     public void UpdateShiftTimer(float currentTimer, float maxTimer, bool isPaused)
     {
-        // 1. Text Update (Optional / Debug)
         if (shiftTimeText != null)
         {
             float remaining = Mathf.Max(0, maxTimer - currentTimer);
@@ -232,21 +284,18 @@ public class RestaurantUIManager : MonoBehaviour
             shiftTimeText.color = remaining <= 30f ? Color.red : Color.white;
         }
 
-        // 2. Sprite Sheet Progress Update
         if (clockImage != null && clockSprites != null && clockSprites.Length > 0 && maxTimer > 0)
         {
             float progress = Mathf.Clamp01(currentTimer / maxTimer);
             int targetIndex = Mathf.FloorToInt(progress * (clockSprites.Length - 1));
             clockImage.sprite = clockSprites[targetIndex];
             
-            // --- NEW: Ticking Animation ---
             if (clockRect != null)
             {
                 if (isPaused)
                 {
-                    // Snap back to normal immediately when paused
                     clockRect.localRotation = Quaternion.identity; 
-                    tickTimer = tickInterval; // Pre-load the timer so it ticks immediately when unpaused
+                    tickTimer = tickInterval; 
                 }
                 else
                 {
@@ -254,19 +303,14 @@ public class RestaurantUIManager : MonoBehaviour
                     if (tickTimer >= tickInterval)
                     {
                         tickTimer -= tickInterval; 
-                        currentTickSide = -currentTickSide; // Swap sides (-1 to 1)
-                        
-                        // Generate a random angle between min and max
+                        currentTickSide = -currentTickSide; 
                         float randomAngle = UnityEngine.Random.Range(minTickAngle, maxTickAngle);
-                        
-                        // Apply rotation (Z-axis)
                         clockRect.localRotation = Quaternion.Euler(0, 0, randomAngle * currentTickSide);
                     }
                 }
             }
         }
 
-        // 3. Pause Icon Overlay Update
         if (pauseIconOverlay != null)
         {
             pauseIconOverlay.gameObject.SetActive(isPaused);

@@ -1,0 +1,77 @@
+{
+  "profileName": "Don Julio",
+  "idealTemp": 65,
+  "walkoutTime": 120,
+  "queueWaitTime": 45,
+  "paymentSettings": {
+    "pricePerIngredient": 5,
+    "tipThresholds":[
+      { "scorePercentage": 0.2, "tipAmount": 10 },
+      { "scorePercentage": 0.0, "tipAmount": 2 },
+      { "scorePercentage": -0.5, "tipAmount": 0 },
+      { "scorePercentage": -0.99, "tipAmount": -5 }
+    ]
+  },
+  "scoreSettings": {
+    "baseScore": 100,
+    "unrequestedIngredient": -20,
+    "missingIngredient": -20,
+    "raw": -75,
+    "cooked": 0,
+    "burnt": -40,
+    "onFire": -100,
+    "maxWaitTime": 60,
+    "waitPenaltyPerSecond": -1,
+    "maxFreshness": 30,
+    "stalePenaltyPerSecond": -1,
+    "dirtyPlate": -50
+  },
+  "burgerSizeWeights": [
+    { "size": 3, "weight": 50 },
+    { "size": 4, "weight": 30 },
+    { "size": 5, "weight": 20 }
+  ],
+  "ingredients":[
+    { "name": "Pan", "min": 2, "max": 2, "weight": 0 },
+    { "name": "Carne", "min": 1, "max": 3, "weight": 50 },
+    { "name": "Queso", "min": 0, "max": 2, "weight": 30 },
+    { "name": "Pepinillo", "min": 0, "max": 0, "weight": 0 }
+  ],
+  "sideItems": [
+    { "name": "Gaseosa Naranja", "min": 1, "max": 1, "weight": 20 },
+    { "name": "Gaseosa Negra", "min": 1, "max": 1, "weight": 20 },
+    { "name": "Papas Fritas", "min": 1, "max": 1, "weight": 40 }
+  ],
+  "groupedItems":[],
+  "cookingPreferences":[
+    {
+      "ingredientName": "Pan",
+      "desiredState": "Cooked",
+      "bonusPoints": 20
+    }
+  ],
+  "reactions": {
+    "success": "¡Gracias! Esta es una hamburguesa decente.",
+    "wrongOrder": "Esto no es lo que pedí, yo pedí {ORDER} y esto es {SERVED}.",
+    "foodRaw": "Amigo, ¡esta carne todavía hace muuu! ¡Está cruda!",
+    "foodCooked": "¡Perfecto! Justo en su punto.",
+    "foodBurnt": "Pobre hamburguesa... la convertiste en carbón.",
+    "foodOnFire": "¡AYUDA! ¡ESTOY LLAMANDO A LOS BOMBEROS!",
+    "dirtyPlate": "¡Qué asco! ¡Este plato está sucio!",
+    "walkout": "¡Me harté de esperar! ¡Me voy de este basurero!",
+    "customReactions":[
+      {
+        "conditionName": "Surprise Pepinillo",
+        "requiredIngredients": ["Pepinillo"],
+        "reaction": "¿Por qué hay un pepinillo en mi comida?",
+        "scoreModifier": -60
+      },
+      {
+        "conditionName": "Double Trouble",
+        "requiredIngredients":["Carne", "Carne"],
+        "reaction": "¡Doble carne! Hoy romperé mi dieta felizmente.",
+        "scoreModifier": 20
+      }
+    ]
+  }
+}

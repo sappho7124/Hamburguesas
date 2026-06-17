@@ -276,6 +276,12 @@ void HandlePlacementPreview()
             item.SetPhysics(true);
             SetLayerRecursive(item.gameObject, layerToRestore);
         }
+
+        if (item != null && item.itemDef != null)
+        {
+            if (item.itemDef.itemName == "Pan") StoryFlowManager.Instance.ReportAction("PlaceBread");
+            if (item.itemDef.itemName == "Carne") StoryFlowManager.Instance.ReportAction("PlaceMeat");
+        }
     }
     public EquippableItem GetEquippedItem() => currentEquippedItem;
 

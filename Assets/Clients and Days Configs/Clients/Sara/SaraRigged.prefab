@@ -326,7 +326,7 @@ MonoBehaviour:
         m_Calls:
         - m_Target: {fileID: 6659128706730125392}
           m_TargetAssemblyTypeName: Customer, Assembly-CSharp
-          m_MethodName: InteractWithCustomer
+          m_MethodName: HandleInteraction
           m_Mode: 1
           m_Arguments:
             m_ObjectArgument: {fileID: 0}
