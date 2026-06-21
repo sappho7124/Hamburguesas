@@ -296,8 +296,9 @@ public class CustomerSpawner : MonoBehaviour
                 isPaused);
         }
 
-        if (!isShiftActive)
-            return;
+        if (!isShiftActive) return;
+
+        if (RestaurantUIManager.Instance.IsDialogueActive) return;
 
         shiftTimer += Time.deltaTime;
 

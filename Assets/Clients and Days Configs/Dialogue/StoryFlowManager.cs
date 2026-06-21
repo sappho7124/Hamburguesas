@@ -1,6 +1,6 @@
-// Location: C:\Games\Unity\Hamburguesas\Assets\Clients and Days Configs\Scripts\StoryFlowManager.cs
 using UnityEngine;
 using Yarn.Unity;
+using System.Collections;
 
 public class StoryFlowManager : MonoBehaviour
 {
@@ -20,7 +20,7 @@ public class StoryFlowManager : MonoBehaviour
     [Header("Don Julio Event (Day 0)")]
     public GameObject donJulioPrefab;
     public Transform donJulioSpawnPoint;
-    public Transform donJulioExitPoint; // Where he walks when he leaves
+    public Transform donJulioExitPoint; 
     private GameObject activeDonJulio;
 
     [Header("Lucas Event (Day 1)")]
@@ -28,7 +28,7 @@ public class StoryFlowManager : MonoBehaviour
     public Transform lucasSpawnPoint;
     private GameObject activeLucas;
     
-    public GameObject vegetablesBagPrefab; // The bag he leaves behind
+    public GameObject vegetablesBagPrefab; 
     public Transform vegetableDropPoint;
 
     void Awake()
@@ -39,19 +39,31 @@ public class StoryFlowManager : MonoBehaviour
 
     void Start()
     {
-        // 1. Check for overrides
         int currentDay = SaveManager.Instance.HasSave() ? SaveManager.Instance.CurrentSave.currentDay : 1;
         if (overrideSaveDay) currentDay = debugForceDay;
         
         if (currentDay == 1)
         {
-            // Spawn Don Julio FIRST
             if (donJulioPrefab && donJulioSpawnPoint)
             {
                 activeDonJulio = Instantiate(donJulioPrefab, donJulioSpawnPoint.position, donJulioSpawnPoint.rotation);
+                
+                activeDonJulio.name = "Don Julio"; 
+                
+                Animator anim = activeDonJulio.GetComponent<Animator>();
+                if (anim != null) 
+                { 
+                    anim.SetBool("Sitting", false); 
+                    anim.SetBool("Walking", false); 
+                }
+
+                if (Camera.main != null)
+                {
+                    Vector3 lookTarget = new Vector3(Camera.main.transform.position.x, activeDonJulio.transform.position.y, Camera.main.transform.position.z);
+                    activeDonJulio.transform.LookAt(lookTarget);
+                }
             }
 
-            // WAIT 5 SECONDS THEN START NARRATOR!
             Invoke("StartMondayIntro", 5f);
         }
     }
@@ -65,23 +77,65 @@ public class StoryFlowManager : MonoBehaviour
 
     public void DismissDonJulio()
     {
-        if (activeDonJulio != null && donJulioExitPoint != null)
+        if (activeDonJulio != null)
         {
-            // Give him a NavMeshAgent so he can walk!
-            UnityEngine.AI.NavMeshAgent agent = activeDonJulio.GetComponent<UnityEngine.AI.NavMeshAgent>();
-            if (agent != null)
+            if (donJulioExitPoint != null)
             {
-                agent.SetDestination(donJulioExitPoint.position);
+                UnityEngine.AI.NavMeshAgent agent = activeDonJulio.GetComponent<UnityEngine.AI.NavMeshAgent>();
+                if (agent != null)
+                {
+                    agent.enabled = true; 
+                    agent.SetDestination(donJulioExitPoint.position);
+                }
+                
+                Animator anim = activeDonJulio.GetComponent<Animator>();
+                if (anim != null) 
+                { 
+                    anim.SetBool("Walking", true); 
+                    anim.SetBool("Sitting", false); 
+                }
+                
+                // FIX: Instead of a hard 5-second limit, wait until he actually arrives!
+                StartCoroutine(WaitUntilArrivedThenDestroy(activeDonJulio));
             }
-            // Destroy him after 5 seconds of walking
-            Destroy(activeDonJulio, 5f);
+            else
+            {
+                Debug.LogWarning("[StoryFlowManager] donJulioExitPoint is not assigned! Destroying him instantly.");
+                Destroy(activeDonJulio);
+            }
+            
+            // Unassign him so we don't accidentally run this multiple times
+            activeDonJulio = null;
         }
     }
 
-    // Call this from other scripts when the player does something!
+    // NEW: Coroutine to track Don Julio's walk so he doesn't despawn early
+    private IEnumerator WaitUntilArrivedThenDestroy(GameObject npc)
+    {
+        UnityEngine.AI.NavMeshAgent agent = npc.GetComponent<UnityEngine.AI.NavMeshAgent>();
+        float maxWaitTime = 25f; // Failsafe: if he gets stuck on a wall, destroy him after 25s anyway
+
+        while (npc != null && maxWaitTime > 0f)
+        {
+            maxWaitTime -= Time.deltaTime;
+            
+            // Check if he reached the end of his path
+            if (agent != null && !agent.pathPending && agent.remainingDistance <= agent.stoppingDistance + 0.1f)
+            {
+                break;
+            }
+            
+            yield return null;
+        }
+
+        if (npc != null)
+        {
+            Destroy(npc);
+        }
+    }
+
     public void ReportAction(string actionName)
     {
-        // --- LUCAS / SHIFT START LOGIC ---
         if (!isTutorialActive && actionName == "RingBell")
         {
             int currentDay = overrideSaveDay ? debugForceDay : SaveManager.Instance.CurrentSave.currentDay;
@@ -92,13 +146,13 @@ public class StoryFlowManager : MonoBehaviour
                 if (lucasPrefab && lucasSpawnPoint)
                 {
                     activeLucas = Instantiate(lucasPrefab, lucasSpawnPoint.position, lucasSpawnPoint.rotation);
+                    activeLucas.name = "Lucas"; 
                 }
                 dialogueRunner.StartDialogue("LucasBringsVegetables");
             }
             return;
         }
 
-        // --- TUTORIAL LOGIC ---
         if (!isTutorialActive) return;
 
         if (currentTutorialStep == 1 && actionName == "OpenFridge") AdvanceTutorial("TutorialStep_1_OpenFridge", 2);
@@ -113,17 +167,35 @@ public class StoryFlowManager : MonoBehaviour
         else if (currentTutorialStep == 10 && actionName == "ServeTable") 
         {
             AdvanceTutorial("TutorialStep_10_GoToTable", 11);
-            isTutorialActive = false; // Tutorial over, wait for bell
+            isTutorialActive = false; 
         }
     }
 
     private void AdvanceTutorial(string yarnNode, int nextStep)
     {
         currentTutorialStep = nextStep;
+
+        // FIX: If Yarn Spinner is currently typing or waiting for input on the old instruction...
+        if (dialogueRunner.IsDialogueRunning) 
+        {
+            dialogueRunner.Stop();
+            
+            // We MUST yield 1 frame before starting the new dialogue so Yarn can clear its internal state!
+            StartCoroutine(RestartDialogueNextFrame(yarnNode));
+        }
+        else
+        {
+            dialogueRunner.StartDialogue(yarnNode);
+        }
+    }
+
+    // NEW: Safely handles the frame gap required by Yarn Spinner when interrupting dialogue
+    private IEnumerator RestartDialogueNextFrame(string yarnNode)
+    {
+        yield return null; 
         dialogueRunner.StartDialogue(yarnNode);
     }
 
-    // Called via Yarn Command
     public void DismissLucasAndDropVegetables()
     {
         if (vegetablesBagPrefab && vegetableDropPoint)

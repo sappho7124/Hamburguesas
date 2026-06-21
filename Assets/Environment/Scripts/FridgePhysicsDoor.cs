@@ -40,6 +40,7 @@ public class PhysicsDoor : MonoBehaviour
 
     public void ToggleDoor()
     {
+        StoryFlowManager.Instance.ReportAction("OpenFridge");
         isTargetOpen = !isTargetOpen;
         
         if (isTargetOpen)

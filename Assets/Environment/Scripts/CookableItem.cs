@@ -45,22 +45,25 @@ public class CookableItem : MonoBehaviour
         InitializeRenderers();
     }
 
+    private static MaterialPropertyBlock propBlock;
+
     public void InitializeRenderers()
     {
         rendererDataList.Clear();
         foreach (var r in GetComponentsInChildren<Renderer>())
         {
+            if (r.sharedMaterial == null) continue;
+
             Color startColor = Color.white;
 
-            // Check if the shader uses _BaseColor (URP / Toon Shader)
-            if (r.material.HasProperty(BaseColorID))
+            // Check sharedMaterial so we don't accidentally create a clone on Awake!
+            if (r.sharedMaterial.HasProperty(BaseColorID))
             {
-                startColor = r.material.GetColor(BaseColorID);
+                startColor = r.sharedMaterial.GetColor(BaseColorID);
             }
-            // Fallback for legacy standard shaders
-            else if (r.material.HasProperty("_Color"))
+            else if (r.sharedMaterial.HasProperty("_Color"))
             {
-                startColor = r.material.color;
+                startColor = r.sharedMaterial.color;
             }
 
             rendererDataList.Add(new RendererData { renderer = r, originalColor = startColor });
@@ -124,11 +127,14 @@ public class CookableItem : MonoBehaviour
     {
         float safeProgress = Mathf.Clamp(currentHeatProgress, 0, timeToBurn);
 
+        // Initialize block once per session
+        if (propBlock == null) propBlock = new MaterialPropertyBlock();
+
         foreach (var data in rendererDataList)
         {
             Color targetColor = data.originalColor;
 
-            // UPDATED: Bread now follows the Meat visual progression (Normal -> Golden/Cooked -> Black)
+            // Bread and Meat visual progression (Normal -> Golden/Cooked -> Black)
             if (category == FoodCategory.Meat || category == FoodCategory.Bread || category == FoodCategory.AssembledBurger)
             {
                 if (safeProgress <= timeToCook)
@@ -142,15 +148,19 @@ public class CookableItem : MonoBehaviour
                     targetColor = Color.Lerp(data.originalColor, burnedColor, (safeProgress - timeToCook) / (timeToBurn - timeToCook));
             }
 
-            // Apply the color to the correct property
-            if (data.renderer.material.HasProperty(BaseColorID))
+            // Fetch current properties, inject the new color, and apply to the GPU
+            data.renderer.GetPropertyBlock(propBlock);
+
+            if (data.renderer.sharedMaterial.HasProperty(BaseColorID))
             {
-                data.renderer.material.SetColor(BaseColorID, targetColor);
+                propBlock.SetColor(BaseColorID, targetColor);
             }
             else
             {
-                data.renderer.material.color = targetColor;
+                propBlock.SetColor("_Color", targetColor);
             }
+
+            data.renderer.SetPropertyBlock(propBlock);
         }
     }
 }

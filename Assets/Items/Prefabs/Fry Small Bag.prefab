@@ -163,7 +163,7 @@ MonoBehaviour:
   slideOutDistance: 0.2
   thicknessMultiplier: 1.2
   outlineTarget: {fileID: 0}
-  hoverColor: {r: 1, g: 1, b: 1, a: 1}
+  hoverColor: {r: 0, g: 0, b: 0, a: 1}
   maxOutlineWidth: 10
   animSpeed: 15
   baseNoiseAmount: 7

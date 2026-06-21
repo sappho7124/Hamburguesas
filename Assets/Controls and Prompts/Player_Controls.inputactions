@@ -526,13 +526,22 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "Fast Forward",
+                    "type": "Button",
+                    "id": "91366389-d8f8-49a4-9ceb-e781aa91e06e",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
                 {
                     "name": "",
                     "id": "af2063e4-1844-432f-9678-7290035028b1",
-                    "path": "",
+                    "path": "<Keyboard>/enter",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -543,7 +552,7 @@
                 {
                     "name": "",
                     "id": "8830e2fc-8c12-4a25-b6da-369c4ba76019",
-                    "path": "",
+                    "path": "<Keyboard>/upArrow",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -554,11 +563,22 @@
                 {
                     "name": "",
                     "id": "6109ebe8-2758-4d7a-8467-33ef9d51439f",
-                    "path": "",
+                    "path": "<Keyboard>/downArrow",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
                     "action": "UI down",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "4adae6d1-14fa-42f3-ae9f-2d16ab8bcc16",
+                    "path": "<Keyboard>/f",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Fast Forward",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

@@ -245,7 +245,7 @@ Sara: FUE UN GUSTO CONOCERTE, AHÍ NOS VEMOS. #afraid
 /// Sara leaves in a rush
 
 <<set $hasIrritabilidad = false>>
-<<SetStatusEffect Irritabilidad false>>
+<<set_status_effect Irritabilidad false>>
 
 <<if $triedNice== true>>
     Narrador: Oh, parece que ya no quieres cachetear a nadie...

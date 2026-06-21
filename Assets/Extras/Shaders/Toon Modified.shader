@@ -204,10 +204,11 @@ Shader "Modified Toon/Toon 3D as 2D (URP)"{
 
                 // Todas las sombras e iluminaciones usan la UV compensada por tu script
                 const float4 firstShadeTex = lerp(SAMPLE_TEXTURE2D(_1st_ShadeMap, sampler_MainTex, uv), mainTex, _Use_BaseAs1st);
-                const float3 firstShadeAlbedo = _1st_ShadeColor.rgb * firstShadeTex.rgb; 
+                // FIX: Multiply the shades by the Base Color and Script Tint so burning the food darkens the shadows too!
+                const float3 firstShadeAlbedo = _1st_ShadeColor.rgb * firstShadeTex.rgb * _BaseColor.rgb * _Color.rgb; 
 
                 const float4 secondShadeTex = lerp(SAMPLE_TEXTURE2D(_2nd_ShadeMap, sampler_MainTex, uv), firstShadeTex, _Use_1stAs2nd);
-                const float3 secondShadeAlbedo = _2nd_ShadeColor.rgb * secondShadeTex.rgb;
+                const float3 secondShadeAlbedo = _2nd_ShadeColor.rgb * secondShadeTex.rgb * _BaseColor.rgb * _Color.rgb;
                 
                 const float3 color2D = ThreeColorsLinearShading(
                     (baseAlbedo * light2dMod.rgb + light2dAdd.rgb).rgb,

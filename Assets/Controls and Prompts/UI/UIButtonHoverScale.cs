@@ -1,14 +1,18 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
+using System;
 
-public class UIButtonHoverScale : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+public class UIButtonHoverScale : MonoBehaviour, IPointerEnterHandler
 {
     [Header("Hover Settings")]
-    public Vector3 hoverScale = new Vector3(1.05f, 1.05f, 1.05f); // 5% bigger
+    public Vector3 hoverScale = new Vector3(1.05f, 1.05f, 1.05f);
     public float scaleSpeed = 15f;
     
     private Vector3 originalScale;
     private Vector3 targetScale;
+    
+    [HideInInspector] public bool isSelected = false;
+    public Action<UIButtonHoverScale> OnHovered;
 
     void Awake()
     {
@@ -18,14 +22,15 @@ public class UIButtonHoverScale : MonoBehaviour, IPointerEnterHandler, IPointerE
 
     void OnEnable()
     {
-        // Reset scale instantly if the button is turned off and back on
         transform.localScale = originalScale;
         targetScale = originalScale;
+        isSelected = false;
     }
 
     void Update()
     {
-        // Smoothly scale towards the target
+        targetScale = isSelected ? hoverScale : originalScale;
+        
         if (Mathf.Abs(transform.localScale.x - targetScale.x) > 0.001f)
         {
             transform.localScale = Vector3.Lerp(transform.localScale, targetScale, Time.unscaledDeltaTime * scaleSpeed);
@@ -34,11 +39,7 @@ public class UIButtonHoverScale : MonoBehaviour, IPointerEnterHandler, IPointerE
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        targetScale = hoverScale;
-    }
-
-    public void OnPointerExit(PointerEventData eventData)
-    {
-        targetScale = originalScale;
+        // Tell the manager that the mouse has hovered over this specific option
+        OnHovered?.Invoke(this);
     }
 }

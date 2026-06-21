@@ -80,19 +80,20 @@ public class InteractionController : MonoBehaviour
         if (equipmentController == null) equipmentController = FindAnyObjectByType<EquipmentController>();
     }
 
-    void Update()
+void Update()
     {
-        // NEW: If we are locked in dialogue, hijack the camera!
-        if (isDialogueLocked && dialogueTargetHead != null)
+        if (isDialogueLocked)
         {
-            Vector3 direction = (dialogueTargetHead.position - playerCamera.transform.position).normalized;
-            Quaternion targetRotation = Quaternion.LookRotation(direction);
+            if (dialogueTargetHead != null)
+            {
+                Vector3 direction = (dialogueTargetHead.position - playerCamera.transform.position).normalized;
+                Quaternion targetRotation = Quaternion.LookRotation(direction);
+                
+                playerCamera.transform.rotation = Quaternion.Slerp(playerCamera.transform.rotation, targetRotation, Time.unscaledDeltaTime * cameraLockSpeed);
+            }
             
-            // Smoothly look at the head (using unscaled time so it works while paused!)
-            playerCamera.transform.rotation = Quaternion.Slerp(playerCamera.transform.rotation, targetRotation, Time.unscaledDeltaTime * cameraLockSpeed);
-            
-            // Do not process normal physics/hovering while talking
-            return;
+            // This return must be outside the 'if' so normal camera & hovering stop unconditionally
+            return; 
         }
 
         if (isHolding)
@@ -114,30 +115,29 @@ public class InteractionController : MonoBehaviour
 
     public void ToggleDialogueMode(bool enable, Transform targetHead = null)
     {
-        isDialogueLocked = enable;
         dialogueTargetHead = targetHead;
-
-        if (playerController != null)
-        {
-            // Lock the player's movement and looking
-            playerController.SetInputLock(enable, enable);
-        }
 
         if (enable)
         {
-            originalCameraRotation = playerCamera.transform.rotation;
+            // FIX: Only save the original rotation if we weren't ALREADY in dialogue
+            if (!isDialogueLocked) originalCameraRotation = playerCamera.transform.rotation;
             
-            // Unlock and show the mouse cursor for clicking options!
+            isDialogueLocked = true;
+            
+            if (playerController != null) playerController.SetInputLock(true, true);
+            
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
         }
         else
         {
-            // Hide the cursor and lock it back to the game
+            isDialogueLocked = false;
+            
+            if (playerController != null) playerController.SetInputLock(false, false);
+            
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
             
-            // Snap camera back
             playerCamera.transform.rotation = originalCameraRotation;
         }
     }
@@ -384,9 +384,25 @@ public class InteractionController : MonoBehaviour
         tempRB.AddForce(playerCamera.transform.forward * throwForce, ForceMode.Impulse);
     }
 
-    void ExitGrabState()
+void ExitGrabState()
     {
         if (heldObjectRB == null) return;
+
+        // --- NEW: Report dropping Physics items to the StoryFlowManager! ---
+        GrabbableItem itemScript = heldObjectRB.GetComponent<GrabbableItem>();
+        if (itemScript != null && itemScript.itemDefinition != null)
+        {
+            if (itemScript.itemDefinition.itemName == "Pan") StoryFlowManager.Instance.ReportAction("PlaceBread");
+            if (itemScript.itemDefinition.itemName == "Carne") StoryFlowManager.Instance.ReportAction("PlaceMeat");
+            if (itemScript.itemDefinition.itemName == "Hamburguesa") StoryFlowManager.Instance.ReportAction("PlaceBurger");
+        }
+
+        // Also check if it's an assembled burger component directly!
+        if (heldObjectRB.GetComponent<AssembledBurger>() != null)
+        {
+            StoryFlowManager.Instance.ReportAction("PlaceBurger");
+        }
+        // -------------------------------------------------------------------
 
         // 1. INPUT MAP SWAP
         controls.ObjectManipulation.Disable();
@@ -410,15 +426,12 @@ public class InteractionController : MonoBehaviour
         isHolding = false;
         if (equipmentController) 
         {
-            // Must set this to false BEFORE RefreshPrompts
             equipmentController.SetPhysicsHolding(false); 
         }
 
         // 4. UI CONTEXT SWAP
-        // Clear Physics prompts
         ActionPromptManager.Instance.ClearAll(false);
         
-        // Now refresh tool prompts (will pass the internal isPhysicsHolding check)
         if (equipmentController) 
         {
             equipmentController.RefreshPrompts();
@@ -429,8 +442,6 @@ public class InteractionController : MonoBehaviour
         lockY = false;
         if(crosshair) crosshair.color = Color.white;
     }
-
-// Location: C:\Games\Unity\Hamburguesas\Assets\Controls and Prompts\InteractionController.cs
 
     // State Tracking for Continuous UI Updates
     private string lastDisplayVerb = "";

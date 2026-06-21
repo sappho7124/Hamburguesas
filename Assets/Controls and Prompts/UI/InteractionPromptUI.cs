@@ -13,6 +13,7 @@ public class InteractionPromptUI : MonoBehaviour
     
     [Header("Components")]
     public Image backgroundImage; 
+    [Tooltip("Optional: Leave empty or delete component to remove outline effect")]
     public UIBorderRenderer panelOutlineRenderer; 
     public Image iconImage; 
     public TextMeshProUGUI promptText; 
@@ -64,13 +65,19 @@ public class InteractionPromptUI : MonoBehaviour
         }
         if (uiCamera == null) uiCamera = Camera.main;
 
-        // Ensure Pivot is correct for the new sliding logic
         if (panelRect) panelRect.pivot = new Vector2(0f, 0.5f);
 
         if (baseTextMaterial) { instancedTextMat = new Material(baseTextMaterial); promptText.fontMaterial = instancedTextMat; }
         if (baseIconMaterial) { instancedIconMat = new Material(baseIconMaterial); iconImage.material = instancedIconMat; }
         if (baseBackgroundMaterial) { instancedBgMat = new Material(baseBackgroundMaterial); backgroundImage.material = instancedBgMat; }
-        if (baseOutlineMaterial) { instancedOutlineMat = new Material(baseOutlineMaterial); panelOutlineRenderer.material = instancedOutlineMat; }
+        
+        // SAFE CHECK: Only instance outline if the renderer exists
+        if (baseOutlineMaterial && panelOutlineRenderer != null) 
+        { 
+            instancedOutlineMat = new Material(baseOutlineMaterial); 
+            panelOutlineRenderer.material = instancedOutlineMat; 
+        }
+        
         if (baseBackgroundMaterial && leftMaskImage) { instancedMaskMat = new Material(baseBackgroundMaterial); leftMaskImage.material = instancedMaskMat; }
     }
 
@@ -102,115 +109,102 @@ public class InteractionPromptUI : MonoBehaviour
         }
     }
 
-// Inside InteractionPromptUI.cs
-
-// Helper to find the visual right edge of the object based on camera perspective
-float CalculateDynamicEdgeOffset(HighlightableObject target, Vector3 camRight)
-{
-    // 1. Get all renderers (in case it's a complex object with children)
-    // Ignore particle renderers so they don't stretch the UI distance
-    Renderer[] renderers = target.GetComponentsInChildren<Renderer>()
-        .Where(r => !(r is ParticleSystemRenderer))
-        .ToArray();
-
-    if (renderers.Length == 0) return 0f;
-
-    float maxDot = 0f;
-    Vector3 anchorPos = target.GetUIPosition();
-
-    foreach (Renderer rend in renderers)
+    float CalculateDynamicEdgeOffset(HighlightableObject target, Vector3 camRight)
     {
-        // We use the object's World-Axis-Aligned bounding box corners
-        Bounds b = rend.bounds;
-        Vector3[] corners = new Vector3[8];
-        Vector3 center = b.center;
-        Vector3 ext = b.extents;
+        Renderer[] renderers = target.GetComponentsInChildren<Renderer>()
+            .Where(r => !(r is ParticleSystemRenderer))
+            .ToArray();
 
-        corners[0] = center + new Vector3(ext.x, ext.y, ext.z);
-        corners[1] = center + new Vector3(ext.x, ext.y, -ext.z);
-        corners[2] = center + new Vector3(ext.x, -ext.y, ext.z);
-        corners[3] = center + new Vector3(ext.x, -ext.y, -ext.z);
-        corners[4] = center + new Vector3(-ext.x, ext.y, ext.z);
-        corners[5] = center + new Vector3(-ext.x, ext.y, -ext.z);
-        corners[6] = center + new Vector3(-ext.x, -ext.y, ext.z);
-        corners[7] = center + new Vector3(-ext.x, -ext.y, -ext.z);
+        if (renderers.Length == 0) return 0f;
 
-        foreach (Vector3 corner in corners)
+        float maxDot = 0f;
+        Vector3 anchorPos = target.GetUIPosition();
+
+        foreach (Renderer rend in renderers)
         {
-            // Calculate vector from anchor to corner
-            Vector3 rel = corner - anchorPos;
-            // Project onto camera right
-            float dot = Vector3.Dot(rel, camRight);
-            if (dot > maxDot) maxDot = dot;
+            Bounds b = rend.bounds;
+            Vector3[] corners = new Vector3[8];
+            Vector3 center = b.center;
+            Vector3 ext = b.extents;
+
+            corners[0] = center + new Vector3(ext.x, ext.y, ext.z);
+            corners[1] = center + new Vector3(ext.x, ext.y, -ext.z);
+            corners[2] = center + new Vector3(ext.x, -ext.y, ext.z);
+            corners[3] = center + new Vector3(ext.x, -ext.y, -ext.z);
+            corners[4] = center + new Vector3(-ext.x, ext.y, ext.z);
+            corners[5] = center + new Vector3(-ext.x, ext.y, -ext.z);
+            corners[6] = center + new Vector3(-ext.x, -ext.y, ext.z);
+            corners[7] = center + new Vector3(-ext.x, -ext.y, -ext.z);
+
+            foreach (Vector3 corner in corners)
+            {
+                Vector3 rel = corner - anchorPos;
+                float dot = Vector3.Dot(rel, camRight);
+                if (dot > maxDot) maxDot = dot;
+            }
         }
+
+        return maxDot;
     }
 
-    return maxDot;
-}
-
-void TrackObject()
-{
-    if (uiCamera == null || panelRect == null || currentTarget == null) return;
-
-    Vector3 anchorPos = currentTarget.GetUIPosition();
-    float dist = Vector3.Distance(uiCamera.transform.position, anchorPos);
-    Vector3 targetScale = Vector3.one * baseScale;
-    if (fixedScreenSize) targetScale *= dist;
-
-    LayoutRebuilder.ForceRebuildLayoutImmediate(panelRect);
-    float worldWidth = panelRect.rect.width * targetScale.x;
-
-    if (maskRect != null)
+    void TrackObject()
     {
-        maskRect.position = anchorPos;
-        maskRect.rotation = uiCamera.transform.rotation;
-        maskRect.localScale = targetScale;
-        maskRect.sizeDelta = new Vector2(maskWidth, panelRect.sizeDelta.y * maskHeightMultiplier);
+        if (uiCamera == null || panelRect == null || currentTarget == null) return;
+
+        Vector3 anchorPos = currentTarget.GetUIPosition();
+        float dist = Vector3.Distance(uiCamera.transform.position, anchorPos);
+        Vector3 targetScale = Vector3.one * baseScale;
+        if (fixedScreenSize) targetScale *= dist;
+
+        LayoutRebuilder.ForceRebuildLayoutImmediate(panelRect);
+        float worldWidth = panelRect.rect.width * targetScale.x;
+
+        if (maskRect != null)
+        {
+            maskRect.position = anchorPos;
+            maskRect.rotation = uiCamera.transform.rotation;
+            maskRect.localScale = targetScale;
+            maskRect.sizeDelta = new Vector2(maskWidth, panelRect.sizeDelta.y * maskHeightMultiplier);
+        }
+
+        Vector3 camRight = uiCamera.transform.right;
+        float edgeOffset = CalculateDynamicEdgeOffset(currentTarget, camRight);
+
+        float progress = Mathf.Clamp01(animationProgress);
+        float easedProgress = Mathf.SmoothStep(0, 1, progress);
+        
+        float hiddenX = -worldWidth;
+        float visibleX = edgeOffset + currentTarget.slideOutDistance;
+        float slideX = Mathf.Lerp(hiddenX, visibleX, easedProgress);
+        
+        Vector3 slideOffset = camRight * slideX;
+
+        panelRect.position = anchorPos + slideOffset;
+        panelRect.rotation = uiCamera.transform.rotation;
+        panelRect.localScale = targetScale;
     }
-
-    // --- NEW DYNAMIC EDGE LOGIC ---
-    Vector3 camRight = uiCamera.transform.right;
-    float edgeOffset = CalculateDynamicEdgeOffset(currentTarget, camRight);
-
-    float progress = Mathf.Clamp01(animationProgress);
-    float easedProgress = Mathf.SmoothStep(0, 1, progress);
-    
-    // Hidden: Tucked behind the object center
-    float hiddenX = -worldWidth;
-    
-    // Visible: Visual Edge + Buffer (slideOutDistance)
-    float visibleX = edgeOffset + currentTarget.slideOutDistance;
-    
-    float slideX = Mathf.Lerp(hiddenX, visibleX, easedProgress);
-    
-    Vector3 slideOffset = camRight * slideX;
-
-    panelRect.position = anchorPos + slideOffset;
-    panelRect.rotation = uiCamera.transform.rotation;
-    panelRect.localScale = targetScale;
-}
 
     void SyncOutlineVisuals()
     {
-        if (panelOutlineRenderer == null || currentTarget == null) return;
+        if (currentTarget == null) return;
 
         Outline objOutline = currentTarget.OutlineComponent;
         if (objOutline != null)
         {
-            // Thickness sync
-            panelOutlineRenderer.Thickness = -(objOutline.OutlineWidth * currentTarget.thicknessMultiplier);
-            
-            // ALPHA FIX: 
-            // Use the actual current width of the 3D outline to drive UI transparency.
-            // This ensures they fade out together.
             float alpha = Mathf.Clamp01(objOutline.OutlineWidth / (currentTarget.maxOutlineWidth * 0.5f));
-            
             Color c = objOutline.OutlineColor;
             c.a = alpha;
-            panelOutlineRenderer.color = c;
+            
+            // SAFE CHECK: Only update outline if it exists!
+            if (panelOutlineRenderer != null)
+            {
+                panelOutlineRenderer.Thickness = -(objOutline.OutlineWidth * currentTarget.thicknessMultiplier);
+                panelOutlineRenderer.color = c;
+            }
 
-            Color contentColor = isCurrentStateBlocked ? c : Color.white;
-            contentColor.a = alpha; // Apply smooth fade to text/icon too
+            // FIX: Normal text color is now Black!
+            Color contentColor = isCurrentStateBlocked ? c : Color.black;
+            contentColor.a = alpha; 
 
             if (iconImage) iconImage.color = (iconImage.sprite != null) ? contentColor : Color.clear;
             if (promptText) promptText.color = contentColor;
@@ -265,7 +259,10 @@ void TrackObject()
             ApplyMaterialProperties(instancedTextMat, id, 4000);
             ApplyMaterialProperties(instancedIconMat, id, 4000);
             ApplyMaterialProperties(instancedBgMat, id, 4000);
-            ApplyMaterialProperties(instancedOutlineMat, id, 4000);
+            
+            // SAFE CHECK
+            if (panelOutlineRenderer != null) ApplyMaterialProperties(instancedOutlineMat, id, 4000);
+            
             if (instancedMaskMat != null)
             {
                 instancedMaskMat.SetFloat("_Stencil", id);

@@ -47,6 +47,11 @@ public class EquippableItem : MonoBehaviour
         if (transitionCoroutine != null) StopCoroutine(transitionCoroutine);
         
         transform.SetParent(newParent);
+        
+        // FIX: Force the item to retain its original scale immediately upon parenting
+        // to prevent Unity from stretching it if the hand mount has a weird inherited scale.
+        transform.localScale = originalScale; 
+        
         transitionCoroutine = StartCoroutine(TransitionRoutine(targetPos, targetRot, isLocal, onComplete));
     }
 

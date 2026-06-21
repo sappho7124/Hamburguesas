@@ -1,4 +1,3 @@
-// Location: C:\Games\Unity\Hamburguesas\Assets\Clients and Days Configs\Scripts\Customer.cs
 using UnityEngine;
 using UnityEngine.AI; 
 using System;
@@ -14,8 +13,9 @@ public class Customer : MonoBehaviour
     private Transform currentQueueSpot;
     private CustomerGroup myGroup; 
     
-    private enum State { MovingToSeat, Seated, Leaving, MovingToQueue, WaitingInQueue, FinishedEating}
-    private State currentState;
+    // NEW: Added "Idle" as the first state so special NPCs don't walk away when spawned
+    private enum State { Idle, MovingToSeat, Seated, Leaving, MovingToQueue, WaitingInQueue, FinishedEating }
+    private State currentState = State.Idle;
 
     private bool hasOrdered = false;
     private Renderer bodyRenderer;
@@ -61,7 +61,7 @@ public class Customer : MonoBehaviour
 
     private bool HasArrived()
     {
-        if (agent.pathPending) return false;
+        if (agent == null || !agent.enabled || agent.pathPending) return false;
         return agent.remainingDistance <= agent.stoppingDistance + 0.4f;
     }
 
@@ -100,6 +100,9 @@ public class Customer : MonoBehaviour
 
     void Update()
     {
+        // FIX: Ignore uninitialized/story characters (Like Don Julio & Lucas)
+        if (currentState == State.Idle) return; 
+
         if (currentState == State.MovingToSeat) { if (HasArrived()) SitDown(); }
         else if (currentState == State.Leaving) { if (HasArrived()) Destroy(gameObject); }
         else if (currentState == State.MovingToQueue) { 
@@ -127,7 +130,6 @@ public class Customer : MonoBehaviour
         UpdateAnimations();
     }
 
-    // --- NEW: Procedural Head Look At ---
     void LateUpdate()
     {
         if (headBone == null || Camera.main == null) return;
@@ -140,7 +142,6 @@ public class Customer : MonoBehaviour
                           (Vector3.Distance(transform.position, camTransform.position) <= lookRadius) &&
                           (currentState != State.Leaving);
 
-        // Smoothly blend the tracking weight on top of the animator
         currentHeadWeight = Mathf.MoveTowards(currentHeadWeight, shouldLook ? 1f : 0f, Time.deltaTime * headTurnSpeed);
 
         if (currentHeadWeight > 0.01f)
@@ -174,6 +175,13 @@ public class Customer : MonoBehaviour
 
     private void SitDown()
     {
+        if (targetSeat == null)
+        {
+            Debug.LogWarning($"[Customer] {profile?.profileName} tried to sit down but targetSeat is null! Forcing them to leave.");
+            Leave();
+            return;
+        }
+
         currentState = State.Seated;
         agent.enabled = false; 
         transform.position = targetSeat.transform.TransformPoint(targetSeat.customerOffset); 
@@ -191,21 +199,26 @@ public class Customer : MonoBehaviour
         if (faceController != null && faceController.CurrentMood == CustomerFaceController.Mood.Angry)
             faceController.SetMood(CustomerFaceController.Mood.ReallyAngry);
 
-        Vector3 groundExit = new Vector3(exitPoint.position.x, transform.position.y, exitPoint.position.z);
-        if (UnityEngine.AI.NavMesh.SamplePosition(groundExit, out UnityEngine.AI.NavMeshHit hit, 5.0f, UnityEngine.AI.NavMesh.AllAreas))
-            MoveToClosestNavPoint(hit.position);
+        if (exitPoint != null)
+        {
+            Vector3 groundExit = new Vector3(exitPoint.position.x, transform.position.y, exitPoint.position.z);
+            if (UnityEngine.AI.NavMesh.SamplePosition(groundExit, out UnityEngine.AI.NavMeshHit hit, 5.0f, UnityEngine.AI.NavMesh.AllAreas))
+                MoveToClosestNavPoint(hit.position);
+            else
+                MoveToClosestNavPoint(groundExit);
+        }
         else
-            MoveToClosestNavPoint(groundExit);
+        {
+            // If they don't have an exit point (like some story characters), just destroy immediately
+            Destroy(gameObject);
+        }
     }
 
-// --- MASTER INTERACTION HANDLER ---
-    // Link this directly to your InteractableObject's "OnInteract" Unity Event!
     public void HandleInteraction()
     {
         string triggerState = DetermineCurrentTriggerState();
         if (string.IsNullOrEmpty(triggerState)) return; 
 
-        // 1. MAIN EVENT: Taking the order OR Talking after eating!
         if (triggerState == "BeforeOrder" || triggerState == "PostMeal")
         {
             RestaurantYarnView yarnView = FindAnyObjectByType<RestaurantYarnView>();
@@ -213,7 +226,6 @@ public class Customer : MonoBehaviour
 
             Yarn.Unity.DialogueRunner runner = FindAnyObjectByType<Yarn.Unity.DialogueRunner>();
             
-            // Choose the correct Yarn Node based on the state!
             string targetNode = triggerState == "BeforeOrder" ? profile.yarnNodeName : profile.yarnPostMealNodeName; 
 
             if (runner != null && !string.IsNullOrEmpty(targetNode))
@@ -230,7 +242,6 @@ public class Customer : MonoBehaviour
                     }
                     else if (triggerState == "PostMeal")
                     {
-                        // Turn off interaction so you can't talk to them again while they are leaving
                         SetInteractable(false, "");
                     }
                     return; 
@@ -250,7 +261,7 @@ public class Customer : MonoBehaviour
         if (currentState == State.WaitingInQueue) return "Queue";
         if (currentState == State.Seated && !hasOrdered) return "BeforeOrder";
         if (currentState == State.Seated && hasOrdered) return "AfterOrder";
-        if (currentState == State.FinishedEating) return "PostMeal"; // Added this!
+        if (currentState == State.FinishedEating) return "PostMeal"; 
         return "";
     }
 

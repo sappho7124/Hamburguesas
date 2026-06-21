@@ -612,13 +612,22 @@ public partial class @Player_Controls: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Fast Forward"",
+                    ""type"": ""Button"",
+                    ""id"": ""91366389-d8f8-49a4-9ceb-e781aa91e06e"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
                 {
                     ""name"": """",
                     ""id"": ""af2063e4-1844-432f-9678-7290035028b1"",
-                    ""path"": """",
+                    ""path"": ""<Keyboard>/enter"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
@@ -629,7 +638,7 @@ public partial class @Player_Controls: IInputActionCollection2, IDisposable
                 {
                     ""name"": """",
                     ""id"": ""8830e2fc-8c12-4a25-b6da-369c4ba76019"",
-                    ""path"": """",
+                    ""path"": ""<Keyboard>/upArrow"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
@@ -640,11 +649,22 @@ public partial class @Player_Controls: IInputActionCollection2, IDisposable
                 {
                     ""name"": """",
                     ""id"": ""6109ebe8-2758-4d7a-8467-33ef9d51439f"",
-                    ""path"": """",
+                    ""path"": ""<Keyboard>/downArrow"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""UI down"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""4adae6d1-14fa-42f3-ae9f-2d16ab8bcc16"",
+                    ""path"": ""<Keyboard>/f"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Fast Forward"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -682,6 +702,7 @@ public partial class @Player_Controls: IInputActionCollection2, IDisposable
         m_UI_Select = m_UI.FindAction("Select", throwIfNotFound: true);
         m_UI_UIup = m_UI.FindAction("UI up", throwIfNotFound: true);
         m_UI_UIdown = m_UI.FindAction("UI down", throwIfNotFound: true);
+        m_UI_FastForward = m_UI.FindAction("Fast Forward", throwIfNotFound: true);
     }
 
     ~@Player_Controls()
@@ -1221,6 +1242,7 @@ public partial class @Player_Controls: IInputActionCollection2, IDisposable
     private readonly InputAction m_UI_Select;
     private readonly InputAction m_UI_UIup;
     private readonly InputAction m_UI_UIdown;
+    private readonly InputAction m_UI_FastForward;
     /// <summary>
     /// Provides access to input actions defined in input action map "UI".
     /// </summary>
@@ -1244,6 +1266,10 @@ public partial class @Player_Controls: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "UI/UIdown".
         /// </summary>
         public InputAction @UIdown => m_Wrapper.m_UI_UIdown;
+        /// <summary>
+        /// Provides access to the underlying input action "UI/FastForward".
+        /// </summary>
+        public InputAction @FastForward => m_Wrapper.m_UI_FastForward;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -1279,6 +1305,9 @@ public partial class @Player_Controls: IInputActionCollection2, IDisposable
             @UIdown.started += instance.OnUIdown;
             @UIdown.performed += instance.OnUIdown;
             @UIdown.canceled += instance.OnUIdown;
+            @FastForward.started += instance.OnFastForward;
+            @FastForward.performed += instance.OnFastForward;
+            @FastForward.canceled += instance.OnFastForward;
         }
 
         /// <summary>
@@ -1299,6 +1328,9 @@ public partial class @Player_Controls: IInputActionCollection2, IDisposable
             @UIdown.started -= instance.OnUIdown;
             @UIdown.performed -= instance.OnUIdown;
             @UIdown.canceled -= instance.OnUIdown;
+            @FastForward.started -= instance.OnFastForward;
+            @FastForward.performed -= instance.OnFastForward;
+            @FastForward.canceled -= instance.OnFastForward;
         }
 
         /// <summary>
@@ -1510,5 +1542,12 @@ public partial class @Player_Controls: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnUIdown(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Fast Forward" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnFastForward(InputAction.CallbackContext context);
     }
 }

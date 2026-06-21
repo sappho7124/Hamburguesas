@@ -7,7 +7,7 @@ position: -575,-937
 <<declare $hasIrritabilidad = false>>
 
 /// This happens right after Sunday night's conversation with the narrator, the player is now alone in the restaurant's kitchen
-
+<<set_darkness 0.5>>
 Narrador: Te noto algo tenso.
 Narrador: Parece que anoche te mantuve despierto más de la cuenta.
 Narrador: ...
@@ -28,6 +28,7 @@ Narrador: ¿Qué, no sabes qué hacer?
 Narrador: ...
 Narrador: Jaja, supongo que por un momento yo también olvidé cómo eres.
 Narrador: A ver...
+<<set_darkness 0>>
 Narrador: Para preparar una hamburguesa primero ve a la nevera y presiona E para abrirla.
 
 
@@ -201,7 +202,7 @@ Narrador: ¿SEGURÍSIMO?
 Narrador: ¿SEGURISISÍSIMO?
 
 <<set $hasIrritabilidad = true>>
-<<SetStatusEffect Irritabilidad true>>
+<<set_status_effect Irritabilidad true>>
 
 /// The player now has the "irritabilidad" status effect on. This will make the game ignore whatever dialogue option the player chooses and go with a specific response (the meanest) every time. How this is handled is explained in the "clients" yarn file 
 

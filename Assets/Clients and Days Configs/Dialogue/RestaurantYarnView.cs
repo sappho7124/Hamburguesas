@@ -1,9 +1,7 @@
-#nullable enable
 using UnityEngine;
 using Yarn.Unity;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks; 
 
@@ -14,33 +12,37 @@ public class RestaurantYarnView : DialoguePresenterBase
     
     [HideInInspector] 
     public CustomerFaceController? currentSpeakerFace; 
+    
+    private string lastNodeName = "";
 
-    // 1. Updated Return Type to YarnTask
+    private void Start()
+    {
+        // FIX: Safely track the current node name using the built-in UnityEvent.
+        // This avoids any API version conflicts with CurrentNodeName!
+        DialogueRunner runner = FindAnyObjectByType<DialogueRunner>();
+        if (runner != null)
+        {
+            runner.onNodeStart.AddListener((nodeName) => lastNodeName = nodeName);
+        }
+    }
+
     public override async YarnTask OnDialogueStartedAsync()
     {
-        Time.timeScale = 0f; 
-
-        // If there is a speaker (a customer/NPC), lock the camera to them!
-        if (currentSpeakerFace != null)
-        {
-            InteractionController ic = FindAnyObjectByType<InteractionController>();
-            // Look for a child object named "Head", otherwise just look at the character
-            Transform headTarget = currentSpeakerFace.transform.Find("Head");
-            if (headTarget == null) headTarget = currentSpeakerFace.transform;
-
-            if (ic != null) ic.ToggleDialogueMode(true, headTarget);
-        }
-
         await Task.CompletedTask;
     }
 
-    // 2. Updated Return Type to YarnTask
     public override async YarnTask OnDialogueCompleteAsync()
     {
-        Time.timeScale = 1f; 
-        RestaurantUIManager.Instance.HideDialoguePanel();
+        // Detect if the node that just finished is meant to stay on screen for gameplay
+        bool isGameplayNode = lastNodeName.StartsWith("TutorialStep") || lastNodeName == "TutorialStart" || lastNodeName == "TutorialFuckUpReroute";
 
-        // Unlock the camera and cursor
+        // ONLY hide the panel if it's a normal conversation
+        if (!isGameplayNode)
+        {
+            RestaurantUIManager.Instance.HideDialoguePanel();
+        }
+
+        // ALWAYS ensure the player is unlocked when dialogue finishes
         InteractionController ic = FindAnyObjectByType<InteractionController>();
         if (ic != null) ic.ToggleDialogueMode(false);
 
@@ -48,16 +50,62 @@ public class RestaurantYarnView : DialoguePresenterBase
         await Task.CompletedTask;
     }
 
-    // 3. Updated Token to LineCancellationToken and Return Type to YarnTask
     public override async YarnTask RunLineAsync(LocalizedLine dialogueLine, LineCancellationToken cancellationToken)
     {
+        // Auto-dismiss Don Julio when the dark screen manipulation starts
+        if (lastNodeName == "NarratorManipulation" && StoryFlowManager.Instance != null)
+        {
+            StoryFlowManager.Instance.DismissDonJulio();
+        }
+
+        CustomerFaceController activeFace = currentSpeakerFace;
+        Transform headTarget = null;
+        string cleanName = dialogueLine.CharacterName;
+
+        if (activeFace == null && !string.IsNullOrEmpty(cleanName))
+        {
+            GameObject sceneNPC = GameObject.Find(cleanName) 
+                ?? GameObject.Find(cleanName + "(Clone)") 
+                ?? GameObject.Find(cleanName.Replace(" ", ""));
+
+            if (sceneNPC != null)
+            {
+                activeFace = sceneNPC.GetComponentInChildren<CustomerFaceController>();
+                
+                Customer cust = sceneNPC.GetComponent<Customer>();
+                if (cust != null && cust.headBone != null) headTarget = cust.headBone;
+                else headTarget = sceneNPC.transform.Find("Head") ?? sceneNPC.transform;
+            }
+        }
+        else if (activeFace != null)
+        {
+            Customer cust = activeFace.GetComponent<Customer>();
+            if (cust != null && cust.headBone != null) headTarget = cust.headBone;
+            else headTarget = activeFace.transform.Find("Head") ?? activeFace.transform;
+        }
+
+        bool isGameplayNode = lastNodeName.StartsWith("TutorialStep") || lastNodeName == "TutorialStart" || lastNodeName == "TutorialFuckUpReroute";
+
+        InteractionController ic = FindAnyObjectByType<InteractionController>();
+        if (ic != null)
+        {
+            if (!isGameplayNode) 
+            {
+                ic.ToggleDialogueMode(true, headTarget);
+            }
+            else
+            {
+                ic.ToggleDialogueMode(false);
+            }
+        }
+
         bool hasIrritabilidad = false;
         if (variableStorage != null)
         {
             variableStorage.TryGetValue("$hasIrritabilidad", out hasIrritabilidad);
         }
 
-        if (hasIrritabilidad && dialogueLine.Metadata != null && dialogueLine.Metadata.Contains("choice"))
+        if (hasIrritabilidad && dialogueLine.Metadata != null && Array.IndexOf(dialogueLine.Metadata, "choice") >= 0)
         {
             return; 
         }
@@ -65,11 +113,11 @@ public class RestaurantYarnView : DialoguePresenterBase
         CustomerFaceController.Mood mood = CustomerFaceController.Mood.Neutral;
         if (dialogueLine.Metadata != null)
         {
-            if (dialogueLine.Metadata.Contains("happy")) mood = CustomerFaceController.Mood.Happy;
-            else if (dialogueLine.Metadata.Contains("angry")) mood = CustomerFaceController.Mood.Angry;
-            else if (dialogueLine.Metadata.Contains("sad")) mood = CustomerFaceController.Mood.Sad;
-            else if (dialogueLine.Metadata.Contains("afraid")) mood = CustomerFaceController.Mood.Scared; 
-            else if (dialogueLine.Metadata.Contains("dead")) mood = CustomerFaceController.Mood.Dead;
+            if (Array.IndexOf(dialogueLine.Metadata, "happy") >= 0) mood = CustomerFaceController.Mood.Happy;
+            else if (Array.IndexOf(dialogueLine.Metadata, "angry") >= 0) mood = CustomerFaceController.Mood.Angry;
+            else if (Array.IndexOf(dialogueLine.Metadata, "sad") >= 0) mood = CustomerFaceController.Mood.Sad;
+            else if (Array.IndexOf(dialogueLine.Metadata, "afraid") >= 0) mood = CustomerFaceController.Mood.Scared; 
+            else if (Array.IndexOf(dialogueLine.Metadata, "dead") >= 0) mood = CustomerFaceController.Mood.Dead;
         }
 
         var lineTask = new TaskCompletionSource<bool>();
@@ -78,15 +126,14 @@ public class RestaurantYarnView : DialoguePresenterBase
             dialogueLine.CharacterName, 
             dialogueLine.TextWithoutCharacterName.Text, 
             mood, 
-            currentSpeakerFace, 
+            activeFace, 
+            isGameplayNode, // Pass the boolean we created!
             () => lineTask.SetResult(true) 
         );
 
         await lineTask.Task;
     }
 
-    // 4. Updated Return Type to YarnTask<DialogueOption?>
-    // (We also add the [Obsolete] tag to satisfy Unity's compiler warning)
     [Obsolete]
     public override async YarnTask<DialogueOption?> RunOptionsAsync(DialogueOption[] dialogueOptions, CancellationToken cancellationToken)
     {
@@ -100,10 +147,9 @@ public class RestaurantYarnView : DialoguePresenterBase
 
         RestaurantUIManager.Instance.DisplayDialogueOptions(
             optionsTexts, 
-            (index) => optionTask.SetResult(dialogueOptions[index]) // Pass back the actual Option, not just the index
+            (index) => optionTask.SetResult(dialogueOptions[index]) 
         );
 
-        // Wait for the player to click a button
         return await optionTask.Task;
     }
 }

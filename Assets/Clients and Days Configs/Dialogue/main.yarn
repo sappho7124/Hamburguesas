@@ -32,7 +32,7 @@ color: yellow
 position: 16,187
 ---
 /// The player is now talking with Don Julio in the Restaurant's kitchen during Sunday night
-
+<<set_darkness 0>>
 Don Julio: ¡Fua! ¿Quién hubiera imaginado que un chino tan flacuchento iba a salir con semejante talento pa' la cocina, eh? #happy
 
 <<if visited("NarratorManipulation")>>
@@ -93,7 +93,7 @@ Don Julio: Bueno, se me cuida chino, en lo que yo entrego los domicilios de la n
 -> Tomas: Que sí, viejo fastidioso.
     Don Julio: ...¿Cómo? #angry
     <<set $lastScene = 4>>
-
+<<julio_leave>>
 <<jump NarratorManipulation>>
 ===
 
@@ -102,7 +102,7 @@ position: 312,389
 ---
 
 /// Screen darkens, vignette effect
-
+<<set_darkness 1>>
 <<if visited_count("NarratorManipulation") == 0>>
     <<if $lastScene == 2>>
         Narrador: Deberías aceptar sus términos.

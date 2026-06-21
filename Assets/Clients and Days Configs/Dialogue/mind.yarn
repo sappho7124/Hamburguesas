@@ -1,7 +1,7 @@
 title: SundayNight
 ---
 /// This happens right after talking to Don Julio, now the player is in Tomás' again
-
+<<set_darkness 1>>
 Narrador: No es mi intención interrumpir tu tiempo de sueño, pero debo recordarte que el resto de tu vida depende de cómo te vaya mañana.
 Narrador: Y de cómo te vaya al día siguiente.
 Narrador: Y al siguiente.
@@ -11,7 +11,7 @@ Narrador: ...
 Narrador: Pero no te preocupes por eso.
 Narrador: Solo tenlo presente.
 
-<<SetStatusEffect ProblemasDeSueno true>>
+<<set_status_effect "ProblemasDeSueno" true>>
 
 Narrador: Oh, ¿qué es eso?
 Narrador: ...
@@ -19,39 +19,42 @@ Narrador: Se siente extraño...
 Narrador: Jmm...
 Narrador: De alguna manera me hace sentir más conectado a ti...
 Narrador: ...
+<<play_sound "fan" 0.3>>
 Narrador: ¿Puedes oír esto?
 
 /// Fan noise
 
 Narrador: Viene de tu habitación, en este momento.
 Narrador: No sé por qué sueles ignorar ese hermoso sonido.
+<<play_sound "fan" 0.8>>
 Narrador: Puedo hacer que suene aún más fuerte, si quieres.
 
 /// Fan noise intensifies
-
+<<stop_sound "fan">>
 Narrador: Creo que es suficiente, tampoco quiero abrumarte.
 ...
 Narrador: ¡Oh, ya sé!
 Narrador: ¿Puedes
 Narrador: ver
+<<start_floating_words "Inutil">>
 Narrador: esto?
 
 /// The word "inútil" appears on the screen, huge
-
+<<stop_floating_words>>
 Narrador: ¡Woh, jojo!
+<<start_floating_words "basura, idiota, insuficiente, patético, decepcionante, vergüenza">>
 Narrador: ¿Qué tal esto?
 
 /// The Words "basura", "idiota", "insuficiente", "patético", "decepcionante" & "vergüenza" start appearing all over the screen
-
+<<stop_floating_words>>
 Narrador: Bueno, ya.
-
 /// The words disappear
 
 Narrador: Todo eso es lo que no quiero que seas, por cierto.
 Narrador: Trabajaremos juntos para evitarlo.
 Narrador: ...
 
-<<SetStatusEffect ProblemasDeSueno false>>
+<<set_status_effect ProblemasDeSueno false>>
 
 Narrador: Por ahora duerme, mañana es un día importante.
 Narrador: ...
@@ -72,7 +75,7 @@ Narrador: ...
 Narrador: ¡Ah, sí, cómo pude olvidarlo!
 Narrador: No eres lo suficientemente bueno.
 
-<<SetStatusEffect ProblemasDeSueno true>>
+<<set_status_effect "ProblemasDeSueno" true>>
 
 Narrador: Ahhh...
 Narrador: Mucho mejor.
