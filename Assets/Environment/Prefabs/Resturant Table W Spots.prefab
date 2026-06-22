@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1624417645493123199}
   - component: {fileID: 7656797493270511675}
+  - component: {fileID: 3082110107901635107}
   m_Layer: 0
   m_Name: Eating Spot 3
   m_TagString: Untagged
@@ -47,6 +48,27 @@ MonoBehaviour:
   linkedSittingSpot: {fileID: 8776574444557361412}
   moneyPrefab: {fileID: 6625425270166459256, guid: 5e9850536249d484983e989746e6ba10, type: 3}
   eatingDuration: 5
+--- !u!65 &3082110107901635107
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 779930182374092604}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.441565, y: 0.111902826, z: 0.49188855}
+  m_Center: {x: 0.0043911547, y: 0.06404856, z: 0.05239326}
 --- !u!1 &1638657872561732875
 GameObject:
   m_ObjectHideFlags: 0
@@ -94,6 +116,7 @@ MonoBehaviour:
   linkedTableSpot: {fileID: 6001917233661979486}
   connectedSpots:
   - {fileID: 2272484522827284866}
+  - {fileID: 3886075049312499512}
   - {fileID: 8776574444557361412}
   - {fileID: 6913953178671808716}
   customerOffset: {x: 0, y: -0.25, z: 0}
@@ -376,6 +399,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SittingSpot
   linkedTableSpot: {fileID: 2276183315684703432}
   connectedSpots:
+  - {fileID: 2272484522827284866}
   - {fileID: 3886075049312499512}
   - {fileID: 8776574444557361412}
   - {fileID: 6913953178671808716}
@@ -393,6 +417,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5578435301417720000}
   - component: {fileID: 6001917233661979486}
+  - component: {fileID: 5177728248455513720}
   m_Layer: 0
   m_Name: Eating Spot 2
   m_TagString: Untagged
@@ -430,6 +455,27 @@ MonoBehaviour:
   linkedSittingSpot: {fileID: 3886075049312499512}
   moneyPrefab: {fileID: 6625425270166459256, guid: 5e9850536249d484983e989746e6ba10, type: 3}
   eatingDuration: 5
+--- !u!65 &5177728248455513720
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4727558729519852281}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.441565, y: 0.111902826, z: 0.49188855}
+  m_Center: {x: 0.0043911547, y: 0.06404856, z: 0.05239326}
 --- !u!1 &5057706868925433479
 GameObject:
   m_ObjectHideFlags: 0
@@ -613,6 +659,7 @@ MonoBehaviour:
   linkedTableSpot: {fileID: 7656797493270511675}
   connectedSpots:
   - {fileID: 2272484522827284866}
+  - {fileID: 3886075049312499512}
   - {fileID: 8776574444557361412}
   - {fileID: 6913953178671808716}
   customerOffset: {x: 0, y: -0.25, z: 0}
@@ -699,7 +746,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SittingSpot
   linkedTableSpot: {fileID: 3878034737747021006}
   connectedSpots:
+  - {fileID: 2272484522827284866}
+  - {fileID: 3886075049312499512}
   - {fileID: 8776574444557361412}
+  - {fileID: 6913953178671808716}
   customerOffset: {x: 0, y: -0.25, z: 0}
   isReserved: 0
   isOccupied: 0
@@ -714,6 +764,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2144850278442810925}
   - component: {fileID: 3878034737747021006}
+  - component: {fileID: 1798296686142807815}
   m_Layer: 0
   m_Name: Eating Spot 4
   m_TagString: Untagged
@@ -751,6 +802,27 @@ MonoBehaviour:
   linkedSittingSpot: {fileID: 6913953178671808716}
   moneyPrefab: {fileID: 6625425270166459256, guid: 5e9850536249d484983e989746e6ba10, type: 3}
   eatingDuration: 5
+--- !u!65 &1798296686142807815
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7025993746868693465}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.441565, y: 0.111902826, z: 0.49188855}
+  m_Center: {x: 0.0043911547, y: 0.06404856, z: 0.05239326}
 --- !u!1 &8628052356158654447
 GameObject:
   m_ObjectHideFlags: 0
@@ -761,6 +833,7 @@ GameObject:
   m_Component:
   - component: {fileID: 929809206650152290}
   - component: {fileID: 2276183315684703432}
+  - component: {fileID: 4530824065773301338}
   m_Layer: 0
   m_Name: Eating Spot 1
   m_TagString: Untagged
@@ -798,3 +871,24 @@ MonoBehaviour:
   linkedSittingSpot: {fileID: 2272484522827284866}
   moneyPrefab: {fileID: 6625425270166459256, guid: 5e9850536249d484983e989746e6ba10, type: 3}
   eatingDuration: 5
+--- !u!65 &4530824065773301338
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8628052356158654447}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.441565, y: 0.111902826, z: 0.49188855}
+  m_Center: {x: 0.0043911547, y: 0.06404856, z: 0.05239326}

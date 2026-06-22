@@ -37,7 +37,11 @@ public class InteractionController : MonoBehaviour
 
     [Header("Dialogue Camera Settings")]
     public float cameraLockSpeed = 5f;
-    private bool isDialogueLocked = false;
+    public bool isDialogueLocked = false;
+
+    private bool rotatedDuringHold = false;
+    private bool isThrowing = false;
+
     private Transform dialogueTargetHead;
     private Quaternion originalCameraRotation;
     // Internal State
@@ -283,7 +287,7 @@ void Update()
     void ToggleRotationMode(bool enable)
     {
         IsRotationMode = enable;
-        StoryFlowManager.Instance.ReportAction("RotateBread");
+        if (enable) rotatedDuringHold = true;
         
         // Lock player camera/movement via the PlayerController
         if (playerController != null) playerController.SetInputLock(enable, enable);
@@ -311,6 +315,9 @@ void Update()
 
     void Pickup(Rigidbody rb)
     {
+        rotatedDuringHold = false;
+        isThrowing = false;
+
         if (rb == null) return;
         heldObjectRB = rb;
         
@@ -380,28 +387,42 @@ void Update()
     {
         if (heldObjectRB == null) return;
         Rigidbody tempRB = heldObjectRB;
+        
+        isThrowing = true; // Skips "PlaceBread" in ExitGrabState
         ExitGrabState(); 
+        isThrowing = false; 
+
         tempRB.AddForce(playerCamera.transform.forward * throwForce, ForceMode.Impulse);
     }
 
 void ExitGrabState()
     {
-        if (heldObjectRB == null) return;
+    if (heldObjectRB == null) return;
 
-        // --- NEW: Report dropping Physics items to the StoryFlowManager! ---
+    if (isThrowing)
+    {
+        if (StoryFlowManager.Instance != null) StoryFlowManager.Instance.ReportAction("ThrowSomething");
+    }
+    else
+    {
         GrabbableItem itemScript = heldObjectRB.GetComponent<GrabbableItem>();
-        if (itemScript != null && itemScript.itemDefinition != null)
+        if (itemScript != null && itemScript.itemDefinition != null && StoryFlowManager.Instance != null)
         {
-            if (itemScript.itemDefinition.itemName == "Pan") StoryFlowManager.Instance.ReportAction("PlaceBread");
+            if (itemScript.itemDefinition.itemName == "Pan") 
+            {
+                if (rotatedDuringHold) StoryFlowManager.Instance.ReportAction("RotateBread");
+                else StoryFlowManager.Instance.ReportAction("PlaceBread");
+            }
             if (itemScript.itemDefinition.itemName == "Carne") StoryFlowManager.Instance.ReportAction("PlaceMeat");
             if (itemScript.itemDefinition.itemName == "Hamburguesa") StoryFlowManager.Instance.ReportAction("PlaceBurger");
         }
 
-        // Also check if it's an assembled burger component directly!
-        if (heldObjectRB.GetComponent<AssembledBurger>() != null)
+        // Also report assembled burger placements!
+        if (heldObjectRB.GetComponent<AssembledBurger>() != null && StoryFlowManager.Instance != null)
         {
             StoryFlowManager.Instance.ReportAction("PlaceBurger");
         }
+    }
         // -------------------------------------------------------------------
 
         // 1. INPUT MAP SWAP

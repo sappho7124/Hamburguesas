@@ -131,8 +131,7 @@ public class RestaurantUIManager : MonoBehaviour
 
     void Update()
     {
-        bool advancePressed = (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame) || 
-                              (uiSelectAction != null && uiSelectAction.WasPressedThisFrame()) ||
+        bool advancePressed = (uiSelectAction != null && uiSelectAction.WasPressedThisFrame()) ||
                               (Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame);
 
         if ((isTyping || isSliding) && advancePressed)
@@ -236,8 +235,7 @@ public class RestaurantUIManager : MonoBehaviour
         isTyping = true;
         currentFullText = text;
         dialogueText.text = "";
-
-        // WE NO LONGER DO HARDCODED DARKNESS HERE! IT'S CONTROLLED BY YARN NOW.
+        ActionPromptManager.Instance.ShowPrompt("DialogueAdvance", "Normal", "Interact", "Avanzar Diálogo");
         
         currentEmotionSet = null;
         if (dialogueFaceImage != null)
@@ -312,9 +310,11 @@ public class RestaurantUIManager : MonoBehaviour
 
         isTyping = false;
         dialogueText.text = $"{currentFullText}";
-        
+            
         if (currentEmotionSet != null && dialogueFaceImage != null) dialogueFaceImage.sprite = currentEmotionSet.closedMouth;
         if (speakerFace != null) speakerFace.SetTalking(false);
+
+        ActionPromptManager.Instance.ShowPrompt("DialogueAdvance", "Normal", "Interact", "Avanzar Diálogo");
 
         yield return null; 
 
@@ -326,7 +326,6 @@ public class RestaurantUIManager : MonoBehaviour
                 yield return new WaitForSecondsRealtime(0.05f);
                 waitToAdvance = false;
             }
-            else if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame) waitToAdvance = false;
             else if (uiSelectAction != null && uiSelectAction.WasPressedThisFrame()) waitToAdvance = false;
             else if (Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame) waitToAdvance = false;
             else if (Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame) waitToAdvance = false;
@@ -334,6 +333,7 @@ public class RestaurantUIManager : MonoBehaviour
             yield return null;
         }
 
+        ActionPromptManager.Instance.HidePrompt("DialogueAdvance", true);
         onComplete?.Invoke();
     }
 
@@ -371,6 +371,7 @@ public class RestaurantUIManager : MonoBehaviour
         if (optionsContainer) optionsContainer.SetActive(true);
 
         isOptionsActive = true;
+        ActionPromptManager.Instance.HidePrompt("DialogueAdvance", true);
         activeOptionsCount = options.Count;
         selectedOptionIndex = 0; 
 

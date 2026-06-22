@@ -33,6 +33,7 @@ position: 16,187
 ---
 /// The player is now talking with Don Julio in the Restaurant's kitchen during Sunday night
 <<set_darkness 0>>
+<<spawn_julio>>
 Don Julio: ¡Fua! ¿Quién hubiera imaginado que un chino tan flacuchento iba a salir con semejante talento pa' la cocina, eh? #happy
 
 <<if visited("NarratorManipulation")>>
@@ -55,6 +56,7 @@ title: DonJulioScene2
 color: yellow
 position: 19,377
 ---
+<<set_darkness 0>>
 Don Julio: Uste llega, fiun, fan, alista las cositas, pam-pam-pam, atiende a la gente, les cocina sus hamburguesitas, lava los platicos así bien juicioso, cha-cha-cha, y a las 10 de la noche, 10 y media, ya se está yendo para la casita, ¿qué le parece? #happy
 
 <<if visited("NarratorManipulation") && $lastScene == 3>>
@@ -82,6 +84,7 @@ title: DonJulioScene3
 color: yellow
 position: 29,569
 ---
+<<set_darkness 0>>
 Don Julio: Bueno, se me cuida chino, en lo que yo entrego los domicilios de la noche uste termine de organizar la cocina y cierra con candado cuando salga. #happy
 
 <<if visited("NarratorManipulation") && $lastScene == 5>>
@@ -134,13 +137,13 @@ position: 312,389
 
 /// Fade to black for 2 seconds
 
-<<wait 2>>
+<<skippable_wait 2>>
 
 <<if $lastScene == 1>>
     <<jump DonJulioScene1>>
 <<elseif $lastScene == 2>>
     <<set $lastScene = 3>>
-    <<jump DonJulioScene3>>
+    <<jump DonJulioScene2>>
 <<elseif $lastScene == 4>>
     <<set $lastScene = 5>>
     <<jump DonJulioScene3>>

@@ -30,23 +30,37 @@ public class TableSpot : MonoBehaviour
 
     void Update()
     {
-        if (isEating || linkedSittingSpot == null || !linkedSittingSpot.isOccupied) return;
+        bool isTutorial = StoryFlowManager.Instance != null && StoryFlowManager.Instance.isTutorialActive;
+
+        // FIX: Do NOT return early if the tutorial is active. We need to allow placing plates on empty tables!
+        if (isEating || linkedSittingSpot == null || (!linkedSittingSpot.isOccupied && !isTutorial)) return;
+
         platesInZone.RemoveAll(p => p == null);
 
         foreach (var plate in platesInZone)
         {
             EquippableItem eqPlate = plate.GetComponent<EquippableItem>();
-            // If the plate is resting on the table and has food/items on it...
             if (eqPlate != null && !eqPlate.GetRigidbody().isKinematic && plate.GetAttachedItems().Count > 0)
             {
                 if (!rejectedPlates.Contains(plate))
                 {
+                    Debug.Log($"[TableSpot] Plate placed on table '{gameObject.name}'. Contains {plate.GetAttachedItems().Count} items.");
+                    
+                    // --- NEW: TUTORIAL BYPASS ---
+                    if (isTutorial)
+                    {
+                        Debug.Log($"[TableSpot] Tutorial is active! Serving food automatically without customer order check.");
+                        StoryFlowManager.Instance.ReportAction("ServeTable");
+                        StartCoroutine(EatRoutine(plate, eqPlate, 0));
+                        break;
+                    }
+
                     TableSpot correctSpot = FindCorrectSpotInCluster(plate);
                     if (correctSpot != null && correctSpot != this)
                     {
                         eqPlate.transform.position = correctSpot.transform.position + (Vector3.up * 0.1f);
                         platesInZone.Remove(plate);
-                        Debug.Log($"[TableSpot] Auto-corrected plate to adjacent table!");
+                        Debug.Log($"[TableSpot] Auto-corrected plate to adjacent table '{correctSpot.name}'!");
                         break; 
                     }
 
@@ -65,6 +79,7 @@ public class TableSpot : MonoBehaviour
                     }
                     else
                     {
+                        Debug.Log($"[TableSpot] Food rejected by customer!");
                         if (face != null) face.SetMood(reactionMood);
                         RestaurantUIManager.Instance.ShowDialogue(OrderManager.Instance.GetActiveProfileName(this), customerDialogue, reactionMood, face);
                         rejectedPlates.Add(plate);

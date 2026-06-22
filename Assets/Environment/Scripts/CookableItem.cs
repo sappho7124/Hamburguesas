@@ -108,6 +108,8 @@ public class CookableItem : MonoBehaviour
     private void CatchFire()
     {
         isOnFire = true;
+        if (StoryFlowManager.Instance != null) StoryFlowManager.Instance.ReportAction("BurnSomething");
+        
         if (fireParticlePrefab != null && activeFire == null)
         {
             activeFire = Instantiate(fireParticlePrefab, transform.position, Quaternion.identity, transform);

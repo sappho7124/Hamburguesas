@@ -233,10 +233,12 @@ void HandlePlacementPreview()
     {
         if (currentEquippedItem == null) return;
         Rigidbody rb = currentEquippedItem.GetRigidbody();
-        
-        // false = INSTANT detach, no smooth transition. Physics take over immediately.
-        DetachItem(cameraTransform.position + cameraTransform.forward * 0.5f, cameraTransform.rotation, false);
-        
+            
+        if (StoryFlowManager.Instance != null) StoryFlowManager.Instance.ReportAction("ThrowSomething");
+
+        // Pass 'true' at the end to flag it as a throw
+        DetachItem(cameraTransform.position + cameraTransform.forward * 0.5f, cameraTransform.rotation, false, true);
+            
         if (rb != null)
         {
             rb.linearVelocity = Vector3.zero;
@@ -245,8 +247,7 @@ void HandlePlacementPreview()
     }
 
     // Refactored DetachItem to support animations and deferring physics restoration
-    void DetachItem(Vector3 pos, Quaternion rot, bool animate = false)
-    {
+    void DetachItem(Vector3 pos, Quaternion rot, bool animate = false, bool isThrow = false)    {
         if (currentEquippedItem == null) return;
         
         EquippableItem item = currentEquippedItem;
@@ -277,7 +278,7 @@ void HandlePlacementPreview()
             SetLayerRecursive(item.gameObject, layerToRestore);
         }
 
-        if (item != null && item.itemDef != null)
+        if (!isThrow && item != null && item.itemDef != null)
         {
             if (item.itemDef.itemName == "Pan") StoryFlowManager.Instance.ReportAction("PlaceBread");
             if (item.itemDef.itemName == "Carne") StoryFlowManager.Instance.ReportAction("PlaceMeat");

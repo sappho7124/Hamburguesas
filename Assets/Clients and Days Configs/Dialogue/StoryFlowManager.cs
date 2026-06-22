@@ -41,32 +41,35 @@ public class StoryFlowManager : MonoBehaviour
     {
         int currentDay = SaveManager.Instance.HasSave() ? SaveManager.Instance.CurrentSave.currentDay : 1;
         if (overrideSaveDay) currentDay = debugForceDay;
-        
+            
         if (currentDay == 1)
         {
-            if (donJulioPrefab && donJulioSpawnPoint)
-            {
-                activeDonJulio = Instantiate(donJulioPrefab, donJulioSpawnPoint.position, donJulioSpawnPoint.rotation);
-                
-                activeDonJulio.name = "Don Julio"; 
-                
-                Animator anim = activeDonJulio.GetComponent<Animator>();
-                if (anim != null) 
-                { 
-                    anim.SetBool("Sitting", false); 
-                    anim.SetBool("Walking", false); 
-                }
-
-                if (Camera.main != null)
-                {
-                    Vector3 lookTarget = new Vector3(Camera.main.transform.position.x, activeDonJulio.transform.position.y, Camera.main.transform.position.z);
-                    activeDonJulio.transform.LookAt(lookTarget);
-                }
-            }
-
+            SpawnDonJulio(); // <-- Changed to use the new method
             Invoke("StartMondayIntro", 5f);
         }
     }
+
+    public void SpawnDonJulio()
+{
+    if (activeDonJulio == null && donJulioPrefab && donJulioSpawnPoint)
+    {
+        activeDonJulio = Instantiate(donJulioPrefab, donJulioSpawnPoint.position, donJulioSpawnPoint.rotation);
+        activeDonJulio.name = "Don Julio"; 
+                
+        Animator anim = activeDonJulio.GetComponent<Animator>();
+        if (anim != null) 
+        { 
+            anim.SetBool("Sitting", false); 
+            anim.SetBool("Walking", false); 
+        }
+
+        if (Camera.main != null)
+        {
+            Vector3 lookTarget = new Vector3(Camera.main.transform.position.x, activeDonJulio.transform.position.y, Camera.main.transform.position.z);
+            activeDonJulio.transform.LookAt(lookTarget);
+        }
+    }
+}
 
     private void StartMondayIntro()
     {
@@ -134,42 +137,50 @@ public class StoryFlowManager : MonoBehaviour
         }
     }
 
-    public void ReportAction(string actionName)
+public void ReportAction(string actionName)
+{
+    if (!isTutorialActive && actionName == "RingBell")
     {
-        if (!isTutorialActive && actionName == "RingBell")
+        int currentDay = overrideSaveDay ? debugForceDay : SaveManager.Instance.CurrentSave.currentDay;
+        if (currentDay == 1 && !hasLucasAppeared)
         {
-            int currentDay = overrideSaveDay ? debugForceDay : SaveManager.Instance.CurrentSave.currentDay;
-            if (currentDay == 1 && !hasLucasAppeared)
+            hasLucasAppeared = true; 
+            if (lucasPrefab && lucasSpawnPoint)
             {
-                hasLucasAppeared = true; 
-                
-                if (lucasPrefab && lucasSpawnPoint)
-                {
-                    activeLucas = Instantiate(lucasPrefab, lucasSpawnPoint.position, lucasSpawnPoint.rotation);
-                    activeLucas.name = "Lucas"; 
-                }
-                dialogueRunner.StartDialogue("LucasBringsVegetables");
+                activeLucas = Instantiate(lucasPrefab, lucasSpawnPoint.position, lucasSpawnPoint.rotation);
+                activeLucas.name = "Lucas"; 
             }
-            return;
+            dialogueRunner.StartDialogue("LucasBringsVegetables");
         }
-
-        if (!isTutorialActive) return;
-
-        if (currentTutorialStep == 1 && actionName == "OpenFridge") AdvanceTutorial("TutorialStep_1_OpenFridge", 2);
-        else if (currentTutorialStep == 2 && actionName == "GrabBread") AdvanceTutorial("TutorialStep_2_GrabBread", 3);
-        else if (currentTutorialStep == 3 && actionName == "PlaceBread") AdvanceTutorial("TutorialStep_3_PlaceBread", 4);
-        else if (currentTutorialStep == 4 && actionName == "RotateBread") AdvanceTutorial("TutorialStep_4_RotateBread", 5);
-        else if (currentTutorialStep == 5 && actionName == "GrabMeat") AdvanceTutorial("TutorialStep_5_GrabMeat", 6);
-        else if (currentTutorialStep == 6 && actionName == "CookMeat") AdvanceTutorial("TutorialStep_6_CookMeat", 7);
-        else if (currentTutorialStep == 7 && actionName == "PlaceMeat") AdvanceTutorial("TutorialStep_7_PlaceMeat", 8);
-        else if (currentTutorialStep == 8 && actionName == "BuildBurger") AdvanceTutorial("TutorialStep_8_BuildBurger", 9);
-        else if (currentTutorialStep == 9 && actionName == "PlaceBurger") AdvanceTutorial("TutorialStep_9_PlaceBurger", 10);
-        else if (currentTutorialStep == 10 && actionName == "ServeTable") 
-        {
-            AdvanceTutorial("TutorialStep_10_GoToTable", 11);
-            isTutorialActive = false; 
-        }
+        return;
     }
+
+    if (!isTutorialActive) return;
+
+    // Handle fuckups immediately without breaking the step flow
+    if (actionName == "ThrowSomething") { AdvanceTutorial("TutorialFuckUp_1_ThrowSomething", currentTutorialStep); return; }
+    if (actionName == "DropSomething") { AdvanceTutorial("TutorialFuckUp_2_DropSomething", currentTutorialStep); return; }
+    if (actionName == "BurnSomething") { AdvanceTutorial("TutorialFuckUp_3_BurnSomething", currentTutorialStep); return; }
+
+    // State Machine Evaluation
+    if (currentTutorialStep == 1 && actionName == "OpenFridge") AdvanceTutorial("TutorialStep_1_OpenFridge", 2);
+    else if (currentTutorialStep == 2 && actionName == "GrabBread") AdvanceTutorial("TutorialStep_2_GrabBread", 3);
+    
+    // FIX: Allow BOTH placing or rotating to satisfy Step 3 so the player never gets stuck!
+    else if (currentTutorialStep == 3 && (actionName == "PlaceBread" || actionName == "RotateBread")) AdvanceTutorial("TutorialStep_3_PlaceBread", 4);
+    
+    else if (currentTutorialStep == 4 && actionName == "RotateBread") AdvanceTutorial("TutorialStep_4_RotateBread", 5);
+    else if (currentTutorialStep == 5 && actionName == "GrabMeat") AdvanceTutorial("TutorialStep_5_GrabMeat", 6);
+    else if (currentTutorialStep == 6 && actionName == "CookMeat") AdvanceTutorial("TutorialStep_6_CookMeat", 7);
+    else if (currentTutorialStep == 7 && actionName == "PlaceMeat") AdvanceTutorial("TutorialStep_7_PlaceMeat", 8);
+    else if (currentTutorialStep == 8 && actionName == "BuildBurger") AdvanceTutorial("TutorialStep_8_BuildBurger", 9);
+    else if (currentTutorialStep == 9 && actionName == "PlaceBurger") AdvanceTutorial("TutorialStep_9_PlaceBurger", 10);
+    else if (currentTutorialStep == 10 && actionName == "ServeTable") 
+    {
+        AdvanceTutorial("TutorialStep_10_GoToTable", 11);
+        isTutorialActive = false; 
+    }
+}
 
     private void AdvanceTutorial(string yarnNode, int nextStep)
     {
@@ -207,4 +218,5 @@ public class StoryFlowManager : MonoBehaviour
             Destroy(activeLucas);
         }
     }
+    public int GetCurrentTutorialStep() => currentTutorialStep;
 }

@@ -192,7 +192,7 @@ private IEnumerator AssembleBurgerRoutine(List<GrabbableItem> ingredients, Vecto
         masterHighlight.interactionVerb = "Grab";
         masterHighlight.animSpeed = 15f;
         masterHighlight.maxOutlineWidth = 10f;
-        masterHighlight.hoverColor = Color.white;
+        masterHighlight.hoverColor = Color.black;
 
 // 5. CALCULATE AVERAGE TEMPERATURE & MERGE COMPONENTS
         float totalTemp = 0f;

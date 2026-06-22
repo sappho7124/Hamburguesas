@@ -95,7 +95,8 @@ public class RestaurantYarnView : DialoguePresenterBase
             }
             else
             {
-                ic.ToggleDialogueMode(false);
+                // FIX: Only unlock if it was actually locked, preventing it from snapping back to empty rot data!
+                if (ic.isDialogueLocked) ic.ToggleDialogueMode(false);
             }
         }
 

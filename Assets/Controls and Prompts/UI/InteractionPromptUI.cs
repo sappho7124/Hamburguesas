@@ -194,20 +194,24 @@ public class InteractionPromptUI : MonoBehaviour
             float alpha = Mathf.Clamp01(objOutline.OutlineWidth / (currentTarget.maxOutlineWidth * 0.5f));
             Color c = objOutline.OutlineColor;
             c.a = alpha;
-            
-            // SAFE CHECK: Only update outline if it exists!
+                
             if (panelOutlineRenderer != null)
             {
                 panelOutlineRenderer.Thickness = -(objOutline.OutlineWidth * currentTarget.thicknessMultiplier);
                 panelOutlineRenderer.color = c;
             }
 
-            // FIX: Normal text color is now Black!
-            Color contentColor = isCurrentStateBlocked ? c : Color.black;
-            contentColor.a = alpha; 
+            // FIX: Text keeps the blocked color or black, but the ICON stays white so the sprite shows!
+            Color textColor = isCurrentStateBlocked ? c : Color.black;
+            textColor.a = alpha; 
+            if (promptText) promptText.color = textColor;
 
-            if (iconImage) iconImage.color = (iconImage.sprite != null) ? contentColor : Color.clear;
-            if (promptText) promptText.color = contentColor;
+            if (iconImage) 
+            {
+                Color iconColor = Color.white;
+                iconColor.a = alpha;
+                iconImage.color = (iconImage.sprite != null) ? iconColor : Color.clear;
+            }
         }
     }
 

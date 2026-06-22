@@ -202,6 +202,7 @@ public class CustomerSpawner : MonoBehaviour
     {
         tableIslands.Clear();
         HashSet<SittingSpot> unvisited = new HashSet<SittingSpot>(allSittingSpots);
+        int islandIndex = 1;
 
         while (unvisited.Count > 0)
         {
@@ -228,18 +229,19 @@ public class CustomerSpawner : MonoBehaviour
                 }
             }
 
-            bool hasEnds =
-                newIsland.spots.Any(s => s.connectedSpots.Count <= 1) &&
-                newIsland.spots.Count > 2;
-
+            bool hasEnds = newIsland.spots.Any(s => s.connectedSpots.Count <= 1) && newIsland.spots.Count > 2;
             newIsland.isClosedLoop = !hasEnds;
 
             tableIslands.Add(newIsland);
-        }
 
-        Debug.Log(
-            $"[Seating System] Initialization complete. Detected {tableIslands.Count} total isolated seating groups. " +
-            $"({tableIslands.Count(t => t.isClosedLoop)} Private Tables, {tableIslands.Count(t => !t.isClosedLoop)} Open Chains).");
+            // --- NEW: VERBOSE LOGGING ---
+            string spotsList = string.Join(", ", newIsland.spots.Select(s => s.gameObject.name));
+            string loopType = newIsland.isClosedLoop ? "CLOSED LOOP" : "OPEN CHAIN";
+            Debug.Log($"[Seating System] Island {islandIndex} Detected as {loopType}. Contains {newIsland.spots.Count} seats: [{spotsList}]");
+            islandIndex++;
+        }
+        
+        Debug.Log($"[Seating System] Initialization complete. Detected {tableIslands.Count} total isolated seating groups.");
     }
 
     public void StartShift(int dayNumber)

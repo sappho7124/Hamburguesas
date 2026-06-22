@@ -22,6 +22,8 @@ public class YarnGameLogic : MonoBehaviour
             dialogueRunner.AddCommandHandler("start_shift", StartShift);
             dialogueRunner.AddCommandHandler("customer_leave", CustomerLeave);
             dialogueRunner.AddCommandHandler("julio_leave", JulioLeave);
+            dialogueRunner.AddCommandHandler("spawn_julio", SpawnJulio);
+            dialogueRunner.AddCommandHandler<float>("skippable_wait", SkippableWait);
             
             // NEW: Floating words and Audio Commands
             dialogueRunner.AddCommandHandler<string>("start_floating_words", StartFloatingWords);
@@ -116,4 +118,32 @@ public class YarnGameLogic : MonoBehaviour
     {
         if (AudioManager.Instance != null) AudioManager.Instance.StopSound(soundName);
     }
+
+    public void SpawnJulio()
+    {
+        if (StoryFlowManager.Instance != null)
+            StoryFlowManager.Instance.SpawnDonJulio();
+    }
+
+    public Coroutine SkippableWait(float duration)
+    {
+        return StartCoroutine(SkippableWaitRoutine(duration));
+    }
+
+    private System.Collections.IEnumerator SkippableWaitRoutine(float duration)
+{
+    float timer = 0f;
+    var controls = new Player_Controls();
+    controls.Enable();
+
+    while (timer < duration)
+    {
+        // Speeds up the wait time 5x if holding the fast forward button
+        if (controls.UI.FastForward.IsPressed()) timer += Time.deltaTime * 5f;
+        else timer += Time.deltaTime;
+        
+        yield return null;
+    }
+    controls.Disable();
+}
 }

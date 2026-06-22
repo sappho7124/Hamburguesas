@@ -114,6 +114,11 @@ public class PlateItem : EquippableItem
 
             Collider[] cols = itemRb.GetComponentsInChildren<Collider>();
             foreach (var c in cols) c.enabled = false;
+
+            if (itemRb.GetComponent<AssembledBurger>() != null && StoryFlowManager.Instance != null)
+            {
+                StoryFlowManager.Instance.ReportAction("PlaceBurger");
+            }
         }
     }
 
