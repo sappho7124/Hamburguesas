@@ -8,12 +8,12 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Main Menu.unity
     guid: 6eafd26a1521c924b9c38f7dd191599f
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/Core.unity
     guid: 373464798cd73b84f8a230edde54b624
   - enabled: 1
     path: Assets/Scenes/Restaurant.unity
-    guid: cb7b326e426cace45b065252101b4e5a
+    guid: ec67704bbda3f9243ab2ae6a792bd7d4
   - enabled: 0
     path: Assets/Scenes/Play testing.unity
     guid: 5194b64a7ad0c0d4c9c9935698440f49

@@ -15,7 +15,12 @@ public class TableSpot : MonoBehaviour
     void OnTriggerEnter(Collider other)
     {
         PlateItem plate = other.GetComponentInParent<PlateItem>();
-        if (plate != null && !platesInZone.Contains(plate)) platesInZone.Add(plate);
+        if (plate != null && !platesInZone.Contains(plate)) 
+        {
+            platesInZone.Add(plate);
+            // NEW: Standing near the table with a plate triggers Step 10!
+            if (StoryFlowManager.Instance != null) StoryFlowManager.Instance.ReportAction("HoverTable"); 
+        }
     }
 
     void OnTriggerExit(Collider other)
@@ -140,7 +145,7 @@ public class TableSpot : MonoBehaviour
         }
         
         // --- Make the plate dirty ---
-        plate.MakeDirty();
+        //plate.MakeDirty();
 
         eqPlate.SetPhysics(true);
         plate.enabled = true;

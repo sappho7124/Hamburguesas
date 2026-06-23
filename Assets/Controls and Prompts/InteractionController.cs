@@ -539,16 +539,22 @@ void ExitGrabState()
         }
     }
 
-    private void EvaluateHoverState(HighlightableObject item, out string displayVerb, out bool isBlocked, out string actionToLookup)
+private void EvaluateHoverState(HighlightableObject item, out string displayVerb, out bool isBlocked, out string actionToLookup)
     {
         displayVerb = item.interactionVerb;
         actionToLookup = "Interact"; 
         isBlocked = false;
 
+        // NEW: Abort early if the item's highlight component is disabled!
+        if (!item.isActiveAndEnabled) return;
+
         ItemDefinition equippedDef = equipmentController?.GetEquippedItem()?.itemDef;
         InteractableObject interactable = item.GetComponent<InteractableObject>();
         EquippableItem equippable = item.GetComponent<EquippableItem>();
-        GrabbableItem grabbable = item.GetComponent<GrabbableItem>(); // NEW: Check for Grabbables!
+        GrabbableItem grabbable = item.GetComponent<GrabbableItem>();
+
+        // NEW: Ignore disabled interactables so they don't block the raycast
+        if (interactable != null && !interactable.isActiveAndEnabled) interactable = null;
 
         // 1. Surrender Control Check
         if (interactable != null && !interactable.manageUI) return;

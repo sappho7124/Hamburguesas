@@ -94,6 +94,7 @@ Lucas: Más bien usted no ande de grosero, ¿me recibe las verduras o no? #angry
 /// A bag appears before the player
 
 Lucas: Hasta luego.
+<<lucas_leave>>
 
 /// Lucas leaves
 

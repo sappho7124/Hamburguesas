@@ -162,14 +162,8 @@ Narrador: Ya lo puedes llevar a la mesa de un cliente. Agarra el plato con E y v
 title: TutorialStep_10_GoToTable
 position: -164,768
 ---
-
-/// The player hovers on a table while holding a burger on a plate
-
-Narrador: Presiona Q mientras miras hacia la mesa para poner el platillo sobre ella.
-
+Narrador: Presiona el botón para tirar/poner (Click Izquierdo o Q) mientras miras hacia la mesa para servir el platillo.
 <<set $nextTutorialStep = 11>>
-
-<<jump TutorialEnd>>
 
 ===
 
@@ -212,15 +206,7 @@ Narrador: Calmado.
 Narrador: No querrás hablarle así a los clientes.
 Narrador: Ojo ahí, te pueden dejar sin propina.
 Narrador: ...
-Narrador: A trabajar, te dejo tranquilo.
-
-/// The player hovers over the kitchen bell. Before they can ring it:
-
-Lucas: ¿Buenas?...
-Lucas: ...
-Lucas: ¡Buenas!
-
-/// Knocking on door.
+Narrador: A trabajar, te dejo tranquilo, toca la campana para empezar el dia.
 
 /// The player walks to the door
 ===
@@ -286,28 +272,28 @@ position: 676,-192
 title: TutorialFuckUpReroute
 position: 414,45
 ---
-
-/// This node makes it so tutorial lines continue as intended, going back to the step the player was in before they fucked up
-
-<<if $nextTutorialStep== 1>>
-    <<jump TutorialStep_1_OpenFridge>>
+/// Reroutes correctly to the CURRENT instruction needed
+<<if $nextTutorialStep == 1>>
+    <<jump TutorialStart>>
 <<elseif $nextTutorialStep == 2>>
-    <<jump TutorialStep_2_GrabBread>>
+    <<jump TutorialStep_1_OpenFridge>>
 <<elseif $nextTutorialStep == 3>>
-    <<jump TutorialStep_3_PlaceBread>>
+    <<jump TutorialStep_2_GrabBread>>
 <<elseif $nextTutorialStep == 4>>
-    <<jump TutorialStep_4_RotateBread>>
+    <<jump TutorialStep_3_PlaceBread>>
 <<elseif $nextTutorialStep == 5>>
-    <<jump TutorialStep_5_GrabMeat>>
+    <<jump TutorialStep_4_RotateBread>>
 <<elseif $nextTutorialStep == 6>>
-    <<jump TutorialStep_6_CookMeat>>
+    <<jump TutorialStep_5_GrabMeat>>
 <<elseif $nextTutorialStep == 7>>
-    <<jump TutorialStep_7_PlaceMeat>>
+    <<jump TutorialStep_6_CookMeat>>
 <<elseif $nextTutorialStep == 8>>
-    <<jump TutorialStep_8_BuildBurger>>
+    <<jump TutorialStep_7_PlaceMeat>>
 <<elseif $nextTutorialStep == 9>>
-    <<jump TutorialStep_9_PlaceBurger>>
+    <<jump TutorialStep_8_BuildBurger>>
 <<elseif $nextTutorialStep == 10>>
+    <<jump TutorialStep_9_PlaceBurger>>
+<<elseif $nextTutorialStep == 11>>
     <<jump TutorialStep_10_GoToTable>>
 <<else>>
     <<jump TutorialEnd>>

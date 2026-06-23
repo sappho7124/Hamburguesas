@@ -26,7 +26,7 @@ public class StoryFlowManager : MonoBehaviour
     [Header("Lucas Event (Day 1)")]
     public GameObject lucasPrefab;
     public Transform lucasSpawnPoint;
-    private GameObject activeLucas;
+    public GameObject activeLucas;
     public Transform lucasWaitPoint;
     
     public GameObject vegetablesBagPrefab; 
@@ -72,26 +72,33 @@ public class StoryFlowManager : MonoBehaviour
     }
 
     public void SpawnDonJulio()
-{
-    if (activeDonJulio == null && donJulioPrefab && donJulioSpawnPoint)
     {
-        activeDonJulio = Instantiate(donJulioPrefab, donJulioSpawnPoint.position, donJulioSpawnPoint.rotation);
-        activeDonJulio.name = "Don Julio"; 
-                
-        Animator anim = activeDonJulio.GetComponent<Animator>();
-        if (anim != null) 
-        { 
-            anim.SetBool("Sitting", false); 
-            anim.SetBool("Walking", false); 
+        // 1. If he already exists (e.g. game restarted), destroy the old one so we don't get physics/NavMesh bugs
+        if (activeDonJulio != null)
+        {
+            Destroy(activeDonJulio);
         }
 
-        if (Camera.main != null)
+        // 2. Spawn a fresh Don Julio perfectly on the ground
+        if (donJulioPrefab && donJulioSpawnPoint)
         {
-            Vector3 lookTarget = new Vector3(Camera.main.transform.position.x, activeDonJulio.transform.position.y, Camera.main.transform.position.z);
-            activeDonJulio.transform.LookAt(lookTarget);
+            activeDonJulio = Instantiate(donJulioPrefab, donJulioSpawnPoint.position, donJulioSpawnPoint.rotation);
+            activeDonJulio.name = "Don Julio"; 
+                    
+            Animator anim = activeDonJulio.GetComponent<Animator>();
+            if (anim != null) 
+            { 
+                anim.SetBool("Sitting", false); 
+                anim.SetBool("Walking", false); 
+            }
+
+            if (Camera.main != null)
+            {
+                Vector3 lookTarget = new Vector3(Camera.main.transform.position.x, activeDonJulio.transform.position.y, Camera.main.transform.position.z);
+                activeDonJulio.transform.LookAt(lookTarget);
+            }
         }
     }
-}
 
     private void StartMondayIntro()
     {
@@ -137,14 +144,17 @@ public class StoryFlowManager : MonoBehaviour
     // NEW: Coroutine to track Don Julio's walk so he doesn't despawn early
     private IEnumerator WaitUntilArrivedThenDestroy(GameObject npc)
     {
+        // FIX: We MUST wait half a second so the NavMeshAgent has time to calculate the path, 
+        // otherwise it thinks it has already arrived and destroys him instantly!
+        yield return new WaitForSeconds(0.5f); 
+
         UnityEngine.AI.NavMeshAgent agent = npc.GetComponent<UnityEngine.AI.NavMeshAgent>();
-        float maxWaitTime = 25f; // Failsafe: if he gets stuck on a wall, destroy him after 25s anyway
+        float maxWaitTime = 25f; // Failsafe
 
         while (npc != null && maxWaitTime > 0f)
         {
             maxWaitTime -= Time.deltaTime;
             
-            // Check if he reached the end of his path
             if (agent != null && !agent.pathPending && agent.remainingDistance <= agent.stoppingDistance + 0.1f)
             {
                 break;
@@ -153,10 +163,7 @@ public class StoryFlowManager : MonoBehaviour
             yield return null;
         }
 
-        if (npc != null)
-        {
-            Destroy(npc);
-        }
+        if (npc != null) Destroy(npc);
     }
 
     public void ReportAction(string actionName)
@@ -179,15 +186,14 @@ public class StoryFlowManager : MonoBehaviour
         else if (currentTutorialStep == 7 && actionName == "PlaceMeat") AdvanceTutorial("TutorialStep_7_PlaceMeat", 8);
         else if (currentTutorialStep == 8 && actionName == "BuildBurger") AdvanceTutorial("TutorialStep_8_BuildBurger", 9);
         else if (currentTutorialStep == 9 && actionName == "PlaceBurger") AdvanceTutorial("TutorialStep_9_PlaceBurger", 10);
-        else if (currentTutorialStep == 10 && actionName == "ServeTable") 
-            {
-                AdvanceTutorial("TutorialStep_10_GoToTable", 11);
-                isTutorialActive = false; 
-                    
-                // NEW: Show exclamation mark on the bell
-                KitchenBell bell = FindAnyObjectByType<KitchenBell>();
-                if (bell != null) bell.ShowExclamationMark();
-            }
+        else if (currentTutorialStep == 10 && actionName == "HoverTable") AdvanceTutorial("TutorialStep_10_GoToTable", 11);
+        else if (currentTutorialStep == 11 && actionName == "ServeTable") 
+        {
+            AdvanceTutorial("TutorialEnd", 12);
+            isTutorialActive = false; 
+            KitchenBell bell = FindAnyObjectByType<KitchenBell>();
+            if (bell != null) bell.ShowExclamationMark();
+        }
     }
 
     public void SpawnLucas()
@@ -243,16 +249,31 @@ public class StoryFlowManager : MonoBehaviour
         {
             Instantiate(vegetablesBagPrefab, vegetableDropPoint.position, vegetableDropPoint.rotation);
         }
+        
         if (activeLucas != null)
         {
-            Destroy(activeLucas);
+            // FIX: Make Lucas walk back to where he came from before despawning
+            UnityEngine.AI.NavMeshAgent agent = activeLucas.GetComponent<UnityEngine.AI.NavMeshAgent>();
+            if (agent != null)
+            {
+                agent.enabled = true;
+                agent.SetDestination(lucasSpawnPoint.position);
+            }
+            
+            Animator anim = activeLucas.GetComponent<Animator>();
+            if (anim != null) anim.SetBool("Walking", true);
+            
+            // Reuse the Don Julio walking coroutine!
+            StartCoroutine(WaitUntilArrivedThenDestroy(activeLucas));
+            
+            activeLucas = null; // Unassign so it doesn't trigger twice
         }
     }
 
     public bool TryOverrideTableServe(PlateItem plate)
     {
         // Manager evaluates if we are currently at the "Serve" step of the tutorial
-        return isTutorialActive && currentTutorialStep == 10;
+        return isTutorialActive && currentTutorialStep == 11;
     }
     
     public int GetCurrentTutorialStep() => currentTutorialStep;

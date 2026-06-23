@@ -1,5 +1,7 @@
 {
   "profileName": "Cliente1",
+  "yarnNodeName": "MondayClient1",
+  "yarnPostMealNodeName": "",
   "idealTemp": 65,
   "walkoutTime": 120,
   "queueWaitTime": 45,

@@ -1,5 +1,7 @@
 {
   "profileName": "Sara",
+  "yarnNodeName": "MondayClient5",
+  "yarnPostMealNodeName": "SaraIntroduction",
   "idealTemp": 65,
   "walkoutTime": 120,
   "queueWaitTime": 45,

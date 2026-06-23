@@ -8,6 +8,11 @@ public class Customer : MonoBehaviour
     [HideInInspector] public CustomerProfile profile;
     [HideInInspector] public DialogueOverrideConfig overrides;
 
+    [Header("Dialogue & Seating")]
+    [Tooltip("Place an empty GameObject near the face and assign it here so the camera focuses perfectly.")]
+    public Transform dialogueCameraTarget; 
+    public Vector3 personalSeatOffset = Vector3.zero;
+
     private SittingSpot targetSeat;
     private Transform exitPoint;
     private Transform currentQueueSpot;
@@ -34,8 +39,20 @@ public class Customer : MonoBehaviour
     public float lookRadius = 4f;
     private float currentHeadWeight = 0f;
 
+    public SittingSpot TargetSeat => targetSeat; // <--- NEW GETTER for YarnGameLogic!
+    private float preOrderTimer = 0f; // <--- NEW TIMER for pre-order patience
+
     void Awake()
     {
+        // FIX: Massive Box Collider that scales inversely to guarantee the whole body is interactable
+        BoxCollider col = GetComponent<BoxCollider>();
+        if (col == null) col = gameObject.AddComponent<BoxCollider>();
+        
+        // Ensures the box is 1m wide and 2m tall in WORLD space, regardless of the prefab's scale
+        col.size = new Vector3(1f / transform.localScale.x, 2.2f / transform.localScale.y, 1f / transform.localScale.z);
+        col.center = new Vector3(0, 1.1f / transform.localScale.y, 0);
+        col.isTrigger = false; // MUST be false for the raycast to hit it
+
         if (faceController == null) faceController = GetComponent<CustomerFaceController>();
         agent = GetComponent<NavMeshAgent>();
         animator = GetComponent<Animator>();
@@ -60,8 +77,15 @@ public class Customer : MonoBehaviour
     {
         if (exclamationMarkPrefab != null && activeExclamationMark == null)
         {
-            Vector3 pos = headBone != null ? headBone.position + (Vector3.up * 0.6f) : transform.position + (Vector3.up * 2f);
-            activeExclamationMark = Instantiate(exclamationMarkPrefab, pos, Quaternion.identity, transform);
+            Vector3 pos = transform.position + new Vector3(0, 2.2f, 0); // Default safely above head
+            if (headBone != null && headBone.position.y > transform.position.y + 0.5f) 
+            {
+                pos = headBone.position + new Vector3(0, 0.6f, 0);
+            }
+            
+            // Setting parent true keeps it moving with him without warping the scale terribly
+            activeExclamationMark = Instantiate(exclamationMarkPrefab, pos, Quaternion.identity);
+            activeExclamationMark.transform.SetParent(transform, true);
         }
     }
 
@@ -141,8 +165,21 @@ public class Customer : MonoBehaviour
         }
         else if (currentState == State.Seated)
         {
-            if (targetSeat != null && targetSeat.linkedTableSpot != null && faceController != null)
+            if (!hasOrdered)
             {
+                // Pre-order patience: If they sit too long without you taking their order, they leave.
+                preOrderTimer += Time.deltaTime;
+                if (faceController != null) faceController.UpdateWaitMood(preOrderTimer / profile.walkoutTime);
+
+                if (preOrderTimer >= profile.walkoutTime)
+                {
+                    OrderManager.Instance.HandleQueueWalkout(profile, faceController);
+                    Leave();
+                }
+            }
+            else if (targetSeat != null && targetSeat.linkedTableSpot != null && faceController != null)
+            {
+                // Post-order patience (Food Wait)
                 float patience = OrderManager.Instance.GetWaitTimePercent(targetSeat.linkedTableSpot);
                 faceController.UpdateWaitMood(patience);
             }
@@ -197,15 +234,19 @@ public class Customer : MonoBehaviour
     {
         if (targetSeat == null)
         {
-            Debug.LogWarning($"[Customer] {profile?.profileName} tried to sit down but targetSeat is null! Forcing them to leave.");
             Leave();
             return;
         }
 
         currentState = State.Seated;
         agent.enabled = false; 
-        transform.position = targetSeat.transform.TransformPoint(targetSeat.customerOffset); 
-        transform.rotation = targetSeat.transform.rotation; 
+        
+        // Combine table offsets and personal offsets
+        transform.position = targetSeat.transform.TransformPoint(targetSeat.customerOffset) + targetSeat.transform.TransformDirection(personalSeatOffset); 
+        
+        // Combine the chair's rotation with the chair's rotational offset
+        transform.rotation = targetSeat.transform.rotation * Quaternion.Euler(targetSeat.customerRotationOffset);
+        
         targetSeat.OccupySpot();
         SetInteractable(true, "Tomar Orden");
     }
@@ -215,6 +256,14 @@ public class Customer : MonoBehaviour
         currentState = State.Leaving;
         if (targetSeat != null) targetSeat.FreeSeat(); 
         SetInteractable(false, "");
+
+        // FIX: Force the highlight to shut down immediately
+        HighlightableObject highlight = GetComponent<HighlightableObject>();
+        if (highlight != null)
+        {
+            highlight.ToggleHighlight(false);
+            highlight.enabled = false;
+        }
 
         if (faceController != null && faceController.CurrentMood == CustomerFaceController.Mood.Angry)
             faceController.SetMood(CustomerFaceController.Mood.ReallyAngry);
@@ -227,11 +276,7 @@ public class Customer : MonoBehaviour
             else
                 MoveToClosestNavPoint(groundExit);
         }
-        else
-        {
-            // If they don't have an exit point (like some story characters), just destroy immediately
-            Destroy(gameObject);
-        }
+        else Destroy(gameObject);
     }
 
     public void HandleInteraction()
@@ -319,22 +364,10 @@ public class Customer : MonoBehaviour
             
         animator.SetBool("Walking", true);
 
-        // Wait until he reaches the bag drop point
-        while (agent.pathPending || agent.remainingDistance > 0.3f)
-        {
-            yield return null;
-        }
+        while (agent.pathPending || agent.remainingDistance > 0.3f) yield return null;
 
         animator.SetBool("Walking", false);
         
-        // Throw floating text to get attention
-        if (!string.IsNullOrEmpty(floatingText) && FloatingTextManager.Instance != null)
-        {
-            FloatingTextManager.Instance.StartWords(floatingText);
-            Invoke(nameof(StopFloatingWords), 3f);
-        }
-
-        // Setup for Interaction
         if (profile == null)
         {
             profile = new CustomerProfile();

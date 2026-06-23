@@ -74,17 +74,31 @@ public class RestaurantYarnView : DialoguePresenterBase
             if (sceneNPC != null)
             {
                 activeFace = sceneNPC.GetComponentInChildren<CustomerFaceController>();
-                
                 Customer cust = sceneNPC.GetComponent<Customer>();
-                if (cust != null && cust.headBone != null) headTarget = cust.headBone;
-                else headTarget = sceneNPC.transform.Find("Head") ?? sceneNPC.transform;
+                
+                if (cust != null) 
+                {
+                    // Prioritize the new specific dialogue target!
+                    if (cust.dialogueCameraTarget != null) headTarget = cust.dialogueCameraTarget;
+                    else if (cust.headBone != null) headTarget = cust.headBone;
+                    else headTarget = sceneNPC.transform;
+                }
+                else 
+                {
+                    headTarget = sceneNPC.transform.Find("Head") ?? sceneNPC.transform;
+                }
+                // Debug.Log($"[YarnView] Camera Target for {cleanName} found at: {headTarget.name}");
             }
         }
         else if (activeFace != null)
         {
             Customer cust = activeFace.GetComponent<Customer>();
-            if (cust != null && cust.headBone != null) headTarget = cust.headBone;
-            else headTarget = activeFace.transform.Find("Head") ?? activeFace.transform;
+            if (cust != null) 
+            {
+                if (cust.dialogueCameraTarget != null) headTarget = cust.dialogueCameraTarget;
+                else if (cust.headBone != null) headTarget = cust.headBone;
+                else headTarget = activeFace.transform;
+            }
         }
 
         // Detect if the node that just finished is meant to stay on screen for gameplay
@@ -136,7 +150,7 @@ public class RestaurantYarnView : DialoguePresenterBase
             mood, 
             activeFace, 
             isGameplayNode, // Pass the boolean we created!
-            () => lineTask.SetResult(true) 
+            () => lineTask.TrySetResult(true) 
         );
 
         await lineTask.Task;
@@ -155,7 +169,7 @@ public class RestaurantYarnView : DialoguePresenterBase
 
         RestaurantUIManager.Instance.DisplayDialogueOptions(
             optionsTexts, 
-            (index) => optionTask.SetResult(dialogueOptions[index]) 
+            (index) => optionTask.TrySetResult(dialogueOptions[index]) 
         );
 
         return await optionTask.Task;

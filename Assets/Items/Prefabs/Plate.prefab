@@ -181,11 +181,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ef247f58e83eba0488ad454d7a9b155e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlateItem
-  itemDef: {fileID: 0}
+  itemDef: {fileID: 11400000, guid: cdd37fbd77fdd144394fd64d17169628, type: 2}
   handPositionOffset: {x: 0.5, y: -0.4, z: 0.8}
   handRotationOffset: {x: 0, y: 90, z: 0}
-  placementOffset: 0
+  placementOffset: 0.1
   transitionDuration: 0.25
+  originalScale: {x: 0, y: 0, z: 0}
   shatterVelocityThreshold: 2
   scatterForce: 3
   isDirty: 0

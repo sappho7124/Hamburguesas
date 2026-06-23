@@ -48,16 +48,20 @@ public class YarnGameLogic : MonoBehaviour
 
     public void SetOrder(string ingredientsList)
     {
-        if (currentInteractingCustomer == null)
-        {
-            Debug.LogError("[YarnGameLogic] Tried to set order, but no customer is currently interacting!");
-            return;
-        }
+        if (currentInteractingCustomer == null) return;
 
-        TableSpot table = currentInteractingCustomer.GetComponentInParent<SittingSpot>()?.linkedTableSpot;
+        // FIX: Fetch the target seat directly instead of relying on the hierarchy
+        SittingSpot spot = currentInteractingCustomer.TargetSeat;
+        TableSpot table = spot != null ? spot.linkedTableSpot : null;
+        
         if (table != null)
         {
             OrderManager.Instance.SetManualOrder(table, currentInteractingCustomer.profile, ingredientsList);
+            Debug.Log($"[YarnGameLogic] SUCCESS: Added Yarn order for {currentInteractingCustomer.profile.profileName} at table '{table.name}'");
+        }
+        else
+        {
+            Debug.LogError("[YarnGameLogic] FAILED to set order: Customer is seated, but linked TableSpot is missing!");
         }
     }
 
@@ -79,6 +83,9 @@ public class YarnGameLogic : MonoBehaviour
     public void LucasLeave()
     {
         StoryFlowManager.Instance.DismissLucasAndDropVegetables();
+        
+        KitchenBell bell = FindAnyObjectByType<KitchenBell>();
+        if (bell != null) bell.ShowExclamationMark();
     }
 
     public void StartShift()
@@ -153,7 +160,18 @@ public class YarnGameLogic : MonoBehaviour
     {
         if (StoryFlowManager.Instance != null)
         {
-            StoryFlowManager.Instance.SpawnLucas();
+            if (StoryFlowManager.Instance.lucasPrefab != null && StoryFlowManager.Instance.lucasSpawnPoint != null)
+            {
+                StoryFlowManager.Instance.activeLucas = Instantiate(StoryFlowManager.Instance.lucasPrefab, StoryFlowManager.Instance.lucasSpawnPoint.position, StoryFlowManager.Instance.lucasSpawnPoint.rotation);
+                StoryFlowManager.Instance.activeLucas.name = "Lucas"; 
+                            
+                Customer lucasCustomer = StoryFlowManager.Instance.activeLucas.GetComponent<Customer>();
+                if (lucasCustomer != null)
+                {
+                    // Pass empty string "" to avoid the weird madness word cloud
+                    lucasCustomer.TriggerSpecialWalkAndWait(StoryFlowManager.Instance.lucasWaitPoint, "", "LucasBringsVegetables", "Hablar");
+                }
+            }
         }
     }
 }

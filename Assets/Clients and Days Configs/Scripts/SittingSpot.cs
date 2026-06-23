@@ -13,6 +13,9 @@ public class SittingSpot : MonoBehaviour
     [Tooltip("Local offset for the customer when seated. Use this to prevent them from clipping into the chair.")]
     public Vector3 customerOffset = Vector3.zero;
 
+    [Tooltip("Local rotation offset for the customer. Useful if the chair model is rotated weirdly.")]
+    public Vector3 customerRotationOffset = Vector3.zero;
+
     [HideInInspector] public bool isReserved = false;
     [HideInInspector] public bool isOccupied = false;[HideInInspector] public Customer currentCustomer;
 

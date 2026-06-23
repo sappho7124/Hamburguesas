@@ -179,7 +179,6 @@ public class OrderManager : MonoBehaviour
     {
         if (table == null) return;
 
-        // Split the string from Yarn (e.g. "Pan, Carne, Queso, Tomate") into a list
         List<string> generatedOrder = new List<string>();
         string[] rawItems = commaSeparatedIngredients.Split(',');
         foreach (string item in rawItems)
@@ -194,7 +193,9 @@ public class OrderManager : MonoBehaviour
         };
         
         activeOrders[table] = newOrder;
-        Debug.Log($"[OrderManager] Yarn set order for {profile.profileName}: {commaSeparatedIngredients}");
+        
+        // NEW: Detailed logging
+        Debug.Log($"<color=cyan>[OrderManager] NEW ORDER ADDED:</color> {profile.profileName} ordered: {commaSeparatedIngredients}");
     }
 
     public bool HasActiveOrder(TableSpot table) => activeOrders.ContainsKey(table);
@@ -406,11 +407,11 @@ public class OrderManager : MonoBehaviour
 
         // DIRTY PLATE PENALTY
         bool wasDirty = false;
-        if (plate.isDirty)
-        {
-            score += order.profile.scoreSettings.dirtyPlate;
-            wasDirty = true;
-        }
+        //if (plate.isDirty)
+        //{
+        //    score += order.profile.scoreSettings.dirtyPlate;
+        //    wasDirty = true;
+        //}
 
         float waitTime = Time.time - order.orderStartTime;
         if (waitTime > order.profile.scoreSettings.maxWaitTime) score += Mathf.RoundToInt((waitTime - order.profile.scoreSettings.maxWaitTime) * order.profile.scoreSettings.waitPenaltyPerSecond);

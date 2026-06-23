@@ -314,8 +314,6 @@ public class RestaurantUIManager : MonoBehaviour
         if (currentEmotionSet != null && dialogueFaceImage != null) dialogueFaceImage.sprite = currentEmotionSet.closedMouth;
         if (speakerFace != null) speakerFace.SetTalking(false);
 
-    if (!isGameplayNode)
-    {
         ActionPromptManager.Instance.ShowPrompt("DialogueAdvance", "Normal", "Interact", "Avanzar Diálogo");
 
         yield return null; 
@@ -336,7 +334,8 @@ public class RestaurantUIManager : MonoBehaviour
         }
 
         ActionPromptManager.Instance.HidePrompt("DialogueAdvance", true);
-    }
+    
+        onComplete?.Invoke();
     
     onComplete?.Invoke();
 }
