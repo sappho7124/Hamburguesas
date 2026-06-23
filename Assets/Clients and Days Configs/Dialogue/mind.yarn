@@ -70,6 +70,8 @@ title: MondayNight
 position: 606,615
 ---
 
+<<set_darkness 1>>
+
 Narrador: Digamos que no estuvo tan mal.
 Narrador: ...
 Narrador: Aún así hay algo que se siente extraño...

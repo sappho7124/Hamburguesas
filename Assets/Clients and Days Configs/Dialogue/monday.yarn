@@ -255,6 +255,9 @@ position: 142,561
 
 Sara: ¡CIERTO! Perdón, no quise quitarte tanto tiempo, me distraje con el chisme. #happy
 Sara: Espera, ¿qué hora-? ¡AAAAAAAAH! VOY TARDE PARA EL ENSAYO. #afraid
+
+<<sara_leave>>
+
 Sara: FUE UN GUSTO CONOCERTE, AHÍ NOS VEMOS. #afraid
 
 /// Sara leaves in a rush
