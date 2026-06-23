@@ -112,13 +112,15 @@ color: purple
 position: 367,55
 ---
 
-<<if $lastScene == 7>>
+<<if visited_count("TomasConfusion") == 0>>
     Tomas: (Eso no es lo que quería decir...) #afraid
-<<elseif $lastScene == 8>>
+<<elseif visited_count("TomasConfusion") == 1>>
     Tomas: (Ocurrió de nuevo.) #afraid
-<<elseif $lastScene == 9>>
+<<endif>>
+
+<<if $lastScene == 9>>
     Tomas: (¡E-e-ey! Yo no quería sonar así.) #afraid
-<<else>>
+<<elseif $lastScene == 10>>
     Tomas: No sé qué me pasa... #sad
     Lucas: Agh...
     Lucas: ...

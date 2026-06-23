@@ -55,7 +55,7 @@ position: -150,-727
 
 Narrador: Listo, con la rueda del mouse puedes alejarlo o acercarlo a ti.
 Narrador: Acércalo a ti o camina hacia atrás para sacarlo de la nevera,
-luego llévalo al mesón del centro y presiona G para soltarlo ahí.
+Narrador: luego llévalo al mesón del botón rojo y presiona G para soltarlo ahí.
 
 <<set $nextTutorialStep = 3>>
 
@@ -112,7 +112,7 @@ position: -150,-28
 /// The player places a patty on the stove and turns it on
 
 Narrador: La carne se cocina rápido, así que debes estar pendiente de que no se queme.
-Narrador: Presiona E para apagar la estufa cuando esté lista, y colócala en la hamburguesa.
+Narrador: Presiona E para apagar la estufa cuando esté lista, y coloca la carne en la hamburguesa.
 
 <<set $nextTutorialStep = 7>>
 
@@ -125,8 +125,8 @@ position: -159,152
 
 /// The player places a patty on the table or on an unfinished burger
 
-Narrador: ¡Muy bien! Cuando sientas que tu hamburguesa esté lista.
-Narrador: Presiona E sobre el mesón para que se arme y un palillo caerá sobre ella uniendo todos los ingredientes (no preguntes).
+Narrador: ¡Muy bien! Cuando sientas que tu hamburguesa esté lista, presiona el botón rojo con E para que se arme.
+Narrador: Un palillo caerá sobre ella uniendo todos los ingredientes (no preguntes).
 
 <<set $nextTutorialStep = 8>>
 
@@ -152,8 +152,7 @@ position: -158,563
 
 /// The player places a burger on a plate
 
-Narrador: Ya lo puedes llevar a la mesa de un cliente.
-Narrador: Agarra el plato con E y ve hacia las mesas de afuera.
+Narrador: Ya lo puedes llevar a la mesa de un cliente. Agarra el plato con E y ve hacia las mesas del salón principal.
 
 <<set $nextTutorialStep = 10>>
 
@@ -180,7 +179,7 @@ position: 67,955
 
 /// The player places a plate with a burger on a table for customers
 
-Narrador: ¡Y listo, el cliente tiene su cena servida!
+Narrador: ¡Y listo, el cliente tiene su cena servida! El plato quedará vacío cuando se la coma.
 Narrador: Puedes seguir armando todas las hamburguesas que quieras para practicar, o ir sacando y preparando ingredientes para dejarlos listos.
 Narrador: Si te quedas sin ingredientes solo debes abrir la nevera y cerrarla, ¡cuando la abras de nuevo volverá a estar llena!
 Narrador: ...
@@ -236,7 +235,7 @@ position: 178,-182
 <<once>>
     Narrador: Jeje, sí.
     Narrador: Con eso mandas las cosas a volar.
-    Narrador: Podría servirte de algo, creo.
+    Narrador: Podría servirte para algo, creo.
 <<endonce>>
 
 <<jump TutorialFuckUpReroute>>
