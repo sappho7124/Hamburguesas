@@ -38,6 +38,8 @@ public class YarnGameLogic : MonoBehaviour
 
             dialogueRunner.AddCommandHandler("ending_sequence", TriggerEndingSequence);
         }
+
+        dialogueRunner.AddCommandHandler("sara_leave", SaraLeave);
     }
 
     public void SetDarkness(float alpha)
@@ -182,6 +184,25 @@ public class YarnGameLogic : MonoBehaviour
         if (RestaurantUIManager.Instance != null)
         {
             RestaurantUIManager.Instance.TriggerEndingSequence();
+        }
+    }
+
+    public void SaraLeave()
+    {
+        // Try the current interacting customer first
+        if (currentInteractingCustomer != null && currentInteractingCustomer.profile.profileName == "Sara")
+        {
+            currentInteractingCustomer.Leave();
+            currentInteractingCustomer = null;
+            return;
+        }
+
+        // Failsafe: Find her directly in the scene
+        GameObject sara = GameObject.Find("Sara") ?? GameObject.Find("Sara(Clone)");
+        if (sara != null)
+        {
+            Customer saraCustomer = sara.GetComponent<Customer>();
+            if (saraCustomer != null) saraCustomer.Leave();
         }
     }
 }

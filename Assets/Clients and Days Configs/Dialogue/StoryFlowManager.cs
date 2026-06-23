@@ -50,19 +50,17 @@ public class StoryFlowManager : MonoBehaviour
             
         if (currentDay == 1)
         {
-            SpawnDonJulio(); // <-- Changed to use the new method
+            SpawnDonJulio(); 
             Invoke("StartMondayIntro", 5f);
         }
     }
 
     void Update()
     {
-        // If the tutorial is over, but Lucas hasn't appeared yet (means they haven't rung the bell)
         if (!isTutorialActive && currentTutorialStep >= 11 && !hasLucasAppeared)
         {
             bellWaitTimer += Time.deltaTime;
             
-            // Check if time passed, we haven't played it yet, and no other dialogue is currently running
             if (bellWaitTimer >= timeToWaitBeforeReminder && !bellReminderPlayed && !dialogueRunner.IsDialogueRunning)
             {
                 bellReminderPlayed = true;
@@ -73,11 +71,18 @@ public class StoryFlowManager : MonoBehaviour
 
     public void SpawnDonJulio()
     {
-        // 1. If he already exists (e.g. game restarted), destroy the old one so we don't get physics/NavMesh bugs
-        if (activeDonJulio != null)
+        // 1. Destroy ANY existing Don Julios in the scene. 
+        // We use FindObjectsByType because 'activeDonJulio' is set to null when he starts walking away!
+        Customer[] existingCustomers = FindObjectsByType<Customer>(FindObjectsSortMode.None);
+        foreach (Customer c in existingCustomers)
         {
-            Destroy(activeDonJulio);
+            if (c.gameObject.name.Contains("Don Julio"))
+            {
+                Destroy(c.gameObject);
+            }
         }
+        
+        activeDonJulio = null;
 
         // 2. Spawn a fresh Don Julio perfectly on the ground
         if (donJulioPrefab && donJulioSpawnPoint)
@@ -96,6 +101,14 @@ public class StoryFlowManager : MonoBehaviour
             {
                 Vector3 lookTarget = new Vector3(Camera.main.transform.position.x, activeDonJulio.transform.position.y, Camera.main.transform.position.z);
                 activeDonJulio.transform.LookAt(lookTarget);
+            }
+
+            // 3. Force Yarn View to connect to THIS specific Don Julio's face and emotions
+            // This stops Yarn from accidentally connecting to a ghost reference
+            RestaurantYarnView yarnView = FindAnyObjectByType<RestaurantYarnView>();
+            if (yarnView != null)
+            {
+                yarnView.currentSpeakerFace = activeDonJulio.GetComponentInChildren<CustomerFaceController>();
             }
         }
     }
@@ -127,7 +140,6 @@ public class StoryFlowManager : MonoBehaviour
                     anim.SetBool("Sitting", false); 
                 }
                 
-                // FIX: Instead of a hard 5-second limit, wait until he actually arrives!
                 StartCoroutine(WaitUntilArrivedThenDestroy(activeDonJulio));
             }
             else
@@ -137,20 +149,19 @@ public class StoryFlowManager : MonoBehaviour
             }
             
             // Unassign him so we don't accidentally run this multiple times
+            // NOTE: If time resets while he's walking, our aggressive FindObjectsByType loop in SpawnDonJulio() will catch him anyway.
             activeDonJulio = null;
         }
     }
 
-    // NEW: Coroutine to track Don Julio's walk so he doesn't despawn early
     private IEnumerator WaitUntilArrivedThenDestroy(GameObject npc)
     {
-        // FIX: We MUST wait half a second so the NavMeshAgent has time to calculate the path, 
-        // otherwise it thinks it has already arrived and destroys him instantly!
         yield return new WaitForSeconds(0.5f); 
 
         UnityEngine.AI.NavMeshAgent agent = npc.GetComponent<UnityEngine.AI.NavMeshAgent>();
         float maxWaitTime = 25f; // Failsafe
 
+        // Added safe check in case SpawnDonJulio destroyed him mid-walk!
         while (npc != null && maxWaitTime > 0f)
         {
             maxWaitTime -= Time.deltaTime;
@@ -170,15 +181,12 @@ public class StoryFlowManager : MonoBehaviour
     {
         if (!isTutorialActive) return;
 
-        // Handle fuckups immediately without breaking the step flow
         if (actionName == "ThrowSomething") { AdvanceTutorial("TutorialFuckUp_1_ThrowSomething", currentTutorialStep); return; }
         if (actionName == "DropSomething") { AdvanceTutorial("TutorialFuckUp_2_DropSomething", currentTutorialStep); return; }
         if (actionName == "BurnSomething") { AdvanceTutorial("TutorialFuckUp_3_BurnSomething", currentTutorialStep); return; }
 
-        // State Machine Evaluation
         if (currentTutorialStep == 1 && actionName == "OpenFridge") AdvanceTutorial("TutorialStep_1_OpenFridge", 2);
         else if (currentTutorialStep == 2 && actionName == "GrabBread") AdvanceTutorial("TutorialStep_2_GrabBread", 3);
-        
         else if (currentTutorialStep == 3 && (actionName == "PlaceBread" || actionName == "RotateBread")) AdvanceTutorial("TutorialStep_3_PlaceBread", 4);
         else if (currentTutorialStep == 4 && (actionName == "RotateBread" || actionName == "PlaceBread")) AdvanceTutorial("TutorialStep_4_RotateBread", 5);
         else if (currentTutorialStep == 5 && actionName == "GrabMeat") AdvanceTutorial("TutorialStep_5_GrabMeat", 6);
@@ -198,8 +206,6 @@ public class StoryFlowManager : MonoBehaviour
 
     public void SpawnLucas()
     {
-        Debug.Log("[StoryFlowManager] Yarn Command received: Spawning Lucas...");
-
         if (lucasPrefab != null && lucasSpawnPoint != null && lucasWaitPoint != null)
         {
             activeLucas = Instantiate(lucasPrefab, lucasSpawnPoint.position, lucasSpawnPoint.rotation);
@@ -208,13 +214,8 @@ public class StoryFlowManager : MonoBehaviour
             Customer lucasCustomer = activeLucas.GetComponent<Customer>();
             if (lucasCustomer != null)
             {
-                Debug.Log("[StoryFlowManager] Lucas spawned successfully. Commanding him to walk to the wait point.");
                 lucasCustomer.TriggerSpecialWalkAndWait(lucasWaitPoint, "¿Buenas? ¡Hola!", "LucasBringsVegetables", "Hablar");
             }
-        }
-        else
-        {
-            Debug.LogError("[StoryFlowManager] FAILED TO SPAWN LUCAS: One of the references (Prefab, SpawnPoint, or WaitPoint) is NULL in the inspector!");
         }
     }
 
@@ -222,12 +223,9 @@ public class StoryFlowManager : MonoBehaviour
     {
         currentTutorialStep = nextStep;
 
-        // FIX: If Yarn Spinner is currently typing or waiting for input on the old instruction...
         if (dialogueRunner.IsDialogueRunning) 
         {
             dialogueRunner.Stop();
-            
-            // We MUST yield 1 frame before starting the new dialogue so Yarn can clear its internal state!
             StartCoroutine(RestartDialogueNextFrame(yarnNode));
         }
         else
@@ -236,7 +234,6 @@ public class StoryFlowManager : MonoBehaviour
         }
     }
 
-    // NEW: Safely handles the frame gap required by Yarn Spinner when interrupting dialogue
     private IEnumerator RestartDialogueNextFrame(string yarnNode)
     {
         yield return null; 
@@ -252,7 +249,6 @@ public class StoryFlowManager : MonoBehaviour
         
         if (activeLucas != null)
         {
-            // FIX: Make Lucas walk back to where he came from before despawning
             UnityEngine.AI.NavMeshAgent agent = activeLucas.GetComponent<UnityEngine.AI.NavMeshAgent>();
             if (agent != null)
             {
@@ -263,16 +259,14 @@ public class StoryFlowManager : MonoBehaviour
             Animator anim = activeLucas.GetComponent<Animator>();
             if (anim != null) anim.SetBool("Walking", true);
             
-            // Reuse the Don Julio walking coroutine!
             StartCoroutine(WaitUntilArrivedThenDestroy(activeLucas));
             
-            activeLucas = null; // Unassign so it doesn't trigger twice
+            activeLucas = null; 
         }
     }
 
     public bool TryOverrideTableServe(PlateItem plate)
     {
-        // Manager evaluates if we are currently at the "Serve" step of the tutorial
         return isTutorialActive && currentTutorialStep == 11;
     }
     

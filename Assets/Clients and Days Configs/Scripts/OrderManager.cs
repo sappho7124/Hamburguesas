@@ -24,7 +24,7 @@ public class ScoreSettings {
     public int waitPenaltyPerSecond = -1; 
     public int maxFreshness = 30; 
     public int stalePenaltyPerSecond = -1;
-    public int dirtyPlate = -50; // <--- NEW: Dirty plate penalty!
+    public int dirtyPlate = -50;
 }
 
 [System.Serializable]
@@ -44,13 +44,13 @@ public class CustomerReactions {
 public class CustomReaction { public string conditionName; public List<string> requiredIngredients; public string reaction; public int scoreModifier; }
 
 [System.Serializable]
-public class ItemSizeWeight { public int size; public int weight; } // <--- NEW: Balances burger sizes
+public class ItemSizeWeight { public int size; public int weight; } 
 
 [System.Serializable]
 public class CustomerProfile { 
     public string profileName; 
-    public string yarnNodeName; // <-- FIX: Add this line!
-    public string yarnPostMealNodeName; // <-- NEW: Yarn node for after they eat!
+    public string yarnNodeName; 
+    public string yarnPostMealNodeName; 
     public float idealTemp; 
     public float walkoutTime = 120f; 
     public float queueWaitTime = 45f; 
@@ -58,9 +58,9 @@ public class CustomerProfile {
     public ScoreSettings scoreSettings; 
     public PaymentSettings paymentSettings; 
     
-    public List<ItemSizeWeight> burgerSizeWeights; // <--- NEW: Replaces min/max items
-    public List<IngredientRule> ingredients; // For the Burger
-    public List<IngredientRule> sideItems;   // For Drinks and Fries (Evaluated independently)
+    public List<ItemSizeWeight> burgerSizeWeights; 
+    public List<IngredientRule> ingredients; 
+    public List<IngredientRule> sideItems;   
     
     public List<ItemGroup> groupedItems; 
     public List<CookingPreference> cookingPreferences; 
@@ -101,11 +101,9 @@ public class OrderManager : MonoBehaviour
 
     void Start()
     {
-        // Load totals from SaveManager at the start of the day
         if (SaveManager.Instance != null && SaveManager.Instance.HasSave())
         {
             totalSavedScore = SaveManager.Instance.CurrentSave.totalScore;
-            // Calculate net money
             totalSavedMoney = SaveManager.Instance.CurrentSave.moneyEarned - SaveManager.Instance.CurrentSave.moneyLost; 
         }
         else
@@ -114,7 +112,6 @@ public class OrderManager : MonoBehaviour
             totalSavedMoney = 0;
         }
 
-        // Reset daily stats
         dailyScore = 0;
         dailyMoneyEarned = 0;
         dailyMoneyLost = 0;
@@ -133,7 +130,6 @@ public class OrderManager : MonoBehaviour
         List<TableSpot> walkouts = new List<TableSpot>();
         foreach (var kvp in activeOrders)
         {
-            // FIX: Story Characters never walk out. They just get angry.
             bool isStoryCharacter = !string.IsNullOrEmpty(kvp.Value.profile.yarnPostMealNodeName);
             
             if (Time.time - kvp.Value.orderStartTime > kvp.Value.profile.walkoutTime && !isStoryCharacter) 
@@ -150,8 +146,9 @@ public class OrderManager : MonoBehaviour
         dailyAngryCustomers++;
         
         RestaurantUIManager.Instance.UpdateScore(totalSavedScore + dailyScore);
-        // PASS 3f AT THE END
-        RestaurantUIManager.Instance.ShowDialogue(profile.profileName, profile.reactions.walkout, CustomerFaceController.Mood.Angry, face, false, null, 3f);
+        
+        // QUEUED: Won't break Sara's conversation!
+        RestaurantUIManager.Instance.QueueDialogue(profile.profileName, profile.reactions.walkout, CustomerFaceController.Mood.Angry, face, 3f);
     }
 
     private void HandleWalkout(TableSpot table)
@@ -163,8 +160,9 @@ public class OrderManager : MonoBehaviour
         RestaurantUIManager.Instance.UpdateScore(totalSavedScore);
         
         CustomerFaceController face = table.linkedSittingSpot.currentCustomer?.faceController;
-        // PASS 3f AT THE END
-        RestaurantUIManager.Instance.ShowDialogue(order.profile.profileName, order.profile.reactions.walkout, CustomerFaceController.Mood.Angry, face, false, null, 3f);
+        
+        // QUEUED: Won't break Sara's conversation!
+        RestaurantUIManager.Instance.QueueDialogue(order.profile.profileName, order.profile.reactions.walkout, CustomerFaceController.Mood.Angry, face, 3f);
 
         if (table.linkedSittingSpot.currentCustomer != null) table.linkedSittingSpot.currentCustomer.Leave();
         activeOrders.Remove(table);
@@ -201,8 +199,6 @@ public class OrderManager : MonoBehaviour
         };
         
         activeOrders[table] = newOrder;
-        
-        // NEW: Detailed logging
         Debug.Log($"<color=cyan>[OrderManager] NEW ORDER ADDED:</color> {profile.profileName} ordered: {commaSeparatedIngredients}");
     }
 
@@ -277,7 +273,6 @@ public class OrderManager : MonoBehaviour
         return 0f;
     }
 
-    // --- NEW: Helper to extract EVERYTHING off the plate ---
     private List<string> GetEverythingOnPlate(PlateItem plate, out List<SavedIngredient> cookableItemsToEval, out float masterBurgerTemp)
     {
         List<string> servedNames = new List<string>();
@@ -288,7 +283,6 @@ public class OrderManager : MonoBehaviour
         {
             if (rb == null) continue;
 
-            // 1. Is it a Burger?
             AssembledBurger burger = rb.GetComponent<AssembledBurger>();
             if (burger != null)
             {
@@ -300,7 +294,6 @@ public class OrderManager : MonoBehaviour
                 continue;
             }
 
-            // 2. Is it a Fries Box? (Evaluated as an average)
             VesselBase vessel = rb.GetComponent<VesselBase>();
             if (vessel != null)
             {
@@ -333,13 +326,12 @@ public class OrderManager : MonoBehaviour
                         timeToCook = tCook,
                         timeToBurn = tBurn
                     };
-                    if (anyFire) simFry.heatProgressWhenAssembled = 9999f; // Force fire flag
+                    if (anyFire) simFry.heatProgressWhenAssembled = 9999f; 
                     cookableItemsToEval.Add(simFry);
                 }
                 continue;
             }
 
-            // 3. Is it a Drink or simple side?
             GrabbableItem simpleItem = rb.GetComponent<GrabbableItem>();
             if (simpleItem != null && simpleItem.itemDefinition != null)
             {
@@ -389,6 +381,7 @@ public class OrderManager : MonoBehaviour
     }
 
     public string GetActiveProfileName(TableSpot table) => activeOrders.ContainsKey(table) ? activeOrders[table].profile.profileName : "Unknown";
+    
     public void AddMoney(int amount) 
     { 
         if (amount > 0) dailyMoneyEarned += amount;
@@ -396,6 +389,7 @@ public class OrderManager : MonoBehaviour
 
         RestaurantUIManager.Instance.UpdateMoney(totalSavedMoney + dailyMoneyEarned - dailyMoneyLost); 
     }
+
     public bool TryServeFood(TableSpot table, PlateItem plate, out int moneyToSpawn, out string customerDialogue, out CustomerFaceController.Mood reactionMood)
     {
         moneyToSpawn = 0; customerDialogue = "";
@@ -413,13 +407,7 @@ public class OrderManager : MonoBehaviour
 
         int score = order.profile.scoreSettings.baseScore;
 
-        // DIRTY PLATE PENALTY
         bool wasDirty = false;
-        //if (plate.isDirty)
-        //{
-        //    score += order.profile.scoreSettings.dirtyPlate;
-        //    wasDirty = true;
-        //}
 
         float waitTime = Time.time - order.orderStartTime;
         if (waitTime > order.profile.scoreSettings.maxWaitTime) score += Mathf.RoundToInt((waitTime - order.profile.scoreSettings.maxWaitTime) * order.profile.scoreSettings.waitPenaltyPerSecond);
@@ -465,9 +453,9 @@ public class OrderManager : MonoBehaviour
         {
             if (ing.isCookable)
             {
-                float finalHeat = ing.heatProgressWhenAssembled; // Assume heat progress stopped/saved
+                float finalHeat = ing.heatProgressWhenAssembled; 
                 string actualState = "Raw";
-                if (finalHeat >= 9999f) { actualState = "OnFire"; isOnFire = true; } // Hack for fires
+                if (finalHeat >= 9999f) { actualState = "OnFire"; isOnFire = true; } 
                 else if (finalHeat >= ing.timeToBurn) actualState = "Burnt";
                 else if (finalHeat >= ing.timeToCook) actualState = "Cooked";
 
@@ -496,7 +484,6 @@ public class OrderManager : MonoBehaviour
             if (tempDiff > 20f) score -= 20; 
         }
 
-        // --- DIALOGUE & MOOD ---
         if (isOnFire) { 
             customerDialogue = order.profile.reactions.foodOnFire; 
             reactionMood = CustomerFaceController.Mood.Scared; 
@@ -507,7 +494,6 @@ public class OrderManager : MonoBehaviour
         }
         else if (!string.IsNullOrEmpty(customReactText)) { 
             customerDialogue = customReactText; 
-            // Custom reactions can be happy or confused, we default to neutral/happy
             reactionMood = CustomerFaceController.Mood.Happy; 
         } 
         else if (unwantedBurnt) { 
@@ -524,14 +510,13 @@ public class OrderManager : MonoBehaviour
             string servedStr = string.Join(", ", servedNames);
             customerDialogue = order.profile.reactions.wrongOrder.Replace("{ORDER}", expectedStr).Replace("{SERVED}", servedStr);
             reactionMood = CustomerFaceController.Mood.Angry; 
-            return false; // Rejected!
+            return false; 
         }
         else { 
             customerDialogue = order.profile.reactions.success; 
             reactionMood = CustomerFaceController.Mood.Happy; 
         }
 
-        // --- PAYMENT ---
         float scorePercent = (float)(score - order.profile.scoreSettings.baseScore) / order.profile.scoreSettings.baseScore;
         int flatMoney = order.expectedIngredients.Count * order.profile.paymentSettings.pricePerIngredient;
         int tip = 0;
@@ -553,7 +538,7 @@ public class OrderManager : MonoBehaviour
         }
         else
         {
-            dailyAngryCustomers++; // They got wrong/burnt/raw food
+            dailyAngryCustomers++; 
         }
         dailyScore += score;
         RestaurantUIManager.Instance.UpdateScore(totalSavedScore + dailyScore);
@@ -565,14 +550,12 @@ public class OrderManager : MonoBehaviour
         List<string> order = new List<string>();
         Dictionary<string, int> counts = new Dictionary<string, int>();
 
-        // 1. Minimums for Burger
         if (profile.ingredients != null) {
             foreach (var rule in profile.ingredients) counts[rule.name] = 0;
             foreach (var rule in profile.ingredients)
                 for (int i = 0; i < rule.min; i++) { order.Add(rule.name); counts[rule.name]++; }
         }
 
-        // 2. Determine Burger Target Size (Weighted)
         int targetTotal = order.Count; 
         if (profile.burgerSizeWeights != null && profile.burgerSizeWeights.Count > 0)
         {
@@ -584,7 +567,6 @@ public class OrderManager : MonoBehaviour
             }
         }
 
-        // 3. Fill Burger to Target Size
         int failsafe = 0; 
         while (order.Count < targetTotal && failsafe < 100)
         {
@@ -610,15 +592,12 @@ public class OrderManager : MonoBehaviour
             TryAddItemWithGroup(chosenItem, profile, order, counts);
         }
 
-        // 4. Roll for Independent Side Items (Drinks & Fries)
         if (profile.sideItems != null)
         {
             foreach (var side in profile.sideItems)
             {
-                // Rolls 1-100. If the side weight is 30, it has a 30% chance to be added!
                 if (Random.Range(0, 100) < side.weight)
                 {
-                    // Add it as many times as 'min' (usually 1)
                     int amountToAdd = Mathf.Max(1, side.min);
                     for(int i = 0; i < amountToAdd; i++) order.Add(side.name);
                 }

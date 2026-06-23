@@ -61,10 +61,12 @@ public class FloatingTextManager : MonoBehaviour
     {
         isSpawning = false;
         
-        // Destroy all currently floating words immediately
+        // Let each word transition out smoothly instead of hard-deleting
         foreach(Transform child in panelRect)
         {
-            Destroy(child.gameObject);
+            FloatingWord fw = child.GetComponent<FloatingWord>();
+            if (fw != null) fw.Despawn();
+            else Destroy(child.gameObject); // Fallback
         }
     }
 
@@ -93,8 +95,16 @@ public class FloatingTextManager : MonoBehaviour
         // 4. Random rotation (slight tilt)
         rt.localRotation = Quaternion.Euler(0, 0, Random.Range(-15f, 15f));
         
-        // 5. Random scale
+        // 5. Random scale + Trigger Animation Component
         float scale = Random.Range(minScale, maxScale);
-        rt.localScale = new Vector3(scale, scale, 1f);
+        FloatingWord fw = go.GetComponent<FloatingWord>();
+        if (fw != null) 
+        {
+            fw.Initialize(scale);
+        }
+        else 
+        {
+            rt.localScale = new Vector3(scale, scale, 1f);
+        }
     }
 }

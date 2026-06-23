@@ -18,7 +18,6 @@ public class Customer : MonoBehaviour
     private Transform currentQueueSpot;
     private CustomerGroup myGroup; 
     
-    // NEW: Added "Idle" as the first state so special NPCs don't walk away when spawned
     private enum State { Idle, MovingToSeat, Seated, Leaving, MovingToQueue, WaitingInQueue, FinishedEating, SpecialEvent }
     private State currentState = State.Idle;
 
@@ -30,22 +29,22 @@ public class Customer : MonoBehaviour
 
     [Header("UI & Feedback")]
     public GameObject exclamationMarkPrefab;
+    [Tooltip("Adjust this to push the mark out of weirdly positioned heads (like Sara's).")]
+    public Vector3 exclamationOffset = Vector3.zero;
     private GameObject activeExclamationMark;
 
     [Header("Head Tracking Animation")]
-    public Transform headBone; // Map your Mixamo head bone here!
+    public Transform headBone; 
     public float maxHeadTurnAngle = 75f;
     public float headTurnSpeed = 6f;
     public float lookRadius = 4f;
     private float currentHeadWeight = 0f;
 
-    public SittingSpot TargetSeat => targetSeat; // <--- NEW GETTER for YarnGameLogic!
-    private float preOrderTimer = 0f; // <--- NEW TIMER for pre-order patience
+    public SittingSpot TargetSeat => targetSeat; 
+    private float preOrderTimer = 0f; 
 
     void Awake()
     {
-        // FIX: Add a Kinematic Rigidbody. This prevents the physics engine from pushing the customer 
-        // up into the air when their interaction BoxCollider overlaps with the chair/bench!
         Rigidbody rb = GetComponent<Rigidbody>();
         if (rb == null) rb = gameObject.AddComponent<Rigidbody>();
         rb.isKinematic = true;
@@ -81,13 +80,14 @@ public class Customer : MonoBehaviour
     {
         if (exclamationMarkPrefab != null && activeExclamationMark == null)
         {
-            Vector3 pos = transform.position + new Vector3(0, 2.2f, 0); // Default safely above head
+            Vector3 pos = transform.position + new Vector3(0, 2.2f, 0); 
             if (headBone != null && headBone.position.y > transform.position.y + 0.5f) 
             {
                 pos = headBone.position + new Vector3(0, 0.6f, 0);
             }
+
+            pos += exclamationOffset; // Added offset for Sara!
             
-            // Setting parent true keeps it moving with him without warping the scale terribly
             activeExclamationMark = Instantiate(exclamationMarkPrefab, pos, Quaternion.identity);
             activeExclamationMark.transform.SetParent(transform, true);
         }
@@ -128,7 +128,7 @@ public class Customer : MonoBehaviour
         if (currentState == State.SpecialEvent) return; 
 
         bool walking = currentState == State.MovingToSeat || currentState == State.MovingToQueue || currentState == State.Leaving;
-        bool sitting = currentState == State.Seated;
+        bool sitting = currentState == State.Seated || currentState == State.FinishedEating; // FIX: Added FinishedEating so Sara sits while waiting
 
         animator.SetBool("Walking", walking);
         animator.SetBool("Sitting", sitting);
@@ -148,7 +148,6 @@ public class Customer : MonoBehaviour
 
     void Update()
     {
-        // FIX: Ignore uninitialized/story characters (Like Don Julio & Lucas)
         if (currentState == State.Idle) return; 
 
         if (currentState == State.MovingToSeat) { if (HasArrived()) SitDown(); }
@@ -183,7 +182,6 @@ public class Customer : MonoBehaviour
             }
             else if (targetSeat != null && targetSeat.linkedTableSpot != null && faceController != null)
             {
-                // Post-order patience (Food Wait)
                 float patience = OrderManager.Instance.GetWaitTimePercent(targetSeat.linkedTableSpot);
                 faceController.UpdateWaitMood(patience);
             }
@@ -261,7 +259,6 @@ public class Customer : MonoBehaviour
         if (targetSeat != null) targetSeat.FreeSeat(); 
         SetInteractable(false, "");
 
-        // FIX: Force the highlight to shut down immediately
         HighlightableObject highlight = GetComponent<HighlightableObject>();
         if (highlight != null)
         {
@@ -301,7 +298,7 @@ public class Customer : MonoBehaviour
                 try 
                 {
                     YarnGameLogic.Instance.currentInteractingCustomer = this;
-                    HideExclamationMark(); // <--- NEW: Hides mark!
+                    HideExclamationMark(); 
                     
                     runner.StartDialogue(targetNode);
                     
@@ -397,21 +394,21 @@ public class Customer : MonoBehaviour
             int seconds = totalSeconds % 60;
             string timeText = minutes > 0 ? $"{minutes} minutos y {seconds} segundos" : $"{seconds} segundos";
             
-            RestaurantUIManager.Instance.ShowDialogue(profile.profileName, $"Llevo esperando {timeText}. ¡Por favor apresúrate!", faceController.CurrentMood, faceController);
+            RestaurantUIManager.Instance.QueueDialogue(profile.profileName, $"Llevo esperando {timeText}. ¡Por favor apresúrate!", faceController.CurrentMood, faceController);
         }
         else if (state == "BeforeOrder" && targetSeat != null && targetSeat.linkedTableSpot != null)
         {
             hasOrdered = true;
             string orderText = OrderManager.Instance.GetOrderText(targetSeat.linkedTableSpot);
             
-            RestaurantUIManager.Instance.ShowDialogue(profile.profileName, $"Hola, me gustaría pedir: {orderText}.", faceController.CurrentMood, faceController);
+            RestaurantUIManager.Instance.QueueDialogue(profile.profileName, $"Hola, me gustaría pedir: {orderText}.", faceController.CurrentMood, faceController);
             SetInteractable(true, "Repetir Orden");
         }
         else if (state == "AfterOrder" && targetSeat != null && targetSeat.linkedTableSpot != null)
         {
             string orderText = OrderManager.Instance.GetOrderText(targetSeat.linkedTableSpot);
             
-            RestaurantUIManager.Instance.ShowDialogue(profile.profileName, $"¿Otra vez? Yo pedí: {orderText}.", faceController.CurrentMood, faceController);
+            RestaurantUIManager.Instance.QueueDialogue(profile.profileName, $"¿Otra vez? Yo pedí: {orderText}.", faceController.CurrentMood, faceController);
         }
     }
 }

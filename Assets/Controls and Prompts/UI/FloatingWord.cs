@@ -3,42 +3,55 @@ using TMPro;
 
 public class FloatingWord : MonoBehaviour
 {
-    [Header("Animation Settings")]
-    public float floatSpeed = 30f;
-    public float lifetime = 2f;
-    public float fadeInTime = 0.2f;
-    public float fadeOutTime = 0.5f;
+    public float transitionSpeed = 8f;
+    
+    private Vector3 targetScale;
+    private TextMeshProUGUI textComponent;
+    private bool isDespawning = false;
+    private float currentAlpha = 1f;
 
-    private TextMeshProUGUI tmp;
-    private RectTransform rt;
-    private float age = 0f;
-
-    void Awake()
+    public void Initialize(float scale)
     {
-        tmp = GetComponent<TextMeshProUGUI>();
-        rt = GetComponent<RectTransform>();
+        targetScale = new Vector3(scale, scale, 1f);
+        transform.localScale = Vector3.zero; // Start at 0 for a pop-in effect
+        textComponent = GetComponent<TextMeshProUGUI>();
+        
+        if (textComponent != null)
+        {
+            currentAlpha = textComponent.color.a;
+        }
     }
 
     void Update()
     {
-        age += Time.deltaTime;
-        
-        // Float upwards
-        rt.anchoredPosition += Vector2.up * floatSpeed * Time.deltaTime;
-
-        // Smooth fade in and fade out
-        float alpha = 1f;
-        if (age < fadeInTime) alpha = age / fadeInTime;
-        else if (age > lifetime - fadeOutTime) alpha = (lifetime - age) / fadeOutTime;
-
-        if (tmp != null)
+        if (isDespawning)
         {
-            Color c = tmp.color;
-            c.a = Mathf.Clamp01(alpha);
-            tmp.color = c;
-        }
+            // Smoothly shrink and fade out
+            transform.localScale = Vector3.Lerp(transform.localScale, Vector3.zero, Time.deltaTime * transitionSpeed);
+            
+            if (textComponent != null)
+            {
+                currentAlpha = Mathf.Lerp(currentAlpha, 0f, Time.deltaTime * transitionSpeed);
+                Color c = textComponent.color;
+                c.a = currentAlpha;
+                textComponent.color = c;
+            }
 
-        // Clean up
-        if (age >= lifetime) Destroy(gameObject);
+            // Destroy once it is practically invisible
+            if (transform.localScale.x < 0.05f)
+            {
+                Destroy(gameObject);
+            }
+        }
+        else
+        {
+            // Smoothly pop in to target scale
+            transform.localScale = Vector3.Lerp(transform.localScale, targetScale, Time.deltaTime * transitionSpeed);
+        }
+    }
+
+    public void Despawn()
+    {
+        isDespawning = true;
     }
 }

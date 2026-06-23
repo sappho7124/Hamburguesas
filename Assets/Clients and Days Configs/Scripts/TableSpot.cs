@@ -18,7 +18,6 @@ public class TableSpot : MonoBehaviour
         if (plate != null && !platesInZone.Contains(plate)) 
         {
             platesInZone.Add(plate);
-            // NEW: Standing near the table with a plate triggers Step 10!
             if (StoryFlowManager.Instance != null) StoryFlowManager.Instance.ReportAction("HoverTable"); 
         }
     }
@@ -61,16 +60,14 @@ public class TableSpot : MonoBehaviour
 
                     CustomerFaceController face = linkedSittingSpot.currentCustomer != null ? linkedSittingSpot.currentCustomer.faceController : null;
 
-                    // Clean check relying entirely on the manager
                     if (OrderManager.Instance.TryServeFood(this, plate, out moneyToSpawn, out customerDialogue, out reactionMood))
                     {
-                        // Table just reports what happened, taking no decisions
                         if (StoryFlowManager.Instance != null) StoryFlowManager.Instance.ReportAction("ServeTable");
 
                         if (face != null) face.SetMood(reactionMood);
                         if (!string.IsNullOrEmpty(customerDialogue)) 
                         {
-                            RestaurantUIManager.Instance.ShowDialogue(OrderManager.Instance.GetActiveProfileName(this), customerDialogue, reactionMood, face);
+                            RestaurantUIManager.Instance.QueueDialogue(OrderManager.Instance.GetActiveProfileName(this), customerDialogue, reactionMood, face);
                         }
                         StartCoroutine(EatRoutine(plate, eqPlate, moneyToSpawn));
                     }
@@ -80,7 +77,7 @@ public class TableSpot : MonoBehaviour
                         if (face != null) face.SetMood(reactionMood);
                         if (!string.IsNullOrEmpty(customerDialogue))
                         {
-                            RestaurantUIManager.Instance.ShowDialogue(OrderManager.Instance.GetActiveProfileName(this), customerDialogue, reactionMood, face, false, null, 3f);
+                            RestaurantUIManager.Instance.QueueDialogue(OrderManager.Instance.GetActiveProfileName(this), customerDialogue, reactionMood, face, 3f);
                         }
                         rejectedPlates.Add(plate);
                     }
@@ -135,7 +132,6 @@ public class TableSpot : MonoBehaviour
 
         yield return new WaitForSeconds(eatingDuration);
 
-        // --- Consume all food on the plate ---
         foreach (var item in plate.GetAttachedItems())
         {
             if (item != null && item.gameObject != plate.gameObject)
@@ -143,14 +139,11 @@ public class TableSpot : MonoBehaviour
                 Destroy(item.gameObject);
             }
         }
-        
-        // --- Make the plate dirty ---
-        //plate.MakeDirty();
 
         eqPlate.SetPhysics(true);
         plate.enabled = true;
 
-    if (moneyPrefab != null && moneyToSpawn > 0)
+        if (moneyPrefab != null && moneyToSpawn > 0)
         {
             GameObject moneyObj = Instantiate(moneyPrefab, transform.position + Vector3.up * 0.2f, Quaternion.identity);
             MoneyPickup pickup = moneyObj.GetComponent<MoneyPickup>();
@@ -159,17 +152,15 @@ public class TableSpot : MonoBehaviour
 
         if (linkedSittingSpot.currentCustomer != null)
         {
-            // If they have a post-meal conversation, make them wait!
             if (!string.IsNullOrEmpty(linkedSittingSpot.currentCustomer.profile.yarnPostMealNodeName))
             {
                 linkedSittingSpot.currentCustomer.MarkAsFinishedEating();
             }
             else
             {
-                // Normal customer, leave immediately
                 linkedSittingSpot.currentCustomer.Leave();
             }
         }
         isEating = false;
-    } // End of EatRoutine
+    } 
 }

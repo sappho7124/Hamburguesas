@@ -46,7 +46,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TableSpot
   linkedSittingSpot: {fileID: 8776574444557361412}
-  moneyPrefab: {fileID: 6625425270166459256, guid: 5e9850536249d484983e989746e6ba10, type: 3}
+  moneyPrefab: {fileID: 4396162158644250492, guid: 6df5d67b8a2f653459f42e5f063d0e7d, type: 3}
   eatingDuration: 5
 --- !u!65 &3082110107901635107
 BoxCollider:
@@ -455,7 +455,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TableSpot
   linkedSittingSpot: {fileID: 3886075049312499512}
-  moneyPrefab: {fileID: 6625425270166459256, guid: 5e9850536249d484983e989746e6ba10, type: 3}
+  moneyPrefab: {fileID: 4396162158644250492, guid: 6df5d67b8a2f653459f42e5f063d0e7d, type: 3}
   eatingDuration: 5
 --- !u!65 &5177728248455513720
 BoxCollider:
@@ -804,7 +804,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TableSpot
   linkedSittingSpot: {fileID: 6913953178671808716}
-  moneyPrefab: {fileID: 6625425270166459256, guid: 5e9850536249d484983e989746e6ba10, type: 3}
+  moneyPrefab: {fileID: 4396162158644250492, guid: 6df5d67b8a2f653459f42e5f063d0e7d, type: 3}
   eatingDuration: 5
 --- !u!65 &1798296686142807815
 BoxCollider:
@@ -873,7 +873,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TableSpot
   linkedSittingSpot: {fileID: 2272484522827284866}
-  moneyPrefab: {fileID: 6625425270166459256, guid: 5e9850536249d484983e989746e6ba10, type: 3}
+  moneyPrefab: {fileID: 4396162158644250492, guid: 6df5d67b8a2f653459f42e5f063d0e7d, type: 3}
   eatingDuration: 5
 --- !u!65 &4530824065773301338
 BoxCollider:

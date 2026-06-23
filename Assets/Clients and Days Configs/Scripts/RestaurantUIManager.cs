@@ -9,6 +9,15 @@ public class RestaurantUIManager : MonoBehaviour
 {
     public static RestaurantUIManager Instance;
 
+    public class DialogueRequest 
+    {
+        public string characterName;
+        public string text;
+        public CustomerFaceController.Mood mood;
+        public CustomerFaceController speakerFace;
+        public float autoDismissTime;
+    }
+
     [System.Serializable]
     public class SpecialCharacterFace
     {
@@ -71,7 +80,7 @@ public class RestaurantUIManager : MonoBehaviour
 
     // Internal State
     private Coroutine dialogueCoroutine;
-    private Coroutine darknessCoroutine; // Track darkness separately
+    private Coroutine darknessCoroutine; 
     private bool isTyping = false;
     private bool isSliding = false; 
     private string currentFullText = "";
@@ -79,6 +88,12 @@ public class RestaurantUIManager : MonoBehaviour
     private RectTransform clockRect;
     private float tickTimer = 0f;
     private int currentTickSide = 1; 
+
+    // Dialogue Queue System
+    private Queue<DialogueRequest> dialogueQueue = new Queue<DialogueRequest>();
+    private bool isPanelVisible = false;
+    private bool isWaitingForNextDialogue = false;
+    private float lastDialogueEndTime = -100f;
 
     // UI Input State
     private Player_Controls controls;
@@ -90,7 +105,7 @@ public class RestaurantUIManager : MonoBehaviour
     private int activeOptionsCount = 0;
     private bool isOptionsActive = false;
     
-    public bool IsDialogueActive => isTyping || isSliding || isOptionsActive;
+    public bool IsDialogueActive => isPanelVisible || isOptionsActive || isWaitingForNextDialogue;
 
     void Awake()
     {
@@ -106,7 +121,6 @@ public class RestaurantUIManager : MonoBehaviour
         if (optionButtons != null) foreach (var btn in optionButtons) if (btn != null) btn.gameObject.SetActive(false);
         if (dialoguePanelRect) dialoguePanelRect.anchoredPosition = new Vector2(dialoguePanelRect.anchoredPosition.x, hiddenY);
 
-        // INITIAL STATE: Starts fully black. 
         if (narratorDarknessOverlay) narratorDarknessOverlay.color = new Color(0, 0, 0, 1f);
 
         controls = new Player_Controls();
@@ -125,12 +139,7 @@ public class RestaurantUIManager : MonoBehaviour
         if (StoryFlowManager.Instance != null && StoryFlowManager.Instance.overrideSaveDay) 
             currentDay = StoryFlowManager.Instance.debugForceDay;
 
-        // If it's NOT Day 1, we fade the initial black screen away automatically.
-        // If it IS Day 1, we leave it black so the Yarn script can control it!
-        if (currentDay != 1)
-        {
-            SetDarkness(0f);
-        }
+        if (currentDay != 1) SetDarkness(0f);
     }
 
     void Update()
@@ -164,7 +173,6 @@ public class RestaurantUIManager : MonoBehaviour
         }
     }
 
-    // NEW: Public interface for Yarn to trigger the darkness
     public void SetDarkness(float targetAlpha)
     {
         if (darknessCoroutine != null) StopCoroutine(darknessCoroutine);
@@ -217,8 +225,61 @@ public class RestaurantUIManager : MonoBehaviour
         if (targetAlpha <= 0) img.gameObject.SetActive(false);
     }
 
+    // --- DIALOGUE QUEUE SYSTEM ---
+    public void QueueDialogue(string characterName, string text, CustomerFaceController.Mood mood = CustomerFaceController.Mood.Neutral, CustomerFaceController speakerFace = null, float autoDismissTime = 0f)
+    {
+        dialogueQueue.Enqueue(new DialogueRequest 
+        {
+            characterName = characterName, text = text, mood = mood, speakerFace = speakerFace, autoDismissTime = autoDismissTime
+        });
+
+        TryProcessNextQueuedDialogue();
+    }
+
+    private void TryProcessNextQueuedDialogue()
+    {
+        if (IsDialogueActive) return;
+
+        var runner = FindAnyObjectByType<Yarn.Unity.DialogueRunner>();
+        if (runner != null && runner.IsDialogueRunning) return;
+
+        if (dialogueQueue.Count > 0)
+        {
+            StartCoroutine(ProcessQueueRoutine());
+        }
+    }
+
+    private IEnumerator ProcessQueueRoutine()
+    {
+        isWaitingForNextDialogue = true;
+        
+        // Dynamic wait so the gap is exactly 1 second between dialogues, no matter what
+        float timeSinceLast = Time.unscaledTime - lastDialogueEndTime;
+        if (timeSinceLast < 1f)
+        {
+            yield return new WaitForSecondsRealtime(1f - timeSinceLast);
+        }
+        
+        isWaitingForNextDialogue = false;
+
+        // Failsafe in case Yarn triggered during the delay
+        var runner = FindAnyObjectByType<Yarn.Unity.DialogueRunner>();
+        if ((runner != null && runner.IsDialogueRunning) || isPanelVisible || isOptionsActive) 
+        {
+            yield break; 
+        }
+
+        if (dialogueQueue.Count > 0)
+        {
+            var req = dialogueQueue.Dequeue();
+            ShowDialogue(req.characterName, req.text, req.mood, req.speakerFace, false, null, req.autoDismissTime);
+        }
+    }
+
+    // --- DIRECT DIALOGUE EXECUTION ---
     public void ShowDialogue(string characterName, string text, CustomerFaceController.Mood mood = CustomerFaceController.Mood.Neutral, CustomerFaceController speakerFace = null, bool isGameplayNode = false, Action onComplete = null, float autoDismissTime = 0f)
     {
+        isPanelVisible = true;
         if (dialogueCoroutine != null) StopCoroutine(dialogueCoroutine);
         
         if (optionsContainer) optionsContainer.SetActive(false);
@@ -233,7 +294,7 @@ public class RestaurantUIManager : MonoBehaviour
         isTyping = false; 
     }
 
-private IEnumerator TypewriterRoutine(string characterName, string text, CustomerFaceController.Mood mood, CustomerFaceController speakerFace, bool isGameplayNode, Action onComplete, float autoDismissTime)
+    private IEnumerator TypewriterRoutine(string characterName, string text, CustomerFaceController.Mood mood, CustomerFaceController speakerFace, bool isGameplayNode, Action onComplete, float autoDismissTime)
     {
         isSliding = true;
         isTyping = true;
@@ -317,16 +378,13 @@ private IEnumerator TypewriterRoutine(string characterName, string text, Custome
         if (currentEmotionSet != null && dialogueFaceImage != null) dialogueFaceImage.sprite = currentEmotionSet.closedMouth;
         if (speakerFace != null) speakerFace.SetTalking(false);
 
-        // --- WAIT OR DISMISS LOGIC ---
         if (autoDismissTime > 0f)
         {
-            // If it's an angry rejection or walkout, wait the set time then automatically close
             yield return new WaitForSecondsRealtime(autoDismissTime);
             HideDialoguePanel();
         }
         else
         {
-            // For ALL standard dialogue (Tutorial AND regular customers), wait for the player to press a button
             ActionPromptManager.Instance.ShowPrompt("DialogueAdvance", "Normal", "Interact", "Avanzar Diálogo");
 
             yield return null; 
@@ -347,17 +405,21 @@ private IEnumerator TypewriterRoutine(string characterName, string text, Custome
             }
 
             ActionPromptManager.Instance.HidePrompt("DialogueAdvance", true);
+            
+            if (onComplete != null)
+            {
+                onComplete.Invoke(); // If it's a Yarn Node
+            }
+            else
+            {
+                HideDialoguePanel(); // If it's a queued interaction (like ordering food)
+            }
         }
-        
-        onComplete?.Invoke();
     }
 
     public void HideDialoguePanel()
     {
         if (dialogueCoroutine != null) StopCoroutine(dialogueCoroutine);
-        
-        // WE NO LONGER AUTO-CLEAR DARKNESS HERE. YARN MANAGES IT!
-        
         StartCoroutine(SlidePanelAway());
     }
 
@@ -375,6 +437,10 @@ private IEnumerator TypewriterRoutine(string characterName, string text, Custome
         }
         dialogueText.text = "";
         if (dialogueFaceImage != null) dialogueFaceImage.gameObject.SetActive(false);
+        
+        isPanelVisible = false;
+        lastDialogueEndTime = Time.unscaledTime;
+        TryProcessNextQueuedDialogue();
     }
 
     public void DisplayDialogueOptions(List<string> options, Action<int> onOptionSelected)
