@@ -92,12 +92,18 @@ public class RestaurantYarnView : DialoguePresenterBase
         }
         else if (activeFace != null)
         {
-            Customer cust = activeFace.GetComponent<Customer>();
+            // FIX: Use GetComponentInParent because the face controller is usually on a child mesh!
+            Customer cust = activeFace.GetComponentInParent<Customer>();
             if (cust != null) 
             {
                 if (cust.dialogueCameraTarget != null) headTarget = cust.dialogueCameraTarget;
                 else if (cust.headBone != null) headTarget = cust.headBone;
                 else headTarget = activeFace.transform;
+            }
+            else
+            {
+                // Failsafe in case the NPC doesn't use the Customer script
+                headTarget = activeFace.transform.parent != null ? activeFace.transform.parent : activeFace.transform;
             }
         }
 
