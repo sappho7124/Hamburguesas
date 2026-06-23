@@ -35,6 +35,8 @@ public class YarnGameLogic : MonoBehaviour
             
             // NEW: Darkness control
             dialogueRunner.AddCommandHandler<float>("set_darkness", SetDarkness);
+
+            dialogueRunner.AddCommandHandler("ending_sequence", TriggerEndingSequence);
         }
     }
 
@@ -172,6 +174,14 @@ public class YarnGameLogic : MonoBehaviour
                     lucasCustomer.TriggerSpecialWalkAndWait(StoryFlowManager.Instance.lucasWaitPoint, "", "LucasBringsVegetables", "Hablar");
                 }
             }
+        }
+    }
+
+    public void TriggerEndingSequence()
+    {
+        if (RestaurantUIManager.Instance != null)
+        {
+            RestaurantUIManager.Instance.TriggerEndingSequence();
         }
     }
 }

@@ -3471,18 +3471,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RestaurantYarnView
   variableStorage: {fileID: 934361471}
   currentSpeakerFace: {fileID: 0}
---- !u!114 &934361475
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 934361468}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b213cb202b595ee419b2a0157b1bf440, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::GameFlowDebugger
 --- !u!1 &970812279
 GameObject:
   m_ObjectHideFlags: 0
@@ -3508,7 +3496,7 @@ Transform:
   m_GameObject: {fileID: 970812279}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 3.274, y: 0.595, z: 1.966}
+  m_LocalPosition: {x: 3.274, y: 0.854, z: 1.924}
   m_LocalScale: {x: 0.5, y: 1, z: 0.5}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -5575,9 +5563,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 7262066351540048079, guid: 52571f68872914e24837210513edea1d, type: 3}
       insertIndex: -1
       addedObject: {fileID: 934361474}
-    - targetCorrespondingSourceObject: {fileID: 7262066351540048079, guid: 52571f68872914e24837210513edea1d, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 934361475}
   m_SourcePrefab: {fileID: 100100000, guid: 52571f68872914e24837210513edea1d, type: 3}
 --- !u!1001 &1675289756
 PrefabInstance:
@@ -7241,6 +7226,14 @@ PrefabInstance:
     - target: {fileID: 2168829202937431016, guid: e7b50227a655fb947b370a671955ca45, type: 3}
       propertyPath: m_Name
       value: Restaurant
+      objectReference: {fileID: 0}
+    - target: {fileID: 8019659048446991318, guid: e7b50227a655fb947b370a671955ca45, type: 3}
+      propertyPath: m_UseGravity
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9218832809263622047, guid: e7b50227a655fb947b370a671955ca45, type: 3}
+      propertyPath: m_Size.z
+      value: 2
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

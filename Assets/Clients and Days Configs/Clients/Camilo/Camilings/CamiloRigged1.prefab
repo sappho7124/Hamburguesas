@@ -495,7 +495,7 @@ GameObject:
   - component: {fileID: -7237090868326382627}
   - component: {fileID: 4613484348080332752}
   m_Layer: 6
-  m_Name: Camilo1
+  m_Name: CamiloRigged1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -733,6 +733,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6241832965588626288}
   - component: {fileID: 1989179415934851980}
+  - component: {fileID: 5275614890057690922}
   m_Layer: 6
   m_Name: Body
   m_TagString: Untagged
@@ -849,6 +850,29 @@ SkinnedMeshRenderer:
     m_Center: {x: -0.0011894703, y: -0.59729934, z: 0.17744273}
     m_Extent: {x: 2.3503754, y: 2.0582016, z: 0.72009104}
   m_DirtyAABB: 0
+--- !u!136 &5275614890057690922
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3096390711582881000}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.006
+  m_Height: 0.05
+  m_Direction: 2
+  m_Center: {x: 0, y: 0, z: 0.04}
 --- !u!1 &3959621539313493002
 GameObject:
   m_ObjectHideFlags: 0

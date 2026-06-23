@@ -80,7 +80,7 @@ public class TableSpot : MonoBehaviour
                         if (face != null) face.SetMood(reactionMood);
                         if (!string.IsNullOrEmpty(customerDialogue))
                         {
-                            RestaurantUIManager.Instance.ShowDialogue(OrderManager.Instance.GetActiveProfileName(this), customerDialogue, reactionMood, face);
+                            RestaurantUIManager.Instance.ShowDialogue(OrderManager.Instance.GetActiveProfileName(this), customerDialogue, reactionMood, face, false, null, 3f);
                         }
                         rejectedPlates.Add(plate);
                     }

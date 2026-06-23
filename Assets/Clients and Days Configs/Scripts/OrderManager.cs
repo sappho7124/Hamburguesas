@@ -133,7 +133,13 @@ public class OrderManager : MonoBehaviour
         List<TableSpot> walkouts = new List<TableSpot>();
         foreach (var kvp in activeOrders)
         {
-            if (Time.time - kvp.Value.orderStartTime > kvp.Value.profile.walkoutTime) walkouts.Add(kvp.Key);
+            // FIX: Story Characters never walk out. They just get angry.
+            bool isStoryCharacter = !string.IsNullOrEmpty(kvp.Value.profile.yarnPostMealNodeName);
+            
+            if (Time.time - kvp.Value.orderStartTime > kvp.Value.profile.walkoutTime && !isStoryCharacter) 
+            {
+                walkouts.Add(kvp.Key);
+            }
         }
         foreach (var table in walkouts) HandleWalkout(table);
     }
@@ -144,7 +150,8 @@ public class OrderManager : MonoBehaviour
         dailyAngryCustomers++;
         
         RestaurantUIManager.Instance.UpdateScore(totalSavedScore + dailyScore);
-        RestaurantUIManager.Instance.ShowDialogue(profile.profileName, profile.reactions.walkout, CustomerFaceController.Mood.Angry, face);
+        // PASS 3f AT THE END
+        RestaurantUIManager.Instance.ShowDialogue(profile.profileName, profile.reactions.walkout, CustomerFaceController.Mood.Angry, face, false, null, 3f);
     }
 
     private void HandleWalkout(TableSpot table)
@@ -156,7 +163,8 @@ public class OrderManager : MonoBehaviour
         RestaurantUIManager.Instance.UpdateScore(totalSavedScore);
         
         CustomerFaceController face = table.linkedSittingSpot.currentCustomer?.faceController;
-        RestaurantUIManager.Instance.ShowDialogue(order.profile.profileName, order.profile.reactions.walkout, CustomerFaceController.Mood.Angry, face);
+        // PASS 3f AT THE END
+        RestaurantUIManager.Instance.ShowDialogue(order.profile.profileName, order.profile.reactions.walkout, CustomerFaceController.Mood.Angry, face, false, null, 3f);
 
         if (table.linkedSittingSpot.currentCustomer != null) table.linkedSittingSpot.currentCustomer.Leave();
         activeOrders.Remove(table);

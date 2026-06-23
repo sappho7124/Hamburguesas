@@ -65,6 +65,10 @@ public class RestaurantUIManager : MonoBehaviour
     public UnityEngine.UI.Image narratorDarknessOverlay;
     public float darknessFadeSpeed = 3f;
 
+    [Header("Ending Sequence")]
+    public UnityEngine.UI.Image endingSequenceOverlay;
+    public float endingFadeSpeed = 0.5f;
+
     // Internal State
     private Coroutine dialogueCoroutine;
     private Coroutine darknessCoroutine; // Track darkness separately
@@ -213,14 +217,14 @@ public class RestaurantUIManager : MonoBehaviour
         if (targetAlpha <= 0) img.gameObject.SetActive(false);
     }
 
-    public void ShowDialogue(string characterName, string text, CustomerFaceController.Mood mood = CustomerFaceController.Mood.Neutral, CustomerFaceController speakerFace = null, bool isGameplayNode = false, Action onComplete = null)
+    public void ShowDialogue(string characterName, string text, CustomerFaceController.Mood mood = CustomerFaceController.Mood.Neutral, CustomerFaceController speakerFace = null, bool isGameplayNode = false, Action onComplete = null, float autoDismissTime = 0f)
     {
         if (dialogueCoroutine != null) StopCoroutine(dialogueCoroutine);
         
         if (optionsContainer) optionsContainer.SetActive(false);
         if (optionButtons != null) foreach (var btn in optionButtons) if (btn != null) btn.gameObject.SetActive(false);
         
-        dialogueCoroutine = StartCoroutine(TypewriterRoutine(characterName, text, mood, speakerFace, isGameplayNode, onComplete));
+        dialogueCoroutine = StartCoroutine(TypewriterRoutine(characterName, text, mood, speakerFace, isGameplayNode, onComplete, autoDismissTime));
     }
 
     private void SkipAnimation()
@@ -229,13 +233,12 @@ public class RestaurantUIManager : MonoBehaviour
         isTyping = false; 
     }
 
-    private IEnumerator TypewriterRoutine(string characterName, string text, CustomerFaceController.Mood mood, CustomerFaceController speakerFace, bool isGameplayNode, Action onComplete)
+private IEnumerator TypewriterRoutine(string characterName, string text, CustomerFaceController.Mood mood, CustomerFaceController speakerFace, bool isGameplayNode, Action onComplete, float autoDismissTime)
     {
         isSliding = true;
         isTyping = true;
         currentFullText = text;
         dialogueText.text = "";
-        ActionPromptManager.Instance.ShowPrompt("DialogueAdvance", "Normal", "Interact", "Avanzar Diálogo");
         
         currentEmotionSet = null;
         if (dialogueFaceImage != null)
@@ -314,31 +317,40 @@ public class RestaurantUIManager : MonoBehaviour
         if (currentEmotionSet != null && dialogueFaceImage != null) dialogueFaceImage.sprite = currentEmotionSet.closedMouth;
         if (speakerFace != null) speakerFace.SetTalking(false);
 
-        ActionPromptManager.Instance.ShowPrompt("DialogueAdvance", "Normal", "Interact", "Avanzar Diálogo");
-
-        yield return null; 
-
-        bool waitToAdvance = true;
-        while (waitToAdvance)
+        // --- WAIT OR DISMISS LOGIC ---
+        if (autoDismissTime > 0f)
         {
-            if (uiFastForwardAction != null && uiFastForwardAction.IsPressed())
-            {
-                yield return new WaitForSecondsRealtime(0.05f);
-                waitToAdvance = false;
-            }
-            else if (uiSelectAction != null && uiSelectAction.WasPressedThisFrame()) waitToAdvance = false;
-            else if (Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame) waitToAdvance = false;
-            else if (Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame) waitToAdvance = false;
-
-            yield return null;
+            // If it's an angry rejection or walkout, wait the set time then automatically close
+            yield return new WaitForSecondsRealtime(autoDismissTime);
+            HideDialoguePanel();
         }
+        else
+        {
+            // For ALL standard dialogue (Tutorial AND regular customers), wait for the player to press a button
+            ActionPromptManager.Instance.ShowPrompt("DialogueAdvance", "Normal", "Interact", "Avanzar Diálogo");
 
-        ActionPromptManager.Instance.HidePrompt("DialogueAdvance", true);
-    
+            yield return null; 
+
+            bool waitToAdvance = true;
+            while (waitToAdvance)
+            {
+                if (uiFastForwardAction != null && uiFastForwardAction.IsPressed())
+                {
+                    yield return new WaitForSecondsRealtime(0.05f);
+                    waitToAdvance = false;
+                }
+                else if (uiSelectAction != null && uiSelectAction.WasPressedThisFrame()) waitToAdvance = false;
+                else if (Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame) waitToAdvance = false;
+                else if (Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame) waitToAdvance = false;
+
+                yield return null;
+            }
+
+            ActionPromptManager.Instance.HidePrompt("DialogueAdvance", true);
+        }
+        
         onComplete?.Invoke();
-    
-    onComplete?.Invoke();
-}
+    }
 
     public void HideDialoguePanel()
     {
@@ -481,5 +493,30 @@ public class RestaurantUIManager : MonoBehaviour
         }
 
         if (pauseIconOverlay != null) pauseIconOverlay.gameObject.SetActive(isPaused);
+    }
+
+    public void TriggerEndingSequence()
+    {
+        if (endingSequenceOverlay != null)
+        {
+            endingSequenceOverlay.gameObject.SetActive(true);
+            StartCoroutine(FadeEndingRoutine());
+        }
+    }
+
+    private IEnumerator FadeEndingRoutine()
+    {
+        Color c = endingSequenceOverlay.color;
+        c.a = 0f;
+        endingSequenceOverlay.color = c;
+
+        while (c.a < 0.99f)
+        {
+            c.a += Time.unscaledDeltaTime * endingFadeSpeed;
+            endingSequenceOverlay.color = c;
+            yield return null;
+        }
+        c.a = 1f;
+        endingSequenceOverlay.color = c;
     }
 }

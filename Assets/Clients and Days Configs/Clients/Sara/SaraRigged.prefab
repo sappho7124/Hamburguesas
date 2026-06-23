@@ -270,6 +270,8 @@ MonoBehaviour:
       customReactions: []
   overrides:
     overrides: []
+  dialogueCameraTarget: {fileID: 8683967391748682658}
+  personalSeatOffset: {x: 0, y: 0, z: 0}
   faceController: {fileID: 8809017651462803271}
   exclamationMarkPrefab: {fileID: 6006642387159902143, guid: 514bd025a390786449a6004aaf0f0e48, type: 3}
   headBone: {fileID: 8683967391748682658}
@@ -290,7 +292,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::HighlightableObject
   objectName: Hablar
   interactionVerb: 
-  uiAnchor: {fileID: 2204208505055679440}
+  uiAnchor: {fileID: 8683967391748682658}
   uiWorldOffset: {x: 0, y: 0, z: 0}
   slideInDistance: 0.5
   slideOutDistance: 0.2

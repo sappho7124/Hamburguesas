@@ -44,14 +44,18 @@ public class Customer : MonoBehaviour
 
     void Awake()
     {
-        // FIX: Massive Box Collider that scales inversely to guarantee the whole body is interactable
+        // FIX: Add a Kinematic Rigidbody. This prevents the physics engine from pushing the customer 
+        // up into the air when their interaction BoxCollider overlaps with the chair/bench!
+        Rigidbody rb = GetComponent<Rigidbody>();
+        if (rb == null) rb = gameObject.AddComponent<Rigidbody>();
+        rb.isKinematic = true;
+        rb.useGravity = false;
+
         BoxCollider col = GetComponent<BoxCollider>();
         if (col == null) col = gameObject.AddComponent<BoxCollider>();
-        
-        // Ensures the box is 1m wide and 2m tall in WORLD space, regardless of the prefab's scale
         col.size = new Vector3(1f / transform.localScale.x, 2.2f / transform.localScale.y, 1f / transform.localScale.z);
         col.center = new Vector3(0, 1.1f / transform.localScale.y, 0);
-        col.isTrigger = false; // MUST be false for the raycast to hit it
+        col.isTrigger = false; 
 
         if (faceController == null) faceController = GetComponent<CustomerFaceController>();
         agent = GetComponent<NavMeshAgent>();
@@ -167,11 +171,11 @@ public class Customer : MonoBehaviour
         {
             if (!hasOrdered)
             {
-                // Pre-order patience: If they sit too long without you taking their order, they leave.
                 preOrderTimer += Time.deltaTime;
                 if (faceController != null) faceController.UpdateWaitMood(preOrderTimer / profile.walkoutTime);
 
-                if (preOrderTimer >= profile.walkoutTime)
+                bool isStoryCharacter = !string.IsNullOrEmpty(profile.yarnPostMealNodeName);
+                if (preOrderTimer >= profile.walkoutTime && !isStoryCharacter)
                 {
                     OrderManager.Instance.HandleQueueWalkout(profile, faceController);
                     Leave();
@@ -241,10 +245,10 @@ public class Customer : MonoBehaviour
         currentState = State.Seated;
         agent.enabled = false; 
         
-        // Combine table offsets and personal offsets
-        transform.position = targetSeat.transform.TransformPoint(targetSeat.customerOffset) + targetSeat.transform.TransformDirection(personalSeatOffset); 
+        animator.SetBool("Sitting", true);
+        animator.SetBool("Walking", false);
         
-        // Combine the chair's rotation with the chair's rotational offset
+        transform.position = targetSeat.transform.TransformPoint(targetSeat.customerOffset) + targetSeat.transform.TransformDirection(personalSeatOffset); 
         transform.rotation = targetSeat.transform.rotation * Quaternion.Euler(targetSeat.customerRotationOffset);
         
         targetSeat.OccupySpot();

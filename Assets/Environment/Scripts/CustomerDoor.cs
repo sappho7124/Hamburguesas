@@ -1,41 +1,47 @@
 using UnityEngine;
 using UnityEngine.AI;
 
+[RequireComponent(typeof(HingeJoint))]
 public class CustomerDoor : MonoBehaviour
 {
-    [Header("Door Pivot Settings")]
-    [Tooltip("The Transform that represents the door's hinge pivot.")]
-    public Transform hingePivot;
-    
-    [Tooltip("The local Euler angles when the door is OPEN.")]
-    public Vector3 openLocalRotation = new Vector3(0, 90, 0);
-    
-    [Tooltip("How fast the door swings.")]
-    public float swingSpeed = 6f;
+    [Header("Door Settings")]
+    [Tooltip("Target angle when the door is open.")]
+    public float openAngle = 90f;
 
-    private Vector3 closedLocalRotation;
+    [Tooltip("Target angle when the door is closed.")]
+    public float closedAngle = 0f;
+
+    [Tooltip("Spring strength.")]
+    public float springForce = 50f;
+
+    [Tooltip("Damping applied to the spring.")]
+    public float springDamper = 5f;
+
+    private HingeJoint hinge;
     private int customersInTrigger = 0;
 
     void Start()
     {
-        if (hingePivot == null) hingePivot = transform;
-        closedLocalRotation = hingePivot.localEulerAngles;
+        hinge = GetComponent<HingeJoint>();
+
+        JointSpring spring = hinge.spring;
+        spring.spring = springForce;
+        spring.damper = springDamper;
+        spring.targetPosition = closedAngle;
+
+        hinge.spring = spring;
+        hinge.useSpring = true;
     }
 
     void Update()
     {
-        Vector3 targetRotation = (customersInTrigger > 0) ? openLocalRotation : closedLocalRotation;
-        
-        hingePivot.localRotation = Quaternion.Slerp(
-            hingePivot.localRotation, 
-            Quaternion.Euler(targetRotation), 
-            Time.deltaTime * swingSpeed
-        );
+        JointSpring spring = hinge.spring;
+        spring.targetPosition = customersInTrigger > 0 ? openAngle : closedAngle;
+        hinge.spring = spring;
     }
 
     void OnTriggerEnter(Collider other)
     {
-        // Only trigger for NPCs walking on the NavMesh
         if (other.GetComponentInParent<NavMeshAgent>() != null)
         {
             customersInTrigger++;
@@ -47,7 +53,9 @@ public class CustomerDoor : MonoBehaviour
         if (other.GetComponentInParent<NavMeshAgent>() != null)
         {
             customersInTrigger--;
-            if (customersInTrigger < 0) customersInTrigger = 0;
+
+            if (customersInTrigger < 0)
+                customersInTrigger = 0;
         }
     }
 }
