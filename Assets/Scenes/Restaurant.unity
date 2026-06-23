@@ -6662,6 +6662,18 @@ MonoBehaviour:
   - soundName: fan
     clip: {fileID: 8300000, guid: 2cd3a1c698307454484b1263b0242ab8, type: 3}
     loop: 1
+  - soundName: statusEffect
+    clip: {fileID: 8300000, guid: 9e5c096c601061e44b0d788bdeff63f2, type: 3}
+    loop: 0
+  - soundName: doorKnock
+    clip: {fileID: 8300000, guid: a1d8217ae2188d64681c72e4d35fb49c, type: 3}
+    loop: 0
+  - soundName: footsteps
+    clip: {fileID: 8300000, guid: 54eefd8275898fe4da3affa7a67ae412, type: 3}
+    loop: 0
+  - soundName: doorOpen
+    clip: {fileID: 8300000, guid: a6e3911f3e95bfd44b3e4478207d70b0, type: 3}
+    loop: 0
 --- !u!1001 &1988803125
 PrefabInstance:
   m_ObjectHideFlags: 0

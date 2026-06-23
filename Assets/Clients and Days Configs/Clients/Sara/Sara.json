@@ -3,8 +3,8 @@
   "yarnNodeName": "MondayClient5",
   "yarnPostMealNodeName": "SaraIntroduction",
   "idealTemp": 65,
-  "walkoutTime": 120,
-  "queueWaitTime": 45,
+  "walkoutTime": 600,
+  "queueWaitTime": 90,
   "paymentSettings": {
     "pricePerIngredient": 5,
     "tipThresholds":[

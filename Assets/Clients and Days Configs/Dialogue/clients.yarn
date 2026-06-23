@@ -4,7 +4,7 @@ position: 26,-44
 
 /// Triggered by the player interacting with the client
 
-Cliente1: Hola, quiero una hamburguesa doble carne con queso y tomate, por favor.
+Cliente1: Hola, quiero una hamburguesa con carne y queso, por favor.
 
 /// Since the player is under the "irritabilidad" status effect, Unity must be prepared to ignore the line sent by Yarn Spinner when the player selects a non-mean option. This is done by putting a #choice tag at the end of every dialogue option, and telling Unity to ignore any lines that have that tag when the "irritabilidad" status effect is active.
 
@@ -14,7 +14,7 @@ Cliente1: Hola, quiero una hamburguesa doble carne con queso y tomate, por favor
 
 /// In order to make dialogue options bypass "irritabilidad" for narrative purposes, the #choice tag must simply not be included. The outcomes of non-mean options are shown in some nodes here to illustrate how it would be done in the rest of the game, but they were not written for the events of monday since getting "irritabilidad" is unavoidable that day.
 
--> Tomas: Sí señora, ya se la preparo. #choice
+-> Tomas: Sí señor, ya se la preparo. #choice
     <<if $hasIrritabilidad== false>>
         Cliente1: ¡Muchas gracias! #happy
         <<stop>>
@@ -25,7 +25,7 @@ Tomas: Agh, bueno. <<if $hasIrritabilidad== true>> #angry
 
 Cliente1: Hm, estos jóvenes de hoy en día son muy groseros. #angry
 
-<<set_order "Pan, Carne, Carne, Queso, Tomate, Pan">>
+<<set_order "Pan, Carne, Queso, Pan">>
 ===
 
 title: MondayClient2
@@ -34,14 +34,14 @@ position: 278,-48
 
 /// Triggered by the player interacting with the client
 
-Cliente2: Buenas, ¿me da por favor una hamburguesa con queso, tomate y pepino? #happy
+Cliente2: Buenas, ¿me da por favor una hamburguesa con carne y tomate? #happy
 
 -> Tomas: Claro, con gusto. #choice
     <<if $hasIrritabilidad== false>>
         Cliente2: ¡Muchas gracias! #happy
         <<stop>>
     <<endif>>
--> Tomas: Queso, tomate y pepino, sí señor. #choice
+-> Tomas: Carne y tomate, sí señor. #choice
     <<if $hasIrritabilidad== false>>
         Cliente2: ¡Así es, gracias! #happy
         <<stop>>
@@ -51,7 +51,7 @@ Cliente2: Buenas, ¿me da por favor una hamburguesa con queso, tomate y pepino? 
 Tomas: Combinación de mierda, pero bueno. <<if $hasIrritabilidad== true>> #angry
 
 Cliente2: Eh, ¿Perdón? #afraid
-<<set_order "Pan, Queso, Tomate, Pepino, Pan">>
+<<set_order "Pan, Carne, Tomate, Pan">>
 ===
 
 title: MondayClient3
@@ -83,8 +83,8 @@ Cliente3: ¿Usted qué me recomienda? #happy
 Tomas: Yo qué sé, pida rápido que hay más gente esperando. <<if $hasIrritabilidad== true>> #angry
 
 Cliente3: Uy, pues como diga, ¿no? Don Julio no le habla a uno así, debería darle pena. #angry
-Cliente3: Deme una de queso pues. #angry
-<<set_order "Pan, Queso, Pan">>
+Cliente3: Deme una de carne y pepinillo pues. #angry
+<<set_order "Pan, Carne, Pepino, Pan">>
 ===
 
 title: MondayClient4
@@ -103,9 +103,9 @@ Cliente4: ¿Usted sabe algo joven?
 Tomas: ¿Va a pedir algo de comer o no? <<if $hasIrritabilidad== true>> #angry
 
 Cliente4: Ay, perdón, no lo quise molestar... #afraid
-Cliente4: Deme con tomate y queso, por favor... #sad
+Cliente4: Deme una con carne y queso, por favor... #sad
 Cliente4: Gracias, qué pena... #sad
-<<set_order "Pan, Tomate, Queso, Pan">>
+<<set_order "Pan, Carne, Queso, Pan">>
 ===
 
 title: MondayClient5
@@ -121,13 +121,13 @@ Sara: Ehhh...
 Sara: Hmmm...
 Sara: Una... de queso y pepino, por favor.
 Sara: No, no, de tomate con queso.
-Sara: Sí, tomate y queso, por favor.
+Sara: Sí, una de carne con tomate y queso, por favor.
 
--> Tomas: Tomate y queso, listo. #choice
+-> Tomas: Carne, tomate y queso, listo. #choice
 -> Tomas: Meh. Ajá. #angry #choice
 
 Tomas: Meh. Ajá. <<if $hasIrritabilidad== true>> #angry
 
 Sara: ¡Gracias! #happy
-<<set_order "Pan, Tomate, Queso, Pan">>
+<<set_order "Pan, Carne, Tomate, Queso, Pan">>
 ===

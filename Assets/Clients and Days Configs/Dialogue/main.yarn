@@ -57,6 +57,7 @@ color: yellow
 position: 19,377
 ---
 <<set_darkness 0>>
+<<spawn_julio>>
 Don Julio: Uste llega, fiun, fan, alista las cositas, pam-pam-pam, atiende a la gente, les cocina sus hamburguesitas, lava los platicos así bien juicioso, cha-cha-cha, y a las 10 de la noche, 10 y media, ya se está yendo para la casita, ¿qué le parece? #happy
 
 <<if visited("NarratorManipulation") && $lastScene == 3>>
@@ -85,6 +86,7 @@ color: yellow
 position: 29,569
 ---
 <<set_darkness 0>>
+<<spawn_julio>>
 Don Julio: Bueno, se me cuida chino, en lo que yo entrego los domicilios de la noche uste termine de organizar la cocina y cierra con candado cuando salga. #happy
 
 <<if visited("NarratorManipulation") && $lastScene == 5>>

@@ -3,7 +3,7 @@
   "yarnNodeName": "MondayClient3",
   "yarnPostMealNodeName": "",
   "idealTemp": 65,
-  "walkoutTime": 120,
+  "walkoutTime": 280,
   "queueWaitTime": 45,
   "paymentSettings": {
     "pricePerIngredient": 5,

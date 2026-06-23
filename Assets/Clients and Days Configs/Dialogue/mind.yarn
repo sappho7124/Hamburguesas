@@ -12,6 +12,7 @@ Narrador: Pero no te preocupes por eso.
 Narrador: Solo tenlo presente.
 
 <<set_status_effect "ProblemasDeSueno" true>>
+<<play_sound "statusEffect" 0.3>>
 
 Narrador: Oh, ¿qué es eso?
 Narrador: ...
@@ -55,6 +56,7 @@ Narrador: Trabajaremos juntos para evitarlo.
 Narrador: ...
 
 <<set_status_effect ProblemasDeSueno false>>
+<<play_sound "statusEffect" 0.3>>
 
 Narrador: Por ahora duerme, mañana es un día importante.
 Narrador: ...
@@ -76,6 +78,7 @@ Narrador: ¡Ah, sí, cómo pude olvidarlo!
 Narrador: No eres lo suficientemente bueno.
 
 <<set_status_effect "ProblemasDeSueno" true>>
+<<play_sound "statusEffect" 0.3>>
 
 Narrador: Ahhh...
 Narrador: Mucho mejor.
@@ -103,26 +106,31 @@ Narrador: Tienes que hacer más ganancias diarias, o Don Julio no te podrá segu
 Narrador: O peor, podría irse a la quiebra y quedar en la calle por tu culpa.
 Narrador: ...
 Narrador: Esperemos a ver si logras seguir con esto.
+
+<<play_sound "doorKnock" 0.3>>
+
 Narrador: Todo depende de cómo te vaya maña-
 
-/// Knocking on door
+<<play_sound "doorKnock" 0.3>>
 
-/// Banging on door
+Narrador: ...
 
-/// More banging
+<<play_sound "footsteps" 0.3>>
 
 Tomas: (¿Quién es a esta hora?)
-
-/// Walking steps
-
 Tomas: ¿Hola?
 Tomas: ...
 Tomas: ¿Quién es?
 Tomas: ...
+
+<<play_sound "doorOpen" 0.3>>
+
 Tomas: ¿Hay alguien ahí?
 
-/// Opening door
-
 /// Tomás POV (2d drawing): a horribly dismembered burger. Written on the floor, with sauce: "bASuRa"
+
+<<ending_sequence>>
+
+Narrador: !
 
 ===

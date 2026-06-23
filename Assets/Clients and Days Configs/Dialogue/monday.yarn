@@ -261,6 +261,7 @@ Sara: FUE UN GUSTO CONOCERTE, AHÍ NOS VEMOS. #afraid
 
 <<set $hasIrritabilidad = false>>
 <<set_status_effect Irritabilidad false>>
+<<play_sound "statusEffect" 0.3>>
 
 <<if $triedNice== true>>
     Narrador: Oh, parece que ya no quieres cachetear a nadie...

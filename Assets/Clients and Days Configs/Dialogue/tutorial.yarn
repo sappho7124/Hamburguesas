@@ -196,6 +196,7 @@ Narrador: ¿SEGURISISÍSIMO?
 
 <<set $hasIrritabilidad = true>>
 <<set_status_effect Irritabilidad true>>
+<<play_sound "statusEffect" 0.3>>
 
 /// The player now has the "irritabilidad" status effect on. This will make the game ignore whatever dialogue option the player chooses and go with a specific response (the meanest) every time. How this is handled is explained in the "clients" yarn file 
 
