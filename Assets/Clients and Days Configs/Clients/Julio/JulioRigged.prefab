@@ -180,6 +180,7 @@ MonoBehaviour:
   overrides:
     overrides: []
   faceController: {fileID: 8809017651462803271, guid: 6e311de4c542ac44ca1b7240077a1eec, type: 3}
+  exclamationMarkPrefab: {fileID: 6006642387159902143, guid: 514bd025a390786449a6004aaf0f0e48, type: 3}
   headBone: {fileID: 8185546933625607513}
   maxHeadTurnAngle: 75
   headTurnSpeed: 6

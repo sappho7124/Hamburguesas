@@ -432,7 +432,7 @@ Shader "Modified Toon/Toon 3D as 2D (URP)"{
                 return output; 
             }
             
-            half4 UnlitFragment(Varyings input) : SV_Target { return CommonUnlitFragment(input, _White); }
+            half4 UnlitFragment(Varyings input) : SV_Target { return CommonUnlitFragment(input, _BaseColor * _Color); }
             ENDHLSL
         }
     }

@@ -342,6 +342,7 @@ public class OrderManager : MonoBehaviour
 
     public bool WouldAcceptOrder(TableSpot table, PlateItem plate)
     {
+        if (StoryFlowManager.Instance != null && StoryFlowManager.Instance.TryOverrideTableServe(plate)) return true;
         if (!activeOrders.ContainsKey(table)) return false; 
         ActiveOrder order = activeOrders[table];
 
@@ -390,6 +391,8 @@ public class OrderManager : MonoBehaviour
     {
         moneyToSpawn = 0; customerDialogue = "";
         reactionMood = CustomerFaceController.Mood.Neutral;
+        if (StoryFlowManager.Instance != null && StoryFlowManager.Instance.TryOverrideTableServe(plate)) return true;
+
         if (!activeOrders.ContainsKey(table)) return false; 
 
         ActiveOrder order = activeOrders[table];

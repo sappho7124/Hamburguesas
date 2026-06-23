@@ -92,6 +92,12 @@ public class GrillAppliance : MonoBehaviour
             itemsOnGrill.Add(food);
             food.targetEnvironmentTemperature = isOn ? grillTemperature : ambientTemperature;
             food.currentHeatMultiplier = isOn ? heatTransferMultiplier : 1f;
+
+            // NEW: Report cooking instantly if placed on an active grill
+            if (isOn && StoryFlowManager.Instance != null)
+            {
+                StoryFlowManager.Instance.ReportAction("CookMeat");
+            }
         }
 
         // 2. Vessel/Basket Check

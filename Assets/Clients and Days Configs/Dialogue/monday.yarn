@@ -1,3 +1,15 @@
+title: BellRingDay1
+color: red
+position: -121,-288
+---
+
+/// The player just rang the bell for the first time.
+/// This executes the spawn command seamlessly without locking the camera.
+
+<<spawn_lucas>>
+
+===
+
 title: LucasBringsVegetables
 color: red
 position: 114,-119

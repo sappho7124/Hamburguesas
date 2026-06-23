@@ -166,7 +166,7 @@ Material:
     - _OutlineFar: 100
     - _OutlineNear: 0.5
     - _OutlineOffsetZ: 0.75
-    - _OutlineWidth: 5
+    - _OutlineWidth: 0
     - _Outline_BaseColorBlend: 0.5
     - _Outline_LightColorBlend: 0.5
     - _Parallax: 0.005

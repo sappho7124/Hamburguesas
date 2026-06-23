@@ -27,9 +27,15 @@ public class StoryFlowManager : MonoBehaviour
     public GameObject lucasPrefab;
     public Transform lucasSpawnPoint;
     private GameObject activeLucas;
+    public Transform lucasWaitPoint;
     
     public GameObject vegetablesBagPrefab; 
     public Transform vegetableDropPoint;
+
+    [Header("Bell Reminder Event")]
+    public float timeToWaitBeforeReminder = 20f;
+    private float bellWaitTimer = 0f;
+    private bool bellReminderPlayed = false;
 
     void Awake()
     {
@@ -46,6 +52,22 @@ public class StoryFlowManager : MonoBehaviour
         {
             SpawnDonJulio(); // <-- Changed to use the new method
             Invoke("StartMondayIntro", 5f);
+        }
+    }
+
+    void Update()
+    {
+        // If the tutorial is over, but Lucas hasn't appeared yet (means they haven't rung the bell)
+        if (!isTutorialActive && currentTutorialStep >= 11 && !hasLucasAppeared)
+        {
+            bellWaitTimer += Time.deltaTime;
+            
+            // Check if time passed, we haven't played it yet, and no other dialogue is currently running
+            if (bellWaitTimer >= timeToWaitBeforeReminder && !bellReminderPlayed && !dialogueRunner.IsDialogueRunning)
+            {
+                bellReminderPlayed = true;
+                dialogueRunner.StartDialogue("TutorialBellReminder");
+            }
         }
     }
 
@@ -137,50 +159,58 @@ public class StoryFlowManager : MonoBehaviour
         }
     }
 
-public void ReportAction(string actionName)
-{
-    if (!isTutorialActive && actionName == "RingBell")
+    public void ReportAction(string actionName)
     {
-        int currentDay = overrideSaveDay ? debugForceDay : SaveManager.Instance.CurrentSave.currentDay;
-        if (currentDay == 1 && !hasLucasAppeared)
-        {
-            hasLucasAppeared = true; 
-            if (lucasPrefab && lucasSpawnPoint)
+        if (!isTutorialActive) return;
+
+        // Handle fuckups immediately without breaking the step flow
+        if (actionName == "ThrowSomething") { AdvanceTutorial("TutorialFuckUp_1_ThrowSomething", currentTutorialStep); return; }
+        if (actionName == "DropSomething") { AdvanceTutorial("TutorialFuckUp_2_DropSomething", currentTutorialStep); return; }
+        if (actionName == "BurnSomething") { AdvanceTutorial("TutorialFuckUp_3_BurnSomething", currentTutorialStep); return; }
+
+        // State Machine Evaluation
+        if (currentTutorialStep == 1 && actionName == "OpenFridge") AdvanceTutorial("TutorialStep_1_OpenFridge", 2);
+        else if (currentTutorialStep == 2 && actionName == "GrabBread") AdvanceTutorial("TutorialStep_2_GrabBread", 3);
+        
+        else if (currentTutorialStep == 3 && (actionName == "PlaceBread" || actionName == "RotateBread")) AdvanceTutorial("TutorialStep_3_PlaceBread", 4);
+        else if (currentTutorialStep == 4 && (actionName == "RotateBread" || actionName == "PlaceBread")) AdvanceTutorial("TutorialStep_4_RotateBread", 5);
+        else if (currentTutorialStep == 5 && actionName == "GrabMeat") AdvanceTutorial("TutorialStep_5_GrabMeat", 6);
+        else if (currentTutorialStep == 6 && actionName == "CookMeat") AdvanceTutorial("TutorialStep_6_CookMeat", 7);
+        else if (currentTutorialStep == 7 && actionName == "PlaceMeat") AdvanceTutorial("TutorialStep_7_PlaceMeat", 8);
+        else if (currentTutorialStep == 8 && actionName == "BuildBurger") AdvanceTutorial("TutorialStep_8_BuildBurger", 9);
+        else if (currentTutorialStep == 9 && actionName == "PlaceBurger") AdvanceTutorial("TutorialStep_9_PlaceBurger", 10);
+        else if (currentTutorialStep == 10 && actionName == "ServeTable") 
             {
-                activeLucas = Instantiate(lucasPrefab, lucasSpawnPoint.position, lucasSpawnPoint.rotation);
-                activeLucas.name = "Lucas"; 
+                AdvanceTutorial("TutorialStep_10_GoToTable", 11);
+                isTutorialActive = false; 
+                    
+                // NEW: Show exclamation mark on the bell
+                KitchenBell bell = FindAnyObjectByType<KitchenBell>();
+                if (bell != null) bell.ShowExclamationMark();
             }
-            dialogueRunner.StartDialogue("LucasBringsVegetables");
-        }
-        return;
     }
 
-    if (!isTutorialActive) return;
-
-    // Handle fuckups immediately without breaking the step flow
-    if (actionName == "ThrowSomething") { AdvanceTutorial("TutorialFuckUp_1_ThrowSomething", currentTutorialStep); return; }
-    if (actionName == "DropSomething") { AdvanceTutorial("TutorialFuckUp_2_DropSomething", currentTutorialStep); return; }
-    if (actionName == "BurnSomething") { AdvanceTutorial("TutorialFuckUp_3_BurnSomething", currentTutorialStep); return; }
-
-    // State Machine Evaluation
-    if (currentTutorialStep == 1 && actionName == "OpenFridge") AdvanceTutorial("TutorialStep_1_OpenFridge", 2);
-    else if (currentTutorialStep == 2 && actionName == "GrabBread") AdvanceTutorial("TutorialStep_2_GrabBread", 3);
-    
-    // FIX: Allow BOTH placing or rotating to satisfy Step 3 so the player never gets stuck!
-    else if (currentTutorialStep == 3 && (actionName == "PlaceBread" || actionName == "RotateBread")) AdvanceTutorial("TutorialStep_3_PlaceBread", 4);
-    
-    else if (currentTutorialStep == 4 && actionName == "RotateBread") AdvanceTutorial("TutorialStep_4_RotateBread", 5);
-    else if (currentTutorialStep == 5 && actionName == "GrabMeat") AdvanceTutorial("TutorialStep_5_GrabMeat", 6);
-    else if (currentTutorialStep == 6 && actionName == "CookMeat") AdvanceTutorial("TutorialStep_6_CookMeat", 7);
-    else if (currentTutorialStep == 7 && actionName == "PlaceMeat") AdvanceTutorial("TutorialStep_7_PlaceMeat", 8);
-    else if (currentTutorialStep == 8 && actionName == "BuildBurger") AdvanceTutorial("TutorialStep_8_BuildBurger", 9);
-    else if (currentTutorialStep == 9 && actionName == "PlaceBurger") AdvanceTutorial("TutorialStep_9_PlaceBurger", 10);
-    else if (currentTutorialStep == 10 && actionName == "ServeTable") 
+    public void SpawnLucas()
     {
-        AdvanceTutorial("TutorialStep_10_GoToTable", 11);
-        isTutorialActive = false; 
+        Debug.Log("[StoryFlowManager] Yarn Command received: Spawning Lucas...");
+
+        if (lucasPrefab != null && lucasSpawnPoint != null && lucasWaitPoint != null)
+        {
+            activeLucas = Instantiate(lucasPrefab, lucasSpawnPoint.position, lucasSpawnPoint.rotation);
+            activeLucas.name = "Lucas"; 
+                        
+            Customer lucasCustomer = activeLucas.GetComponent<Customer>();
+            if (lucasCustomer != null)
+            {
+                Debug.Log("[StoryFlowManager] Lucas spawned successfully. Commanding him to walk to the wait point.");
+                lucasCustomer.TriggerSpecialWalkAndWait(lucasWaitPoint, "¿Buenas? ¡Hola!", "LucasBringsVegetables", "Hablar");
+            }
+        }
+        else
+        {
+            Debug.LogError("[StoryFlowManager] FAILED TO SPAWN LUCAS: One of the references (Prefab, SpawnPoint, or WaitPoint) is NULL in the inspector!");
+        }
     }
-}
 
     private void AdvanceTutorial(string yarnNode, int nextStep)
     {
@@ -218,5 +248,12 @@ public void ReportAction(string actionName)
             Destroy(activeLucas);
         }
     }
+
+    public bool TryOverrideTableServe(PlateItem plate)
+    {
+        // Manager evaluates if we are currently at the "Serve" step of the tutorial
+        return isTutorialActive && currentTutorialStep == 10;
+    }
+    
     public int GetCurrentTutorialStep() => currentTutorialStep;
 }

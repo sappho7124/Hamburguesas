@@ -272,7 +272,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Outline
   outlineMode: 0
   outlineColor: {r: 0, g: 0, b: 0, a: 1}
-  outlineWidth: 1
+  outlineWidth: 3
   noiseAmount: 7
   noiseScale: 250
   frameRate: 8

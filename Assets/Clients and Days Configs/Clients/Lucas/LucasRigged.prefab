@@ -1760,8 +1760,8 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 9.189803, y: -0.00000016505354, z: 1.8153296}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 0.3, y: 0.3, z: 0.3}
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 7601687613666905468}
   - {fileID: 7999847580748027945}
@@ -1846,6 +1846,7 @@ MonoBehaviour:
   overrides:
     overrides: []
   faceController: {fileID: 0}
+  exclamationMarkPrefab: {fileID: 6006642387159902143, guid: 514bd025a390786449a6004aaf0f0e48, type: 3}
   headBone: {fileID: 770228338914609575}
   maxHeadTurnAngle: 75
   headTurnSpeed: 6

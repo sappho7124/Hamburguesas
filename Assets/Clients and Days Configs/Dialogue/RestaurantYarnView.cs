@@ -34,7 +34,10 @@ public class RestaurantYarnView : DialoguePresenterBase
     public override async YarnTask OnDialogueCompleteAsync()
     {
         // Detect if the node that just finished is meant to stay on screen for gameplay
-        bool isGameplayNode = lastNodeName.StartsWith("TutorialStep") || lastNodeName == "TutorialStart" || lastNodeName == "TutorialFuckUpReroute";
+        bool isGameplayNode = lastNodeName.StartsWith("TutorialStep") || 
+                              lastNodeName == "TutorialStart" || 
+                              lastNodeName.StartsWith("TutorialFuckUp") || 
+                              lastNodeName == "TutorialBellReminder";
 
         // ONLY hide the panel if it's a normal conversation
         if (!isGameplayNode)
@@ -84,7 +87,11 @@ public class RestaurantYarnView : DialoguePresenterBase
             else headTarget = activeFace.transform.Find("Head") ?? activeFace.transform;
         }
 
-        bool isGameplayNode = lastNodeName.StartsWith("TutorialStep") || lastNodeName == "TutorialStart" || lastNodeName == "TutorialFuckUpReroute";
+        // Detect if the node that just finished is meant to stay on screen for gameplay
+        bool isGameplayNode = lastNodeName.StartsWith("TutorialStep") || 
+                              lastNodeName == "TutorialStart" || 
+                              lastNodeName.StartsWith("TutorialFuckUp") || 
+                              lastNodeName == "TutorialBellReminder";
 
         InteractionController ic = FindAnyObjectByType<InteractionController>();
         if (ic != null)

@@ -232,6 +232,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Customer
   profile:
     profileName: 
+    yarnNodeName: 
+    yarnPostMealNodeName: 
     idealTemp: 0
     walkoutTime: 120
     queueWaitTime: 45
@@ -269,6 +271,7 @@ MonoBehaviour:
   overrides:
     overrides: []
   faceController: {fileID: 8809017651462803271}
+  exclamationMarkPrefab: {fileID: 6006642387159902143, guid: 514bd025a390786449a6004aaf0f0e48, type: 3}
   headBone: {fileID: 8683967391748682658}
   maxHeadTurnAngle: 75
   headTurnSpeed: 6

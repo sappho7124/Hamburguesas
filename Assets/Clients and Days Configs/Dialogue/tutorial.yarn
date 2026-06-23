@@ -224,9 +224,6 @@ Lucas: ¡Buenas!
 /// Knocking on door.
 
 /// The player walks to the door
-
-<<jump LucasBringsVegetables>>
-
 ===
 
 title: TutorialFuckUp_1_ThrowSomething
@@ -316,5 +313,14 @@ position: 414,45
 <<else>>
     <<jump TutorialEnd>>
 <<endif>>
+===
+
+title: TutorialBellReminder
+position: 414,245
+---
+
+Narrador: Oye, ¿qué estás esperando?
+Narrador: Presiona la campana en el mesón de la cocina.
+Narrador: El restaurante no se va a abrir solo.
 
 ===

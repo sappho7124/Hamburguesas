@@ -30,10 +30,7 @@ public class TableSpot : MonoBehaviour
 
     void Update()
     {
-        bool isTutorial = StoryFlowManager.Instance != null && StoryFlowManager.Instance.isTutorialActive;
-
-        // FIX: Do NOT return early if the tutorial is active. We need to allow placing plates on empty tables!
-        if (isEating || linkedSittingSpot == null || (!linkedSittingSpot.isOccupied && !isTutorial)) return;
+        if (isEating || linkedSittingSpot == null) return;
 
         platesInZone.RemoveAll(p => p == null);
 
@@ -44,17 +41,6 @@ public class TableSpot : MonoBehaviour
             {
                 if (!rejectedPlates.Contains(plate))
                 {
-                    Debug.Log($"[TableSpot] Plate placed on table '{gameObject.name}'. Contains {plate.GetAttachedItems().Count} items.");
-                    
-                    // --- NEW: TUTORIAL BYPASS ---
-                    if (isTutorial)
-                    {
-                        Debug.Log($"[TableSpot] Tutorial is active! Serving food automatically without customer order check.");
-                        StoryFlowManager.Instance.ReportAction("ServeTable");
-                        StartCoroutine(EatRoutine(plate, eqPlate, 0));
-                        break;
-                    }
-
                     TableSpot correctSpot = FindCorrectSpotInCluster(plate);
                     if (correctSpot != null && correctSpot != this)
                     {
@@ -70,18 +56,27 @@ public class TableSpot : MonoBehaviour
 
                     CustomerFaceController face = linkedSittingSpot.currentCustomer != null ? linkedSittingSpot.currentCustomer.faceController : null;
 
+                    // Clean check relying entirely on the manager
                     if (OrderManager.Instance.TryServeFood(this, plate, out moneyToSpawn, out customerDialogue, out reactionMood))
                     {
-                        StoryFlowManager.Instance.ReportAction("ServeTable");
+                        // Table just reports what happened, taking no decisions
+                        if (StoryFlowManager.Instance != null) StoryFlowManager.Instance.ReportAction("ServeTable");
+
                         if (face != null) face.SetMood(reactionMood);
-                        RestaurantUIManager.Instance.ShowDialogue(OrderManager.Instance.GetActiveProfileName(this), customerDialogue, reactionMood, face);
+                        if (!string.IsNullOrEmpty(customerDialogue)) 
+                        {
+                            RestaurantUIManager.Instance.ShowDialogue(OrderManager.Instance.GetActiveProfileName(this), customerDialogue, reactionMood, face);
+                        }
                         StartCoroutine(EatRoutine(plate, eqPlate, moneyToSpawn));
                     }
                     else
                     {
                         Debug.Log($"[TableSpot] Food rejected by customer!");
                         if (face != null) face.SetMood(reactionMood);
-                        RestaurantUIManager.Instance.ShowDialogue(OrderManager.Instance.GetActiveProfileName(this), customerDialogue, reactionMood, face);
+                        if (!string.IsNullOrEmpty(customerDialogue))
+                        {
+                            RestaurantUIManager.Instance.ShowDialogue(OrderManager.Instance.GetActiveProfileName(this), customerDialogue, reactionMood, face);
+                        }
                         rejectedPlates.Add(plate);
                     }
                     break; 

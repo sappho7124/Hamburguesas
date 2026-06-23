@@ -14,7 +14,7 @@ public class Customer : MonoBehaviour
     private CustomerGroup myGroup; 
     
     // NEW: Added "Idle" as the first state so special NPCs don't walk away when spawned
-    private enum State { Idle, MovingToSeat, Seated, Leaving, MovingToQueue, WaitingInQueue, FinishedEating }
+    private enum State { Idle, MovingToSeat, Seated, Leaving, MovingToQueue, WaitingInQueue, FinishedEating, SpecialEvent }
     private State currentState = State.Idle;
 
     private bool hasOrdered = false;
@@ -22,6 +22,10 @@ public class Customer : MonoBehaviour
     private NavMeshAgent agent;
 
     public CustomerFaceController faceController;
+
+    [Header("UI & Feedback")]
+    public GameObject exclamationMarkPrefab;
+    private GameObject activeExclamationMark;
 
     [Header("Head Tracking Animation")]
     public Transform headBone; // Map your Mixamo head bone here!
@@ -39,7 +43,7 @@ public class Customer : MonoBehaviour
         SetInteractable(false, "");
     }
 
-    private void SetInteractable(bool active, string verb)
+    public void SetInteractable(bool active, string verb)
     {
         HighlightableObject highlight = GetComponent<HighlightableObject>();
         if (highlight != null)
@@ -50,6 +54,20 @@ public class Customer : MonoBehaviour
         }
         InteractableObject interactable = GetComponent<InteractableObject>();
         if (interactable != null) interactable.enabled = active;
+    }
+
+    public void ShowExclamationMark()
+    {
+        if (exclamationMarkPrefab != null && activeExclamationMark == null)
+        {
+            Vector3 pos = headBone != null ? headBone.position + (Vector3.up * 0.6f) : transform.position + (Vector3.up * 2f);
+            activeExclamationMark = Instantiate(exclamationMarkPrefab, pos, Quaternion.identity, transform);
+        }
+    }
+
+    public void HideExclamationMark()
+    {
+        if (activeExclamationMark != null) Destroy(activeExclamationMark);
     }
 
     private void MoveToClosestNavPoint(Vector3 targetPos)
@@ -79,6 +97,8 @@ public class Customer : MonoBehaviour
 
     private void UpdateAnimations()
     {
+        if (currentState == State.SpecialEvent) return; 
+
         bool walking = currentState == State.MovingToSeat || currentState == State.MovingToQueue || currentState == State.Leaving;
         bool sitting = currentState == State.Seated;
 
@@ -219,20 +239,21 @@ public class Customer : MonoBehaviour
         string triggerState = DetermineCurrentTriggerState();
         if (string.IsNullOrEmpty(triggerState)) return; 
 
-        if (triggerState == "BeforeOrder" || triggerState == "PostMeal")
+        if (triggerState == "BeforeOrder" || triggerState == "PostMeal" || triggerState == "SpecialEvent")
         {
             RestaurantYarnView yarnView = FindAnyObjectByType<RestaurantYarnView>();
             if (yarnView != null) yarnView.currentSpeakerFace = faceController;
 
             Yarn.Unity.DialogueRunner runner = FindAnyObjectByType<Yarn.Unity.DialogueRunner>();
-            
-            string targetNode = triggerState == "BeforeOrder" ? profile.yarnNodeName : profile.yarnPostMealNodeName; 
+            string targetNode = triggerState == "PostMeal" ? profile.yarnPostMealNodeName : profile.yarnNodeName; 
 
             if (runner != null && !string.IsNullOrEmpty(targetNode))
             {
                 try 
                 {
                     YarnGameLogic.Instance.currentInteractingCustomer = this;
+                    HideExclamationMark(); // <--- NEW: Hides mark!
+                    
                     runner.StartDialogue(targetNode);
                     
                     if (triggerState == "BeforeOrder")
@@ -240,7 +261,7 @@ public class Customer : MonoBehaviour
                         hasOrdered = true;
                         SetInteractable(true, "Repetir Orden");
                     }
-                    else if (triggerState == "PostMeal")
+                    else if (triggerState == "PostMeal" || triggerState == "SpecialEvent")
                     {
                         SetInteractable(false, "");
                     }
@@ -248,11 +269,10 @@ public class Customer : MonoBehaviour
                 }
                 catch (System.Exception)
                 {
-                    Debug.LogWarning($"[Yarn] Node '{targetNode}' missing or invalid! Using generic C# fallback.");
+                    Debug.LogWarning($"[Yarn] Node '{targetNode}' missing!");
                 }
             }
         }
-
         ExecuteStandardInteraction(triggerState);
     }
 
@@ -262,6 +282,8 @@ public class Customer : MonoBehaviour
         if (currentState == State.Seated && !hasOrdered) return "BeforeOrder";
         if (currentState == State.Seated && hasOrdered) return "AfterOrder";
         if (currentState == State.FinishedEating) return "PostMeal"; 
+        if (currentState == State.SpecialEvent) return "SpecialEvent";
+        if (currentState == State.WaitingInQueue) return "Queue";
         return "";
     }
 
@@ -276,6 +298,57 @@ public class Customer : MonoBehaviour
     {
         currentState = State.FinishedEating;
         SetInteractable(true, "Hablar");
+        ShowExclamationMark();
+    }
+
+    public void TriggerSpecialWalkAndWait(Transform destination, string floatingText, string yarnNode, string promptVerb)
+    {
+        StartCoroutine(SpecialWalkRoutine(destination, floatingText, yarnNode, promptVerb));
+    }
+
+    private System.Collections.IEnumerator SpecialWalkRoutine(Transform destination, string floatingText, string yarnNode, string promptVerb)
+    {
+        currentState = State.SpecialEvent;
+        SetInteractable(false, "");
+        agent.enabled = true;
+        
+        if (UnityEngine.AI.NavMesh.SamplePosition(destination.position, out UnityEngine.AI.NavMeshHit hit, 2.0f, UnityEngine.AI.NavMesh.AllAreas))
+            agent.SetDestination(hit.position);
+        else 
+            agent.SetDestination(destination.position);
+            
+        animator.SetBool("Walking", true);
+
+        // Wait until he reaches the bag drop point
+        while (agent.pathPending || agent.remainingDistance > 0.3f)
+        {
+            yield return null;
+        }
+
+        animator.SetBool("Walking", false);
+        
+        // Throw floating text to get attention
+        if (!string.IsNullOrEmpty(floatingText) && FloatingTextManager.Instance != null)
+        {
+            FloatingTextManager.Instance.StartWords(floatingText);
+            Invoke(nameof(StopFloatingWords), 3f);
+        }
+
+        // Setup for Interaction
+        if (profile == null)
+        {
+            profile = new CustomerProfile();
+            profile.profileName = gameObject.name;
+        }
+        profile.yarnNodeName = yarnNode;
+
+        SetInteractable(true, promptVerb);
+        ShowExclamationMark();
+    }
+
+    private void StopFloatingWords()
+    {
+        if (FloatingTextManager.Instance != null) FloatingTextManager.Instance.StopWords();
     }
 
     private void ExecuteStandardInteraction(string state)

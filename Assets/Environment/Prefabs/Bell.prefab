@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 8031895989602646547}
   - component: {fileID: 4852342019569926274}
   - component: {fileID: 8231554483947852166}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: bell.top
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -101,7 +101,7 @@ GameObject:
   - component: {fileID: 1822497863222450308}
   - component: {fileID: 6159774897052318772}
   - component: {fileID: 4949410461879380734}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: bell.bottom
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -192,7 +192,8 @@ GameObject:
   - component: {fileID: 4744737598263301711}
   - component: {fileID: 4702568343962994952}
   - component: {fileID: 6717126060875099542}
-  m_Layer: 0
+  - component: {fileID: 2121604222226279596}
+  m_Layer: 6
   m_Name: Bell
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -207,7 +208,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2116122648485212770}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0.7680601, y: 1.091927, z: -3.1023788}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -258,7 +259,7 @@ MonoBehaviour:
   slideOutDistance: 0.2
   thicknessMultiplier: 1.2
   outlineTarget: {fileID: 0}
-  hoverColor: {r: 1, g: 1, b: 1, a: 1}
+  hoverColor: {r: 0, g: 0, b: 0, a: 1}
   maxOutlineWidth: 10
   animSpeed: 15
   baseNoiseAmount: 7
@@ -289,9 +290,9 @@ MonoBehaviour:
     OnInteract:
       m_PersistentCalls:
         m_Calls:
-        - m_Target: {fileID: 0}
-          m_TargetAssemblyTypeName: CustomerSpawner, Assembly-CSharp
-          m_MethodName: StartShift
+        - m_Target: {fileID: 2121604222226279596}
+          m_TargetAssemblyTypeName: KitchenBell, Assembly-CSharp
+          m_MethodName: RingBell
           m_Mode: 1
           m_Arguments:
             m_ObjectArgument: {fileID: 0}
@@ -302,6 +303,20 @@ MonoBehaviour:
             m_BoolArgument: 0
           m_CallState: 2
   lockedVerb: Requires Tool
+--- !u!114 &2121604222226279596
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2116122648485212770}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5889bc68dbd5f4e4fae03d9307e3167e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::KitchenBell
+  exclamationMarkPrefab: {fileID: 6006642387159902143, guid: 514bd025a390786449a6004aaf0f0e48, type: 3}
+  exclamationOffset: {x: 0, y: 0.5, z: 0}
 --- !u!1 &3460143719151898163
 GameObject:
   m_ObjectHideFlags: 0
@@ -313,7 +328,7 @@ GameObject:
   - component: {fileID: 5993227478825050913}
   - component: {fileID: 7123274047549986559}
   - component: {fileID: 6566831289924931885}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: bell.top.001
   m_TagString: Untagged
   m_Icon: {fileID: 0}
